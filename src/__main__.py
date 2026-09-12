@@ -1,28 +1,44 @@
-import mlx
+from mlx.mlx import Mlx
 from mazegenerator.mazegenerator import MazeGenerator
 from random import randint
+from src import Player
 
 
 WIDTH = 900
 HEIGHT = 800
-SPEED = 10
+SPEED = 15
+H = 9
+V = 3
 class Bot:
     def __init__(self):
         self.x = WIDTH // 2
         self.y = HEIGHT // 2
         self.img = None
-        self.img_w = None
-        self.img_h = None
+        self.img_width = None
+        self.img_height = None
         self.moving = False
 
-
+mobs = [
+    (randint(HEIGHT - 300, WIDTH - 300), randint(HEIGHT - 300, WIDTH - 300)) for _ in range(40)
+]
 
 
 
 N, E, S, W = 1, 2, 4, 8
 
-mlx = mlx.mlx.Mlx()
+mlx = Mlx()
 
+app = mlx.mlx_init()
+window = mlx.mlx_new_window(app, WIDTH, HEIGHT, "teste")
+bot = Bot()
+img, w, h= mlx.mlx_png_file_to_image(app, "/home/denys/Documentos/42/pacman/src/models/assets/player_images/new/right-3.png")
+player = Player(
+    span_x= WIDTH // 2,
+    span_y= HEIGHT // 2,
+    image=img,
+    width=w,
+    height=h
+)
 def close(param):
     mlx.mlx_destroy_window(app, window)
     mlx.mlx_loop_exit(app)
@@ -32,73 +48,97 @@ def key_press(keycode, param):
 
 def frames(x, y):
     mlx.mlx_clear_window(app, window)
-    mlx.mlx_put_image_to_window(app, window, bot.img, x, y)
-    bot.moving = False
+    for coord in mobs:
+        row, col = coord
+        mlx.mlx_string_put(app, window, col, row, 0xFFFFFF, ".")
+    mlx.mlx_put_image_to_window(app, window, player.img, x, y)
+    draw_bbox(mlx, app, window, player, 0xFF0000)
+    player.moving = False
 
+def draw_bbox(mlx: Mlx, app, window, player: Player, color=0xFFFFFF):
+    rect = player.rect
+    left, right = rect.left, rect.right
+    top, bottom = rect.top, rect.bottom
 
-def colision():
-    left = bot.x
-    right = bot.x + bot.img_w
-    top = bot.y
-    bottom = bot.y + bot.img_h
+    # linhas horizontais (topo e base)
+    for x in range(left, right + 1):
+        mlx.mlx_string_put(app, window, x, top - H, color, "-")
+        mlx.mlx_string_put(app, window, x, bottom - H, color, "-")
 
-    if left < 0 or right > WIDTH or top < 0 or bottom > HEIGHT:
-        print("HEIGHT: ", bot.y + bot.img_h)
-        print("WIDTH: ", bot.x + bot.img_w)
+    # linhas verticais (esquerda e direita)
+    for y in range(top, bottom + 1):
+        mlx.mlx_string_put(app, window, left - V , y,  color, "|")
+        mlx.mlx_string_put(app, window, right - V, y, color,  "|")
+
+def colision(player):
+    player = player.rect
+    if (player.left + V) < 0 or (player.right - V) > WIDTH or (player.top - H) < 0 or (player.bottom - H) > HEIGHT:
         return True
-
-    print("WIDTH: ", bot.x + bot.img_w)
-    print("HEIGHT: ", bot.y + bot.img_h)
     return False
 
+def heat(player):
+    rect = player.rect
+    for i in range(len(mobs)):
+        if isinstance(mobs[i], int):
+            continue
+        row, col = mobs[i]
+        if rect.left <= col <= rect.right and rect.top <= row <= rect.bottom:
+            mobs[i] = 0
+    mobs[:] = [m for m in mobs if not isinstance(m, int)]
 def update(img):
-    bot.img, bot.img_w, bot.img_h = mlx.mlx_png_file_to_image(app, img)
+    player.img, player.img_width, player.img_height = mlx.mlx_png_file_to_image(app, img)
 
 
 def controls(key, param):
-
+    if player.moving:
+        return
     if key ==  0xff1b:
         mlx.mlx_destroy_window(app, window)
         mlx.mlx_loop_exit(app)
 
     if key == 65362:
         # up
-        bot.y -= SPEED
-        if colision():
-            bot.y += 5
-        update("./pacman-up.png")
-        frames(bot.x, bot.y)
+        player.y -= SPEED
+        player.moving = True
+        if colision(param):
+            player.y += SPEED
+        heat(player)
+        frames(player.x, player.y)
 
     if key == 65361:
         # left
-        bot.x -= SPEED
-        if colision():
-            bot.x += SPEED
-        update("./pacman-left.png")
-        frames(bot.x, bot.y)
+        player.x -= SPEED
+        player.moving = True
+        if colision(param):
+            player.x += SPEED
+        heat(player)
+
+        frames(player.x, player.y)
     if key == 65363:
         # right
-        bot.x += SPEED
-        if colision():
-            bot.x -= SPEED
-        update("./pacman.png")
-        frames(bot.x, bot.y)
+        player.x += SPEED
+        player.moving = True
+        if colision(param):
+            player.x -= SPEED
+        heat(player)
+
+        frames(player.x, player.y)
 
     if key == 65364:
         # down
-        bot.y += SPEED
-        if colision():
-            bot.y -= SPEED
-        update("./pacman-down.png")
-        frames(bot.x, bot.y)
+        player.y += SPEED
+        player.moving = True
+        if colision(param):
+            player.y -= SPEED
+        heat(player)
+        frames(player.x, player.y)
 
 
     return 0
-app = mlx.mlx_init()
-window = mlx.mlx_new_window(app, WIDTH, HEIGHT, "teste")
-bot = Bot()
-update("./pacman.png")
-mlx.mlx_put_image_to_window(app, window, bot.img, bot.x, bot.y)
-mlx.mlx_hook(window, 2, 1 << 0, key_press, None)
-mlx.mlx_hook(window, 17, 0, close, None)
+mlx.mlx_put_image_to_window(app, window, player.img, player.x, player.y)
+for coord in mobs:
+        row, col = coord
+        mlx.mlx_string_put(app, window, col, row, 0xFFFFFF, ".")
+draw_bbox(mlx, app, window, player)
+mlx.mlx_hook(window, 2, 1 << 0, key_press, player)
 mlx.mlx_loop(app)
