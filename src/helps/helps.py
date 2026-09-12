@@ -1,23 +1,66 @@
-from pathlib import Path
-from PIL import Image
+from typing import TYPE_CHECKING, Any
+from mlx.mlx import Mlx
+if TYPE_CHECKING:
+    from ..models import Player
 
-BASE_DIR = Path(__file__).parent
-NEW_DIR = BASE_DIR / "new"
+def colision(
+    player: "Player",
+    WIDTH: int,
+    HEIGHT: int,
+    V: int,
+    H: int
+):
+    player = player.rect
+    if ((player.left + V) < 0 or
+        (player.right - V) > WIDTH or
+        (player.top - H) < 0 or
+        (player.bottom - H) > HEIGHT
+    ):
+        return True
+    return False
 
-NEW_DIR.mkdir(exist_ok=True)
 
-for i in range(1, 5):
-    right = Image.open(BASE_DIR / f"right-{i}.png")
-    left = Image.open(BASE_DIR / f"left-{i}.png")
-    top = Image.open(BASE_DIR / f"top-{i}.png")
-    down = Image.open(BASE_DIR / f"down-{i}.png")
+def drawlineH(x0, y0, x1, y1, mlx: Mlx, mlx_ptr: Any, window: Any):
+    if x0 > x1:
+        x0, x1 = x1, x0
+        y0, y1 = y1, y0
 
-    right = right.resize((52, 52), Image.Resampling.NEAREST)
-    left = left.resize((52, 52), Image.Resampling.NEAREST)
-    top = top.resize((52, 52), Image.Resampling.NEAREST)
-    down = down.resize((52, 52), Image.Resampling.NEAREST)
+    dx = x1 - x0
+    dy = y1 - y0
 
-    right.save(NEW_DIR / f"right-{i}.png")
-    left.save(NEW_DIR / f"left-{i}.png")
-    top.save(NEW_DIR / f"top-{i}.png")
-    down.save(NEW_DIR / f"down-{i}.png")
+    dt = -1 if dy < 0 else 1
+
+    dy *= dt
+
+    if dx != 0:
+        y = y0
+        p = 2*dy - dx
+        for i in range(dx + 1):
+            mlx.mlx_pixel_put(mlx_ptr, window, x0 + i, y)
+            if p >= 0:
+                y += dt
+                p = p - 2*dx
+            p = p + 2*dy
+
+
+def drawlineV(x0, y0, x1, y1, mlx: Mlx, mlx_ptr: Any, window: Any):
+    if y0 > y1:
+        x0, x1 = x1, x0
+        y0, y1 = y1, y0
+
+    dx = x1 - x0
+    dy = y1 - y0
+
+    dt = -1 if dy < 0 else 1
+
+    dy *= dt
+
+    if dx != 0:
+        y = y0
+        p = 2*dy - dx
+        for i in range(dx + 1):
+            mlx.mlx_pixel_put(mlx_ptr, window, x0 + i, y)
+            if p >= 0:
+                y += dt
+                p = p - 2*dx
+            p = p + 2*dy
