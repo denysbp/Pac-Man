@@ -52,7 +52,7 @@ def frames(x, y):
         row, col = coord
         mlx.mlx_string_put(app, window, col, row, 0xFFFFFF, ".")
     mlx.mlx_put_image_to_window(app, window, player.img, x, y)
-    draw_bbox(mlx, app, window, player, 0xFF0000)
+    # draw_bbox(mlx, app, window, player, 0xFF0000)
     player.moving = False
 
 def draw_bbox(mlx: Mlx, app, window, player: Player, color=0xFFFFFF):
@@ -82,7 +82,7 @@ def heat(player):
         if isinstance(mobs[i], int):
             continue
         row, col = mobs[i]
-        if rect.left <= col <= rect.right and rect.top <= row <= rect.bottom:
+        if rect.left + V <= col <= rect.right - V and rect.top - H <= row <= rect.bottom - H:
             mobs[i] = 0
     mobs[:] = [m for m in mobs if not isinstance(m, int)]
 def update(img):
@@ -90,8 +90,6 @@ def update(img):
 
 
 def controls(key, param):
-    if player.moving:
-        return
     if key ==  0xff1b:
         mlx.mlx_destroy_window(app, window)
         mlx.mlx_loop_exit(app)
@@ -99,38 +97,36 @@ def controls(key, param):
     if key == 65362:
         # up
         player.y -= SPEED
-        player.moving = True
         if colision(param):
             player.y += SPEED
         heat(player)
+        player.update_img("UP", mlx, app)
         frames(player.x, player.y)
 
     if key == 65361:
         # left
         player.x -= SPEED
-        player.moving = True
         if colision(param):
             player.x += SPEED
         heat(player)
-
+        player.update_img("LEFT", mlx, app)
         frames(player.x, player.y)
     if key == 65363:
         # right
         player.x += SPEED
-        player.moving = True
         if colision(param):
             player.x -= SPEED
         heat(player)
-
+        player.update_img("RIGHT", mlx, app)
         frames(player.x, player.y)
 
     if key == 65364:
         # down
         player.y += SPEED
-        player.moving = True
         if colision(param):
             player.y -= SPEED
         heat(player)
+        player.update_img("DOWN", mlx, app)
         frames(player.x, player.y)
 
 
@@ -139,6 +135,6 @@ mlx.mlx_put_image_to_window(app, window, player.img, player.x, player.y)
 for coord in mobs:
         row, col = coord
         mlx.mlx_string_put(app, window, col, row, 0xFFFFFF, ".")
-draw_bbox(mlx, app, window, player)
+# draw_bbox(mlx, app, window, player)
 mlx.mlx_hook(window, 2, 1 << 0, key_press, player)
 mlx.mlx_loop(app)
