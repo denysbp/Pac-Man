@@ -10,5 +10,12 @@ install:
 
 clean:
 	rm -rf $(SRC)__pycache__
+	rm -rf $(SRC)/loader/__pycache__
+	rm -rf $(SRC)/data_base/__pycache__
+	rm -rf $(SRC)/exceptions/__pycache__
+	rm -rf $(SRC)/helps/__pycache__
+	rm -rf $(SRC)/models/__pycache__
+	rm -rf $(SRC)/ui/__pycache__
+
 run:
 	$(PY) -m src
