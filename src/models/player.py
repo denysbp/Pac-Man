@@ -3,9 +3,9 @@ from .metadata import Rect
 from .configs import (
     RIGHT, LEFT, TOP, DOWN
 )
-
-
 from mlx.mlx import Mlx
+
+
 class Player:
     def __init__(
         self,
@@ -14,7 +14,9 @@ class Player:
         span_y: int,
         image: Any,
         width: int,
-        height: int
+        height: int,
+        mlx_ptr: Any,
+        mlx: Mlx
     ):
         self._img_name: str = ""
         self._direction: str = "RIGHT"
@@ -31,16 +33,17 @@ class Player:
         self.y: int = span_y
         self.index: int = 0
         self.moving = False
+        self._image_cache: dict[str, tuple] = {}
+        for frames in self._directions.values():
+            for path in frames:
+                self._image_cache[path] = mlx.mlx_png_file_to_image(mlx_ptr, str(path))
 
     def update_img(self, direction, mlx: Mlx, mlx_ptr: Any) -> None:
         if direction != self._direction:
             self._direction = direction
         move = self._directions[self._direction]
         self._img_name = move[self.index % len(move)]
-        self.img, self.img_width, self.img_height = mlx.mlx_png_file_to_image(
-            mlx_ptr,
-            str(self._img_name)
-        )
+        self.img, self.img_width, self.img_height = self._image_cache[self._img_name]
         self.index += 1
 
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Union, List
+from typing import Union, Any, Callable
 
 
 @dataclass
@@ -48,3 +48,14 @@ class Rect:
             self.top < other.bottom and
             self.bottom > other.top
         )
+
+
+class Memory:
+    def __init__(self):
+        self.data: Any
+        self.bpp: int
+        self.size_line: int
+        self.endian: int
+
+    def save(self, function: Callable, arg) -> None:
+        self.data, self.bpp, self.size_line, self.endian = function(arg)

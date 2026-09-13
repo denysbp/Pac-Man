@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any
 from mlx.mlx import Mlx
+from math import cos, sin, radians
 if TYPE_CHECKING:
     from ..models import Player
 
@@ -19,8 +20,17 @@ def colision(
         return True
     return False
 
+def put_pixel(data, bpp, size_line, x, y, color):
+    bytes_per_pixel = bpp // 8
 
-def drawlineH(x0, y0, x1, y1, mlx: Mlx, mlx_ptr: Any, window: Any):
+    offset = y * size_line + x * bytes_per_pixel
+
+    data[offset] = color & 0xFF
+    data[offset + 1] = (color >> 8) & 0xFF
+    data[offset + 2] = (color >> 16) & 0xFF
+    data[offset + 3] = (color >> 24) & 0xFF
+
+def drawlineH(data, bpp, size_line, x0, y0, x1, y1, color):
     if x0 > x1:
         x0, x1 = x1, x0
         y0, y1 = y1, y0
@@ -36,31 +46,185 @@ def drawlineH(x0, y0, x1, y1, mlx: Mlx, mlx_ptr: Any, window: Any):
         y = y0
         p = 2*dy - dx
         for i in range(dx + 1):
-            mlx.mlx_pixel_put(mlx_ptr, window, x0 + i, y)
+            put_pixel(data, bpp, size_line, x0 + i, y, color)
             if p >= 0:
                 y += dt
                 p = p - 2*dx
             p = p + 2*dy
 
 
-def drawlineV(x0, y0, x1, y1, mlx: Mlx, mlx_ptr: Any, window: Any):
+def drawlineV(data, bpp, size_line, x0, y0, x1, y1, color):
     if y0 > y1:
         x0, x1 = x1, x0
         y0, y1 = y1, y0
 
     dx = x1 - x0
     dy = y1 - y0
+    dt = -1 if dx < 0 else 1
+    dx *= dt
 
-    dt = -1 if dy < 0 else 1
-
-    dy *= dt
-
-    if dx != 0:
-        y = y0
-        p = 2*dy - dx
-        for i in range(dx + 1):
-            mlx.mlx_pixel_put(mlx_ptr, window, x0 + i, y)
+    if dy != 0:
+        x = x0
+        p = 2*dx - dy
+        for i in range(dy + 1):
+            put_pixel(data, bpp, size_line, x, y0 + i, color)
             if p >= 0:
-                y += dt
-                p = p - 2*dx
-            p = p + 2*dy
+                x += dt
+                p = p - 2*dy
+            p = p + 2*dx
+
+def drawline(
+    data,
+    bpp,
+    size_line,
+    x0,
+    y0,
+    x1,
+    y1,
+    color
+):
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+
+    error = dx - dy
+
+    while True:
+        put_pixel(
+            data,
+            bpp,
+            size_line,
+            x0,
+            y0,
+            color
+        )
+
+        if x0 == x1 and y0 == y1:
+            break
+
+        e2 = 2 * error
+
+        if e2 > -dy:
+            error -= dy
+            x0 += sx
+
+        if e2 < dx:
+            error += dx
+            y0 += sy
+
+def draw_arc(
+    data,
+    bpp,
+    size_line,
+    cx,
+    cy,
+    radius,
+    start_angle,
+    end_angle,
+    color
+):
+    steps = max(30, radius * 3)
+
+    previous_x = None
+    previous_y = None
+
+    for i in range(steps + 1):
+        t = i / steps
+
+        angle = start_angle + (end_angle - start_angle) * t
+        theta = radians(angle)
+
+        x = round(cx + radius * cos(theta))
+        y = round(cy + radius * sin(theta))
+
+        if previous_x is not None:
+            drawline(
+                data,
+                bpp,
+                size_line,
+                previous_x,
+                previous_y,
+                x,
+                y,
+                color
+            )
+
+        previous_x = x
+        previous_y = y
+
+def draw_arc_top_left(data, bpp, size_line, cx, cy, radius, color):
+    draw_arc(
+        data, bpp, size_line,
+        cx, cy,
+        radius,
+        180,
+        270,
+        color
+    )
+
+def draw_arc_top_right(data, bpp, size_line, cx, cy, radius, color):
+    draw_arc(
+        data, bpp, size_line,
+        cx, cy,
+        radius,
+        270,
+        360,
+        color
+    )
+
+def draw_arc_bottom_left(data, bpp, size_line, cx, cy, radius, color):
+    draw_arc(
+        data, bpp, size_line,
+        cx, cy,
+        radius,
+        90,
+        180,
+        color
+    )
+
+def draw_arc_bottom_right(data, bpp, size_line, cx, cy, radius, color):
+    draw_arc(
+        data, bpp, size_line,
+        cx, cy,
+        radius,
+        0,
+        90,
+        color
+    )
+
+def blit_into_buffer(
+    dst_data,
+    dst_bpp,
+    dst_size_line,
+    dst_w,
+    dst_h,
+    src_data,
+    src_bpp,
+    src_size_line,
+    src_w,
+    src_h,
+    dst_x,
+    dst_y
+):
+    src_bytes_per_pixel = src_bpp // 8
+    for row in range(src_h):
+        py = dst_y + row
+        if py < 0 or py >= dst_h:
+            continue
+        for col in range(src_w):
+            px = dst_x + col
+            if px < 0 or px >= dst_w:
+                continue
+            src_offset = row * src_size_line + col * src_bytes_per_pixel
+            alpha = src_data[src_offset + 3]
+            if alpha == 0:
+                continue
+            color = (
+                src_data[src_offset] |
+                (src_data[src_offset + 1] << 8) |
+                (src_data[src_offset + 2] << 16) |
+                (src_data[src_offset + 3] << 24)
+            )
+            put_pixel(dst_data, dst_bpp, dst_size_line, px, py, color)
