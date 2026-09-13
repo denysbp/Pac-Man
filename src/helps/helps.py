@@ -21,9 +21,7 @@ def colision(
     return False
 
 def put_pixel(data, bpp, size_line, x, y, color):
-    bytes_per_pixel = bpp // 8
-
-    offset = y * size_line + x * bytes_per_pixel
+    offset = y * size_line + x * 4
 
     data[offset] = color & 0xFF
     data[offset + 1] = (color >> 8) & 0xFF

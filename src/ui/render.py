@@ -19,6 +19,7 @@ class Render:
         self.HEIGHT = 1000
         self.maze_width = 0
         self.maze_height = 0
+        self.color = 0xFF0000FF
         self.SPEED = 15
         self.H = 9
         self.V = 3
@@ -70,8 +71,8 @@ class Render:
             "pacman/src/models/assets/player_images/new/right-3.png"
         )
         self.player: Player = Player(
-            span_x= self.WIDTH // 2,
-            span_y= self.HEIGHT // 2,
+            span_x= round((self.WIDTH // 2) * 1.20),
+            span_y= round((self.HEIGHT // 2) * 0.83),
             image=img,
             width=w,
             height=h,
@@ -86,6 +87,7 @@ class Render:
             seed=seed
         )
         self.maze.generate()
+        print(self.maze.maze)
         self.maze_height = height
         self.maze_width = width
         self.CELL_W = (self.WIDTH - 2 * self.OFFSET_X) // self.maze_width
@@ -204,7 +206,7 @@ class Render:
                         y,
                         x + self.CELL_W,
                         y,
-                        0xFFFFFFFF
+                        self.color
                     )
                 if cell & self.S:
                     drawlineH(
@@ -215,7 +217,7 @@ class Render:
                         y + self.CELL_H,
                         x + self.CELL_W,
                         y + self.CELL_H,
-                        0xFFFFFFFF
+                        self.color
                     )
                 if cell & self.W:
                     drawlineV(
@@ -226,7 +228,7 @@ class Render:
                         y,
                         x,
                         y + self.CELL_H,
-                        0xFFFFFFFF)
+                        self.color)
                 if cell & self.E:
                     drawlineV(
                         self.memory.data,
@@ -236,7 +238,8 @@ class Render:
                         y,
                         x + self.CELL_W,
                         y + self.CELL_H,
-                        0xFFFFFFFF)
+                        self.color)
+
                 if self.is_walkable(cell):
                     small_gum_x = x + (self.CELL_W - self.m_w) // 2
                     small_gum_y = y + (self.CELL_H -self.m_h) // 2
