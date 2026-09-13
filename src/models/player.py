@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Callable
 from .metadata import Rect
 from .configs import (
     RIGHT, LEFT, TOP, DOWN
@@ -50,14 +50,29 @@ class Player:
         self.index += 1
 
 
-    def hit_gum(self,
-        position: Rect
-    ) -> bool:
-        rect = self.rect
-        if rect.colliderect(position):
-            return True
+    def hit_gum(
+        self,
+        position,
+        OFFSET_X,
+        OFFSET_Y,
+        CELL_W,
+        CELL_H,
+        m_w,
+        m_h
+    ):
+        center_x = self.x + self.img_width // 2
+        center_y = self.y + self.img_height // 2
 
-        return False
+        col = (center_x - OFFSET_X) // CELL_W
+        row = (center_y - OFFSET_Y) // CELL_H
+
+        gum_x = OFFSET_X + col * CELL_W + (CELL_W - m_w) // 2
+        gum_y = OFFSET_Y + row * CELL_H + (CELL_H - m_h) // 2
+
+        if (gum_y, gum_x) in position:
+            return gum_y, gum_x
+
+        return None
 
 
     @property

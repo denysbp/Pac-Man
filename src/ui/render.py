@@ -1,6 +1,7 @@
 from mlx.mlx import Mlx
 from mazegenerator.mazegenerator import MazeGenerator
 from random import randint
+import ctypes
 from ..models import Player, Memory, Rect
 from src import (
     colision,
@@ -23,6 +24,7 @@ class Render:
         self.map_height = 0
         self.color = 0xFF0000FF
         self.heated = []
+        self.reload = False
         self.SPEED = 15
         self.H = 2
         self.V = 1
@@ -35,7 +37,6 @@ class Render:
         self.gum_position: list[(int, int)] = []
         self.mlx = Mlx()
         self.app = self.mlx.mlx_init()
-        self.player_colision = 0
         self.window = self.mlx.mlx_new_window(
             self.app,
             self.WIDTH,
@@ -103,6 +104,10 @@ class Render:
         spawn_row = last_row + 1
         return spawn_row, spawn_col
 
+    def clear_buffer(self):
+        self.memory.data[:] = b'\x00' * len(self.memory.data)
+
+
     def start_level(self, width, height, seed):
         self.maze = MazeGenerator(
             (width, height),
@@ -117,6 +122,16 @@ class Render:
         self.CELL_H = (self.CELL_H // self.SPEED) * self.SPEED
         self.map_height = self.CELL_H * self.maze_height
         self.map_width = self.CELL_W * self.maze_width
+        for i in range(len(self.maze.maze)):
+            for j in range(len(self.maze.maze[i])):
+                x, y = self.cell_position(i, j)
+                cell = self.maze.maze[i][j]
+                if self.is_walkable(cell):
+                    small_gum_x = x + (self.CELL_W - self.m_w) // 2
+                    small_gum_y = y + (self.CELL_H -self.m_h) // 2
+                    self.gum_position.append(
+                        (small_gum_y, small_gum_x)
+                    )
         self.cornes.extend(
             [
                 (self.OFFSET_X, self.OFFSET_Y),
@@ -195,6 +210,10 @@ class Render:
 
     def frames(self, x, y):
         self.mlx.mlx_clear_window(self.app, self.window)
+        if self.reload:
+            self.clear_buffer()
+            self.draw_board()
+            self.reload = False
         self.blip()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
 
@@ -275,23 +294,25 @@ class Render:
                         y + self.CELL_H,
                         self.color)
 
-                # if self.is_walkable(cell):
-                #     small_gum_x = x + (self.CELL_W - self.m_w) // 2
-                #     small_gum_y = y + (self.CELL_H -self.m_h) // 2
-                #     blit_into_buffer(
-                #         self.memory.data,
-                #         self.memory.bpp,
-                #         self.memory.size_line,
-                #         self.WIDTH,
-                #         self.HEIGHT,
-                #         self.small_gun_memory.data,
-                #         self.small_gun_memory.bpp,
-                #         self.small_gun_memory.size_line,
-                #         self.m_w,
-                #         self.m_h,
-                #         small_gum_x,
-                #         small_gum_y
-                #     )
+                if self.is_walkable(cell):
+                    small_gum_x = x + (self.CELL_W - self.m_w) // 2
+                    small_gum_y = y + (self.CELL_H -self.m_h) // 2
+                    if (small_gum_y, small_gum_x) in self.heated:
+                       continue
+                    blit_into_buffer(
+                        self.memory.data,
+                        self.memory.bpp,
+                        self.memory.size_line,
+                        self.WIDTH,
+                        self.HEIGHT,
+                        self.small_gun_memory.data,
+                        self.small_gun_memory.bpp,
+                        self.small_gun_memory.size_line,
+                        self.m_w,
+                        self.m_h,
+                        small_gum_x,
+                        small_gum_y
+                    )
                 # if self.is_walkable(cell) and cell & (self.N | self.W):
                 #     small_gum_x = x + (self.CELL_W - self.m_w) // 2
                 #     small_gum_y = y + (self.CELL_H -self.m_h) // 2
@@ -391,6 +412,18 @@ class Render:
                 self.H
             ):
                 self.player.y -= self.SPEED
+        gum = self.player.hit_gum(
+            self.gum_position,
+            self.OFFSET_X,
+            self.OFFSET_Y,
+            self.CELL_W,
+            self.CELL_H,
+            self.m_w,
+            self.m_h,
+        )
+        if gum is not None and gum not in self.heated:
+            self.heated.append(gum)
+            self.reload = True
         self.player.update_img(self.player._direction, self.mlx, self.app)
         self.frames(self.player.x, self.player.y)
 
