@@ -6,18 +6,27 @@ if TYPE_CHECKING:
 
 def colision(
     player: "Player",
-    WIDTH: int,
-    HEIGHT: int,
+    left: int,
+    right: int,
+    top: int,
+    bottom: int,
     V: int,
     H: int
 ):
-    player = player.rect
-    if ((player.left + V) < 0 or
-        (player.right - V) > WIDTH or
-        (player.top - H) < 0 or
-        (player.bottom - H) > HEIGHT
-    ):
+    rect = player.rect
+
+    if rect.left < left:
         return True
+
+    if rect.right > right:
+        return True
+
+    if rect.top < top:
+        return True
+
+    if rect.bottom > bottom:
+        return True
+
     return False
 
 def put_pixel(data, bpp, size_line, x, y, color):

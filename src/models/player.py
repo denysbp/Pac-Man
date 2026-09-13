@@ -36,7 +36,10 @@ class Player:
         self._image_cache: dict[str, tuple] = {}
         for frames in self._directions.values():
             for path in frames:
-                self._image_cache[path] = mlx.mlx_png_file_to_image(mlx_ptr, str(path))
+                self._image_cache[path] = mlx.mlx_png_file_to_image(
+                    mlx_ptr,
+                    str(path)
+                )
 
     def update_img(self, direction, mlx: Mlx, mlx_ptr: Any) -> None:
         if direction != self._direction:
@@ -45,6 +48,16 @@ class Player:
         self._img_name = move[self.index % len(move)]
         self.img, self.img_width, self.img_height = self._image_cache[self._img_name]
         self.index += 1
+
+
+    def hit_gum(self,
+        position: Rect
+    ) -> bool:
+        rect = self.rect
+        if rect.colliderect(position):
+            return True
+
+        return False
 
 
     @property
