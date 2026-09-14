@@ -1,7 +1,7 @@
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
-NEW_DIR = BASE_DIR / "assets" / "player_images" / "new"
+NEW_DIR = BASE_DIR / "assets" / "player"
 
 
 RIGHT = []

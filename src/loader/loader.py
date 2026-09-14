@@ -36,9 +36,7 @@ class ConfigLoader:
         for config in self.configs["level"]:
             if not isinstance(config, dict):
                 raise LoaderError(
-                    f"Expecting 'dict' got '{
-                        config.__class__.__name__
-                    }'."
+                    f"Expecting 'dict' got '{config.__class__.__name__}'."
                 )
             height, width = config["height"], config["width"]
             if height <= 14 or width <= 14:
@@ -100,58 +98,50 @@ class ConfigLoader:
             )
         if not isinstance(self.configs["highscore_filename"], str):
             raise LoaderError(
-                f"Expecting 'str' got '{
-                    self.configs["highscore_filename"].__class__.__name__
-                }'."
+                "Expecting 'str' got "
+                f"'{self.configs['highscore_filename'].__class__.__name__}'."
             )
         if not isinstance(self.configs["lives"], int):
             raise LoaderError(
-                f"Expecting 'int' got '{
-                    self.configs["lives"].__class__.__name__
-                }'"
+                "Expecting 'int' got "
+                f"'{self.configs['lives'].__class__.__name__}'"
             )
         if not isinstance(self.configs["pacgum"], int):
             raise LoaderError(
-                f"Expecting 'int' got '{
-                    self.configs["pacgum"].__class__.__name__
-                }'"
+                "Expecting 'int' got "
+                f"'{self.configs['pacgum'].__class__.__name__}'"
             )
         if not isinstance(self.configs["points_per_pacgum"], int):
             raise LoaderError(
-                f"Expecting 'int' got '{
-                    self.configs["points_per_pacgum"].__class__.__name__
-                }'"
+                "Expecting 'int' got "
+                f"'{self.configs['points_per_pacgum'].__class__.__name__}'"
             )
         if not isinstance(self.configs["points_per_super_pacgum"], int):
+            erro = self.configs['points_per_super_pacgum']
             raise LoaderError(
-                f"Expecting 'int' got '{
-                    self.configs["points_per_super_pacgum"].__class__.__name__
-                }'"
+                "Expecting 'int' got "
+                f"'{erro.__class__.__name__}'"
             )
         if not isinstance(self.configs["points_per_ghost"], int):
             raise LoaderError(
-                f"Expecting 'int' got '{
-                    self.configs["points_per_ghost"].__class__.__name__
-                }'"
+                "Expecting 'int' got "
+                f"'{self.configs['points_per_ghost'].__class__.__name__}'"
             )
         if not isinstance(self.configs["level_max_time"], int):
             raise LoaderError(
-                f"Expecting 'int' got '{
-                    self.configs["level_max_time"].__class__.__name__
-                }'"
+                f"Expecting 'int' got "
+                f"'{self.configs['level_max_time'].__class__.__name__}'"
             )
         if not isinstance(self.configs["level"], list):
             raise LoaderError(
-                f"Expecting 'int' got '{
-                    self.configs["level"].__class__.__name__
-                }'"
+                "Expecting 'int' got "
+                f"'{self.configs['level'].__class__.__name__}'"
             )
         self._ensure_numbers()
         if not isinstance(self.configs["seed"], (int, type(None))):
             raise LoaderError(
-                f"Expecting 'int' got '{
-                    self.configs["seed"].__class__.__name__
-                }'"
+                "Expecting 'int' got "
+                f"'{self.configs['seed'].__class__.__name__}'"
             )
         self._ensure_levels_values()
 

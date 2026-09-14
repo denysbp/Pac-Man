@@ -21,3 +21,4 @@ if __name__ == "__main__":
         create_config(data)
     )
     game.run()
+    game.mlx.mlx_release(game.app)

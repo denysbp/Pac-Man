@@ -66,7 +66,7 @@ class Render:
         )
         self.small_gun, self.m_w, self.m_h  = self.mlx.mlx_png_file_to_image(
             self.app,
-            "/home/denys/Documentos/42/pacman/src/pacgum-small.png"
+            "src/models/assets/gums/pacgum-small.png"
         )
         self.small_gun_memory: Memory = Memory()
         self.small_gun_memory.save(
@@ -75,7 +75,7 @@ class Render:
         )
         self.big_gum, self.b_w, self.b_h  = self.mlx.mlx_png_file_to_image(
             self.app,
-            "/home/denys/Documentos/42/pacman/src/pacgum-big.png"
+            "src/models/assets/gums/pacgum-big.png"
         )
         self.big_gum_memory: Memory = Memory()
         self.big_gum_memory.save(
@@ -84,8 +84,7 @@ class Render:
         )
         img, w, h= self.mlx.mlx_png_file_to_image(
             self.app,
-            "/home/denys/Documentos/42/"
-            "pacman/src/models/assets/player_images/new/right-3.png"
+            "src/models/assets/player/right-3.png"
         )
         self.player: Player = Player(
             span_x= 0,
@@ -211,7 +210,7 @@ class Render:
             )
         return walls
 
-    def check_colision(self, dx, dy, position: str) -> bool:
+    def check_colision(self, dx, dy) -> bool:
         w = self.player.img_width
         h = self.player.img_height
         dest_rect = Rect(dx, dy, w, h)
@@ -244,6 +243,7 @@ class Render:
         )
 
     def close(self, param):
+        self.mlx.mlx_do_key_autorepeaton(self.app)
         self.mlx.mlx_destroy_window(self.app, self.window)
         self.mlx.mlx_loop_exit(self.app)
         return 0
@@ -260,8 +260,6 @@ class Render:
         self.blip()
         self.draw_information()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
-
-
 
     def controls(self, key, param):
         if key ==  0xff1b:
@@ -384,7 +382,7 @@ class Render:
         if self.player._direction in "UP":
             dy = self.player.y - self.SPEED
             dx = self.player.x
-            if self.check_colision(dx, dy, "UP"):
+            if self.check_colision(dx, dy):
                 self.player.y -= self.SPEED
             if colision(
                 param,
@@ -400,7 +398,7 @@ class Render:
         if self.player._direction in "LEFT":
             dy = self.player.y
             dx = self.player.x - self.SPEED
-            if self.check_colision(dx, dy, "LEFT"):
+            if self.check_colision(dx, dy):
                 self.player.x -= self.SPEED
             if colision(
                 param,
@@ -416,7 +414,7 @@ class Render:
         if self.player._direction in "RIGHT":
             dy = self.player.y
             dx = self.player.x + self.SPEED
-            if self.check_colision(dx, dy, "RIGHT"):
+            if self.check_colision(dx, dy):
                 self.player.x += self.SPEED
             if colision(
                 param,
@@ -431,7 +429,7 @@ class Render:
         if self.player._direction in "DOWN":
             dy = self.player.y + self.SPEED
             dx = self.player.x
-            if self.check_colision(dx, dy, "DOWN"):
+            if self.check_colision(dx, dy):
                 self.player.y += self.SPEED
             if colision(
                 param,
@@ -504,8 +502,8 @@ class Render:
                     self.app,
                     self.window,
                     self.player.static,
-                    margin_x + (i * 50),
-                    margin_y
+                    (margin_x + 150) + (i * 50),
+                    margin_y + 40
                 )
         else:
             self.mlx.mlx_string_put(
@@ -517,12 +515,17 @@ class Render:
                 "Lives: " + str(self.data.lives)
             )
 
+    def mouse_handler(self, mouse_code: int, x: int, y: int, param):
+        print(f"{mouse_code}")
     def run(self):
         self.start_level()
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
         self.draw_board()
+        self.mlx.mlx_do_key_autorepeatoff(self.app)
+        self.mlx.mlx_mouse_move
         self.mlx.mlx_hook(self.window, 2, 1 << 0, self.key_press, self.player)
+        self.mlx.mlx_hook(self.window, 17, 1 << 0, self.close, "None")
         self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
         self.mlx.mlx_loop(self.app)
