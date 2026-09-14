@@ -97,6 +97,7 @@ class Render:
             lives=self.data.lives
         )
         self.maze: MazeGenerator
+        
         self.cornes: list = []
 
     def find_spawn_below_42(self):
@@ -375,6 +376,8 @@ class Render:
 
     def render_loop(self, param):
         self.move(self.player)
+        print(self.player.x, self.player.y)
+        print(self.heated_small)
         self.frames(self.player.x, self.player.y)
         return 0
 
