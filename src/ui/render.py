@@ -28,7 +28,7 @@ class Render:
         self.data: ConfigData = data
         self.levels: list[Level] = levels
         self.index: int = 0
-        self.points = 0
+        self.points = -10
         self.maze_height = 0
         self.map_width = 0
         self.map_height = 0
