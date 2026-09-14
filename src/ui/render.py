@@ -36,6 +36,7 @@ class Render:
         self.heated_small = []
         self.heated_big = []
         self.reload = False
+        self.start = True
         self.SPEED = 15
         self.H = 2
         self.V = 1
@@ -97,7 +98,10 @@ class Render:
             lives=self.data.lives
         )
         self.maze: MazeGenerator
-        
+        self.start_img, _, _ = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/start-game.png"
+        )
         self.cornes: list = []
 
     def find_spawn_below_42(self):
@@ -277,7 +281,6 @@ class Render:
             self.frames(self.player.x, self.player.y)
         if key in (65363, 100):
             # right
-
             self.player.update_img("RIGHT", self.mlx, self.app)
             self.frames(self.player.x, self.player.y)
 
@@ -376,8 +379,6 @@ class Render:
 
     def render_loop(self, param):
         self.move(self.player)
-        print(self.player.x, self.player.y)
-        print(self.heated_small)
         self.frames(self.player.x, self.player.y)
         return 0
 
@@ -519,8 +520,26 @@ class Render:
             )
 
     def mouse_handler(self, mouse_code: int, x: int, y: int, param):
-        print(f"{mouse_code}")
+        pass
+
+    def start_game(self, keycode, param):
+        if keycode == 32:
+            self.start = False
+            self.mlx.mlx_loop_exit(self.app)
+
     def run(self):
+        if self.start:
+            self.mlx.mlx_put_image_to_window(
+                self.app,
+                self.window,
+                self.start_img,
+                round((self.WIDTH // 2) * 0.45),
+                0
+            )
+            self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
+            self.mlx.mlx_loop(self.app)
+
+
         self.start_level()
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
