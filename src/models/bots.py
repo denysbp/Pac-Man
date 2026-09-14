@@ -7,7 +7,6 @@ from collections import deque
 class Bot:
     def __init__(
         self,
-        img: Union[Any | None],
         spam_x: int,
         spam_y: int,
         maze: MazeGenerator,
@@ -78,4 +77,4 @@ class Bot:
         return []
 
     def move_bot(s):
-        while
+        pass #while
