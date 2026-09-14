@@ -16,10 +16,12 @@ class Player:
         width: int,
         height: int,
         mlx_ptr: Any,
-        mlx: Mlx
+        mlx: Mlx,
+        lives
     ):
         self._img_name: str = ""
         self._direction: str = "RIGHT"
+        self.live: int = lives
         self.img: Any = image
         self.img_width: int = width
         self.img_height: int = height
@@ -40,6 +42,10 @@ class Player:
                     mlx_ptr,
                     str(path)
                 )
+
+    @property
+    def static(self) -> Any:
+        return self._image_cache[self._img_name][0]
 
     def update_img(self, direction, mlx: Mlx, mlx_ptr: Any) -> None:
         if direction != self._direction:

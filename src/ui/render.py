@@ -2,7 +2,7 @@ from mlx.mlx import Mlx
 from mazegenerator.mazegenerator import MazeGenerator
 from random import randint
 import ctypes
-from ..models import Player, Memory, Rect
+from ..models import Player, Memory, Rect, Level, ConfigData
 from src import (
     colision,
     drawlineH,
@@ -13,17 +13,28 @@ from src import (
 # ESSA CLASSE NOS GERA A VISUALIZACAO, APENAS FAZ RUN
 class Render:
 
-    def __init__(self, w, h):
+    def __init__(
+        self,
+        w,
+        h,
+        levels,
+        data
+    ):
         self.OFFSET_X = 30
         self.OFFSET_Y = 50
         self.WIDTH = w
         self.HEIGHT = h
         self.maze_width = 0
+        self.data: ConfigData = data
+        self.levels: list[Level] = levels
+        self.index: int = 0
+        self.points = 0
         self.maze_height = 0
         self.map_width = 0
         self.map_height = 0
         self.color = 0xFF0000FF
-        self.heated = []
+        self.heated_small = []
+        self.heated_big = []
         self.reload = False
         self.SPEED = 15
         self.H = 2
@@ -83,7 +94,8 @@ class Render:
             width=w,
             height=h,
             mlx_ptr=self.app,
-            mlx=self.mlx
+            mlx=self.mlx,
+            lives=self.data.lives
         )
         self.maze: MazeGenerator
         self.cornes: list = []
@@ -108,10 +120,14 @@ class Render:
         self.memory.data[:] = b'\x00' * len(self.memory.data)
 
 
-    def start_level(self, width, height, seed):
+    def start_level(self):
+        level = self.levels[self.index % len(self.levels)]
+        width, height = level.width, level.height
+        if self.data.seed is None:
+            self.data.seed = 0
         self.maze = MazeGenerator(
             (width, height),
-            seed=seed
+            seed=self.data.seed
         )
         self.maze.generate()
         self.maze_height = height
@@ -122,6 +138,27 @@ class Render:
         self.CELL_H = (self.CELL_H // self.SPEED) * self.SPEED
         self.map_height = self.CELL_H * self.maze_height
         self.map_width = self.CELL_W * self.maze_width
+        margin_x = round(self.CELL_W * 0.5)
+        margin_y = round(self.CELL_H * 0.5)
+        self.cornes.extend(
+            [
+                (
+                    self.OFFSET_X  + margin_x,
+                    self.OFFSET_Y + margin_y),
+                (
+                    self.OFFSET_X + self.maze_width * self.CELL_W - margin_x,
+                    self.OFFSET_Y + margin_y
+                ),
+                (
+                    self.OFFSET_X + margin_x,
+                    self.OFFSET_Y + self.maze_height * self.CELL_H - margin_y
+                ),
+                (
+                    self.OFFSET_X + self.maze_width * self.CELL_W - margin_x,
+                    self.OFFSET_Y + self.maze_height * self.CELL_H - margin_y
+                )
+            ]
+        )
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 x, y = self.cell_position(i, j)
@@ -132,15 +169,6 @@ class Render:
                     self.gum_position.append(
                         (small_gum_y, small_gum_x)
                     )
-        self.cornes.extend(
-            [
-                (self.OFFSET_X, self.OFFSET_Y),
-                (self.OFFSET_X + self.maze_width * self.CELL_W, self.OFFSET_Y),
-                (self.OFFSET_X, self.OFFSET_Y + self.maze_height * self.CELL_H),
-                (self.OFFSET_X + self.maze_width * self.CELL_W,
-                self.OFFSET_Y + self.maze_height * self.CELL_H)
-            ]
-        )
 
     def cell_position(self, row, col):
         x = self.OFFSET_X + col * self.CELL_W
@@ -164,13 +192,23 @@ class Render:
         thickness = 4
         walls = []
         if cell & self.N:
-            walls.append(Rect(x, y - thickness // 2, self.CELL_W, thickness))
+            walls.append(
+                Rect(x, y - thickness // 2, self.CELL_W, thickness)
+            )
         if cell & self.S:
-            walls.append(Rect(x, y + self.CELL_H - thickness // 2, self.CELL_W, thickness))
+            walls.append(
+                Rect(x, y + self.CELL_H - thickness // 2,
+                    self.CELL_W, thickness)
+            )
         if cell & self.W:
-            walls.append(Rect(x - thickness // 2, y, thickness, self.CELL_H))
+            walls.append(
+                Rect(x - thickness // 2, y, thickness, self.CELL_H)
+            )
         if cell & self.E:
-            walls.append(Rect(x + self.CELL_W - thickness // 2, y, thickness, self.CELL_H))
+            walls.append(
+                Rect(x + self.CELL_W - thickness // 2,
+                    y, thickness, self.CELL_H)
+            )
         return walls
 
     def check_colision(self, dx, dy, position: str) -> bool:
@@ -178,7 +216,12 @@ class Render:
         h = self.player.img_height
         dest_rect = Rect(dx, dy, w, h)
 
-        corners = [(dx, dy), (dx + w - 1, dy), (dx, dy + h - 1), (dx + w - 1, dy + h - 1)]
+        corners = [
+            (dx, dy),
+            (dx + w - 1, dy),
+            (dx, dy + h - 1),
+            (dx + w - 1, dy + h - 1)
+        ]
         cells = set()
         for cx, cy in corners:
             col = (cx - self.OFFSET_X) // self.CELL_W
@@ -215,6 +258,7 @@ class Render:
             self.draw_board()
             self.reload = False
         self.blip()
+        self.draw_information()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
 
 
@@ -297,7 +341,7 @@ class Render:
                 if self.is_walkable(cell):
                     small_gum_x = x + (self.CELL_W - self.m_w) // 2
                     small_gum_y = y + (self.CELL_H -self.m_h) // 2
-                    if (small_gum_y, small_gum_x) in self.heated:
+                    if (small_gum_y, small_gum_x) in self.heated_small:
                        continue
                     blit_into_buffer(
                         self.memory.data,
@@ -313,41 +357,28 @@ class Render:
                         small_gum_x,
                         small_gum_y
                     )
-                # if self.is_walkable(cell) and cell & (self.N | self.W):
-                #     small_gum_x = x + (self.CELL_W - self.m_w) // 2
-                #     small_gum_y = y + (self.CELL_H -self.m_h) // 2
-
-                #     if (small_gum_x, small_gum_y) in self.cornes:
-                #         continue
-                #     blit_into_buffer(
-                #         self.memory.data,
-                #         self.memory.bpp,
-                #         self.memory.size_line,
-                #         self.WIDTH,
-                #         self.HEIGHT,
-                #         self.big_gum_memory.data,
-                #         self.big_gum_memory.bpp,
-                #         self.big_gum_memory.size_line,
-                #         self.b_w,
-                #         self.b_h,
-                #         self.OFFSET_X,
-                #         self.OFFSET_Y
-                #     )
+        for x, y in self.cornes:
+            if (x, y) in self.heated_big:
+                continue
+            blit_into_buffer(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                self.WIDTH,
+                self.HEIGHT,
+                self.big_gum_memory.data,
+                self.big_gum_memory.bpp,
+                self.big_gum_memory.size_line,
+                self.b_w,
+                self.b_h,
+                x - self.b_w // 2,
+                y - self.b_h // 2
+            )
 
     def render_loop(self, param):
         self.move(self.player)
         self.frames(self.player.x, self.player.y)
         return 0
-
-    def reload_board(self, arg: Rect) -> None:
-        for rect in arg:
-            if self.player.hit_gum(rect):
-                self.heated.append(rect.x)
-                self.reload = True
-        if self.reload:
-            self.frames(self.player.x, self.player.y)
-            self.draw_board()
-            self.reload = False
 
     def move(self, param) -> None:
         if self.player._direction in "UP":
@@ -421,19 +452,77 @@ class Render:
             self.m_w,
             self.m_h,
         )
-        if gum is not None and gum not in self.heated:
-            self.heated.append(gum)
+
+        big = None
+
+        player_rect = Rect(
+            self.player.x,
+            self.player.y,
+            self.player.img_width,
+            self.player.img_height
+        )
+
+        for x, y in self.cornes:
+            big_rect = Rect(
+                x - self.b_w // 2,
+                y - self.b_h // 2,
+                self.b_w,
+                self.b_h
+            )
+
+            if player_rect.colliderect(big_rect):
+                big = (x, y)
+                break
+
+        if gum is not None and gum not in self.heated_small:
+            self.heated_small.append(gum)
+            self.points += self.data.points_per_pacgum
+            self.reload = True
+
+        if big is not None and big not in self.heated_big:
+            self.heated_big.append(big)
+            self.points -= self.data.points_per_pacgum
+            self.points += self.data.points_per_super_pacgum
             self.reload = True
         self.player.update_img(self.player._direction, self.mlx, self.app)
         self.frames(self.player.x, self.player.y)
 
+    def draw_information(self) -> None:
+        margin_x = round(self.WIDTH * 0.02)
+        margin_y = round(self.HEIGHT * 0.85)
+        self.mlx.mlx_string_put(
+            self.app,
+            self.window,
+            margin_x,
+            margin_y + 50,
+            150,
+            "Points: " + str(self.points)
+        )
+        if self.data.lives <= 32:
+            for i in range(0, self.data.lives):
+                self.mlx.mlx_put_image_to_window(
+                    self.app,
+                    self.window,
+                    self.player.static,
+                    margin_x + (i * 50),
+                    margin_y
+                )
+        else:
+            self.mlx.mlx_string_put(
+                self.app,
+                self.window,
+                margin_x,
+                margin_y + 10,
+                150,
+                "Lives: " + str(self.data.lives)
+            )
+
     def run(self):
-        self.start_level(15, 15, 0)
+        self.start_level()
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
         self.draw_board()
-        # self.mlx.mlx_loop_hook(self.app, self.reload_board, self.gum_position)
         self.mlx.mlx_hook(self.window, 2, 1 << 0, self.key_press, self.player)
         self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
         self.mlx.mlx_loop(self.app)

@@ -43,8 +43,7 @@ class ConfigLoader:
             height, width = config["height"], config["width"]
             if height <= 14 or width <= 14:
                 raise LoaderError(
-                    "PLEASE MAZE SHOULD BE MORE BIGGER "
-                    "AND ONLY POSITIVE NUMBER."
+                    "LIMITS: >= 14 <= 17."
                 )
         return True
 

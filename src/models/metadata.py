@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Union, Any, Callable
+from ..loader.loader import ConfigLoader
 
 
 @dataclass
@@ -59,3 +60,28 @@ class Memory:
 
     def save(self, function: Callable, arg) -> None:
         self.data, self.bpp, self.size_line, self.endian = function(arg)
+
+
+def alocate_levels(data: ConfigLoader) -> list[Level]:
+    all_data = []
+    for level in data.configs["level"]:
+        widt, height = level.values()
+        obj = Level(
+            widt,
+            height
+        )
+        all_data.append(obj)
+    return all_data
+
+
+def create_config(data: ConfigLoader) -> ConfigData:
+    return ConfigData(
+        data.configs["highscore_filename"],
+        data.configs["lives"],
+        data.configs["pacgum"],
+        data.configs["points_per_pacgum"],
+        data.configs["points_per_super_pacgum"],
+        data.configs["points_per_ghost"],
+        data.configs["level_max_time"],
+        data.configs["seed"],
+    )

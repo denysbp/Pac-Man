@@ -18,4 +18,4 @@ clean:
 	rm -rf $(SRC)/ui/__pycache__
 
 run:
-	$(PY) pac-man.py
+	$(PY) pac-man.py config.json

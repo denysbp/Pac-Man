@@ -1,4 +1,13 @@
-from .models import Player, ConfigData, Level, Memory, Rect
+from .models import(
+    Player,
+    ConfigData,
+    Level,
+    Memory,
+    Rect,
+    alocate_levels,
+    create_config
+)
+
 from .loader import LoaderError, ConfigLoader
 from .helps import (
     colision,
