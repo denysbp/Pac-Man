@@ -9,7 +9,7 @@ from src import (
     drawlineV,
     blit_into_buffer
 )
-
+import time
 
 
 # ESSA CLASSE NOS GERA A VISUALIZACAO, APENAS FAZ RUN
@@ -42,8 +42,11 @@ class Render:
         self.start = True
         self.coodown = 200
         self.victory = False
-        self.SPEED = 15
-        self.BOT_SPEED = 13
+        self.SPEED = 10
+        self.BOT_SPEED = 8
+        self.super_pac_deadline = 0
+        self.time_super_pac = 6
+        self.super_pac = False
         self.H = 2
         self.V = 1
         self.N = 1
@@ -327,9 +330,10 @@ class Render:
             self.coodown = 200
             self.victory = True
             self.gum_position.clear()
-
         for b in self.bots:
             self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
+
+            
 
 
     def controls(self, key, param):
@@ -462,7 +466,10 @@ class Render:
                 self.player.x,
                 self.player.y
             )
-
+        if time.time() >= self.super_pac_deadline:
+            self.super_pac = False
+            for bot in self.bots:
+                bot.reset_img(self.mlx, self.app)
         return 0
 
     def level_win(self):
@@ -480,6 +487,7 @@ class Render:
             dx = self.player.x
             if self.check_colision(dx, dy):
                 self.player.y -= self.SPEED
+
             if colision(
                 param,
                 self.OFFSET_X,
@@ -578,16 +586,24 @@ class Render:
             self.points -= self.data.points_per_pacgum
             self.points += self.data.points_per_super_pacgum
             self.reload = True
-
+            self.super_pac_deadline = time.time() + self.time_super_pac
+            self.super_pac = True
+            for bot in self.bots:
+                bot.powerup_img(self.mlx, self.app)
+            
         self.player.update_img(self.player._direction, self.mlx, self.app)
         for b in self.bots:
-            if not b.path or b.i >= len(b.path):
-                b.recalculate_rote((b.x, b.y), (self.player.x -3, self.player.y - 3))
+            if self.super_pac:
+                if not b.path or b.i >= len(b.path):
+                    b.scape((self.player.x, self.player.y))
+            else:
+                if not b.path or b.i >= len(b.path):
+                    b.recalculate_rote((b.x, b.y), (self.player.x -3, self.player.y - 3))
             direction, dx, dy = b.next_position()
 
             if self.check_colision_to_bot(b, dx, dy):
                 b.move_bot()
-                b.pixel += self.SPEED
+                b.pixel += self.BOT_SPEED
                 cell_size = self.CELL_H if direction in ("N", "S") else self.CELL_W
                 if b.pixel >= cell_size:
                     b.i += 1
@@ -595,6 +611,7 @@ class Render:
             else:
                 b.i += 1
                 b.pixel = 0
+
         self.frames(self.player.x, self.player.y)
 
     def draw_information(self) -> None:
@@ -667,3 +684,4 @@ class Render:
             self.mlx.mlx_hook(self.window, 17, 1 << 0, self.close, "None")
             self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
             self.mlx.mlx_loop(self.app)
+

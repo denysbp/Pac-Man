@@ -17,14 +17,15 @@ class Bot:
         bot_id: int = 0,
         pixel_data: dict[str, int] = {}
     ):
-        images: list[str] = [
+        self.images: list[str] = [
             "src/models/assets/ghost_images/orange.png",
             "src/models/assets/ghost_images/pink.png",
             "src/models/assets/ghost_images/red.png",
             "src/models/assets/ghost_images/blue.png",
             ]
+        self.id = bot_id
         self.pixel_data = pixel_data
-        self.img, self.width, self.height = mlx.mlx_png_file_to_image(mlx_ptr, images[bot_id % len(images)])
+        self.img, self.width, self.height = mlx.mlx_png_file_to_image(mlx_ptr, self.images[self.id % len(self.images)])
         self.i = 0
         self.x = spam_x
         self.y = spam_y
@@ -58,6 +59,9 @@ class Bot:
         height = len(self.grid)
         width = len(self.grid[0])
 
+        if not (0 <= x < width and 0 <= y < height):
+            return []
+
         cell = self.grid[y][x]
 
         if y > 0 and self.can_advance(cell, "N"):
@@ -73,6 +77,7 @@ class Bot:
             valid_cells.append(("W", (x - 1, y)))
 
         return valid_cells
+
 
 
     def bfs(self, bot_coord, goal_coord):
@@ -138,12 +143,25 @@ class Bot:
                 abs(item[1][1] - py)
             )
         )
+
+
         new = self.bfs(bot, escape_cell)
 
         if new:
             self.path = new
             self.i = 0
             self.pixel = 0
+
+    def powerup_img(self, mlx: Mlx, mlx_ptr):
+        self.img, self.width, self.height = mlx.mlx_png_file_to_image(
+            mlx_ptr,
+            "src/models/assets/ghost_images/powerup.png"
+        )
+
+    def reset_img(self, mlx: Mlx, mlx_ptr):
+        self.img, self.width, self.height = mlx.mlx_png_file_to_image(
+            mlx_ptr, self.images[self.id % len(self.images)]
+        )
     def get_coord_to_maze_grid(self, coord: tuple[int, int]):
         x = (coord[0] - self.pixel_data.get("OFFSET_X")) // self.pixel_data.get("CELL_W") # calculo para tirar de pixels e se encaixar na grid em cordenadas
         y = (coord[1] - self.pixel_data.get("OFFSET_Y")) // self.pixel_data.get("CELL_H") # calculo para tirar de pixels e se encaixar na grid em cordenadas
