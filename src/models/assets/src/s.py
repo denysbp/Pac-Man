@@ -4,9 +4,9 @@ import os
 PACMAN_FOLDER = "src/models/assets/player_images/new"
 GHOST_FOLDER = "src/models/assets/ghost_images"
 
-reference_path = os.path.join(PACMAN_FOLDER, "right-1.png")
-ref_img = Image.open(reference_path)
-target_size = (ref_img.width, ref_img.height)
+# reference_path = os.path.join(PACMAN_FOLDER, "right-1.png")
+# ref_img = Image.open(reference_path)
+target_size = (20, 20)
 print(f"Tamanho de referência (Pac-Man): {target_size}")
 
 ghost_files = ["blue.png", "dead.png", "orange.png",

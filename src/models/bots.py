@@ -3,6 +3,7 @@ from typing import Any, Union
 from mazegenerator.mazegenerator import MazeGenerator
 from collections import deque
 from src.models.metadata import Rect
+from random import randint
 
 
 class Bot:
@@ -28,8 +29,9 @@ class Bot:
         self.x = spam_x
         self.y = spam_y
         self.maze = maze
-        self.goal_coord = (10, 10)
+        self.goal_coord = (1, 1)
         self.grid = maze.maze
+        self.pixel = 0
         self.path = self.bfs(self.get_coord_to_maze_grid((spam_x, spam_y)), (self.goal_coord))
         self.current_direction = None
 
@@ -80,26 +82,42 @@ class Bot:
 
         return []
 
+    def next_position(self):
+        if not self.path:
+            return None, self.x, self.y
+        direction = self.path[self.i % len(self.path)]
+        bx, by = self.x, self.y
+        #x_grid, y_grid = self.get_coord_to_maze_grid((bx, by))
+#
+        #if (x_grid, y_grid) == self.goal_coord:
+        #    direction = None
+        if direction == "N":
+            by -= self.pixel_data.get("SPEED")
+        elif direction == "E":
+            bx += self.pixel_data.get("SPEED")
+        elif direction == "S":
+            by += self.pixel_data.get("SPEED")
+        elif direction == "W":
+            bx -= self.pixel_data.get("SPEED")
+        return direction, bx, by
+
     def move_bot(self):
-        if self.path[self.i % len(self.path)] == "N":
-            self.y -= self.pixel_data.get("SPEED")
-            self.current_direction = "N"
-        elif self.path[self.i % len(self.path)] == "E":
-            self.x += self.pixel_data.get("SPEED")
-            self.current_direction = "E"
-        elif self.path[self.i % len(self.path)] == "S":
-            self.y += self.pixel_data.get("SPEED")
-            self.current_direction = "S"
-        elif self.path[self.i % len(self.path)] == "W":
-            self.x -= self.pixel_data.get("SPEED")
-            self.current_direction = "W"
+        direction, dx, dy = self.next_position()
+        self.x, self.y = dx, dy
+        self.current_direction = direction
+
+    def recalculate_rote(self, bot_coord: tuple[int, int], goal_coord: tuple[int, int]):
+        new = self.bfs(self.get_coord_to_maze_grid(bot_coord), self.get_coord_to_maze_grid(goal_coord))
+        if new:
+            self.path = new
+            self.i = 0
+            self.pixel = 0
 
     def get_coord_to_maze_grid(self, coord: tuple[int, int]):
         x = (coord[0] - self.pixel_data.get("OFFSET_X")) // self.pixel_data.get("CELL_W") # calculo para tirar de pixels e se encaixar na grid em cordenadas
-        y = (coord[1]- self.pixel_data.get("OFFSET_Y")) // self.pixel_data.get("CELL_H") # calculo para tirar de pixels e se encaixar na grid em cordenadas
+        y = (coord[1] - self.pixel_data.get("OFFSET_Y")) // self.pixel_data.get("CELL_H") # calculo para tirar de pixels e se encaixar na grid em cordenadas
         return (x, y)
 
     @property
     def rect(self):
         return Rect(self.x, self.y, self.width, self.height)
-        

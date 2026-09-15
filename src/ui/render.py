@@ -47,7 +47,6 @@ class Render:
         self.W = 8
         self.CELL_W: int
         self.CELL_H: int
-        self.pixel = 0
         self.gum_position: list[(int, int)] = []
         self.mlx = Mlx()
         self.app = self.mlx.mlx_init()
@@ -126,7 +125,6 @@ class Render:
     def clear_buffer(self):
         self.memory.data[:] = b'\x00' * len(self.memory.data)
 
-
     def start_level(self):
         level = self.levels[self.index % len(self.levels)]
         width, height = level.width, level.height
@@ -170,6 +168,7 @@ class Render:
         pixel_data = {"SPEED": self.SPEED, "OFFSET_X": self.OFFSET_X, "OFFSET_Y":self.OFFSET_Y, "CELL_W":self.CELL_W ,"CELL_H":self.CELL_H}
         for i in range(4):
             self.bots.append(Bot(spam_x = self.cornes[i][0], spam_y = self.cornes[i][1], mlx_ptr=self.app, mlx=self.mlx, maze=self.maze, bot_id=i, pixel_data=pixel_data))
+            print(self.bots[i].path)
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 x, y = self.cell_position(i, j)
@@ -245,6 +244,29 @@ class Render:
                     return False
         return True
 
+    def check_colision_to_bot(self, bot, dx, dy) -> bool:
+        w = bot.width
+        h = bot.height
+        dest_rect = Rect(dx, dy, w, h)
+
+        corners = [
+            (dx, dy),
+            (dx + w - 1, dy),
+            (dx, dy + h - 1),
+            (dx + w - 1, dy + h - 1)
+        ]
+        cells = set()
+        for cx, cy in corners:
+            col = (cx - self.OFFSET_X) // self.CELL_W
+            row = (cy - self.OFFSET_Y) // self.CELL_H
+            cells.add((row, col))
+
+        for row, col in cells:
+            for wall in self.get_wall_rects(row, col):
+                if dest_rect.colliderect(wall):
+                    return False
+        return True
+
     def blip(self):
         self.mlx.mlx_put_image_to_window(
             self.app,
@@ -273,41 +295,8 @@ class Render:
         self.draw_information()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
 
-        
-        #if colision(
-        #    self.bots[0],
-        #    self.OFFSET_X,
-        #    self.OFFSET_X + self.map_width,
-        #    self.OFFSET_Y,
-        #    self.OFFSET_Y + self.map_height,
-        #    self.V,
-        #    self.H
-        #):
-        #    self.bots[0].x -= self.SPEED
-        #if colision(
-        #    self.bots[0],
-        #    metadata.left,
-        #    metadata.right,
-        #    metadata.top,
-        #    metadata.bottom,
-        #    self.V,
-        #    self.H
-        #):
-        #    self.player.x -= 200
         for b in self.bots:
-            if not colision(b, self.OFFSET_X, self.OFFSET_X + self.map_width, self.OFFSET_Y, self.OFFSET_Y + self.map_height):
-                b.move_bot()
-                self.pixel += self.SPEED
-                if (self.pixel >= self.CELL_H and b.current_direction in ("N", "S")):
-                    b.i += 1
-                    self.pixel = 0
-                    print(self.pixel)
-                    print("danilopo")
-                elif (self.pixel >= self.CELL_W and b.current_direction in ("W", "E")):
-                    b.i += 1
-                    self.pixel = 0
-                    print("danilopo")
-            self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x - 20, b.y - 20)
+            self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
 
 
     def controls(self, key, param):
@@ -532,6 +521,21 @@ class Render:
             self.points += self.data.points_per_super_pacgum
             self.reload = True
         self.player.update_img(self.player._direction, self.mlx, self.app)
+        for b in self.bots:
+            if not b.path or b.i >= len(b.path):
+                b.recalculate_rote((b.x, b.y), (self.player.x -3, self.player.y - 3))
+            direction, dx, dy = b.next_position()
+
+            if self.check_colision_to_bot(b, dx, dy):
+                b.move_bot()
+                b.pixel += self.SPEED
+                cell_size = self.CELL_H if direction in ("N", "S") else self.CELL_W
+                if b.pixel >= cell_size:
+                    b.i += 1
+                    b.pixel = 0
+            else:
+                b.i += 1
+                b.pixel = 0
         self.frames(self.player.x, self.player.y)
 
     def draw_information(self) -> None:
