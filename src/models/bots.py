@@ -2,6 +2,7 @@ from mlx import Mlx
 from typing import Any, Union
 from mazegenerator.mazegenerator import MazeGenerator
 from collections import deque
+from src.models.metadata import Rect
 
 
 class Bot:
@@ -12,7 +13,8 @@ class Bot:
         maze: MazeGenerator,
         mlx : Mlx = False,
         mlx_ptr: Any = False,
-        bot_id: int = 0
+        bot_id: int = 0,
+        pixel_data: dict[str, int] = {}
     ):
         images: list[str] = [
             "src/models/assets/ghost_images/orange.png",
@@ -20,14 +22,16 @@ class Bot:
             "src/models/assets/ghost_images/red.png",
             "src/models/assets/ghost_images/blue.png",
             ]
+        self.pixel_data = pixel_data
         self.img, self.width, self.height = mlx.mlx_png_file_to_image(mlx_ptr, images[bot_id % len(images)])
+        self.i = 0
         self.x = spam_x
         self.y = spam_y
         self.maze = maze
-        maze.generate()
+        self.goal_coord = (10, 10)
         self.grid = maze.maze
-        self.running = False
-
+        self.path = self.bfs(self.get_coord_to_maze_grid((spam_x, spam_y)), (self.goal_coord))
+        self.current_direction = None
 
     @staticmethod
     def can_advance(cell: int, direction: str) -> bool:
@@ -76,5 +80,26 @@ class Bot:
 
         return []
 
-    def move_bot(s):
-        pass #while
+    def move_bot(self):
+        if self.path[self.i % len(self.path)] == "N":
+            self.y -= self.pixel_data.get("SPEED")
+            self.current_direction = "N"
+        elif self.path[self.i % len(self.path)] == "E":
+            self.x += self.pixel_data.get("SPEED")
+            self.current_direction = "E"
+        elif self.path[self.i % len(self.path)] == "S":
+            self.y += self.pixel_data.get("SPEED")
+            self.current_direction = "S"
+        elif self.path[self.i % len(self.path)] == "W":
+            self.x -= self.pixel_data.get("SPEED")
+            self.current_direction = "W"
+
+    def get_coord_to_maze_grid(self, coord: tuple[int, int]):
+        x = (coord[0] - self.pixel_data.get("OFFSET_X")) // self.pixel_data.get("CELL_W") # calculo para tirar de pixels e se encaixar na grid em cordenadas
+        y = (coord[1]- self.pixel_data.get("OFFSET_Y")) // self.pixel_data.get("CELL_H") # calculo para tirar de pixels e se encaixar na grid em cordenadas
+        return (x, y)
+
+    @property
+    def rect(self):
+        return Rect(self.x, self.y, self.width, self.height)
+        

@@ -2,7 +2,7 @@ from mlx.mlx import Mlx
 from mazegenerator.mazegenerator import MazeGenerator
 from random import randint
 import ctypes
-from ..models import Player, Memory, Rect, Level, ConfigData
+from ..models import Player, Memory, Rect, Level, ConfigData, Bot
 from src import (
     colision,
     drawlineH,
@@ -24,11 +24,12 @@ class Render:
         self.OFFSET_Y = 50
         self.WIDTH = w
         self.HEIGHT = h
-        self.maze_width = 0
+        self.cell_len = 0
         self.data: ConfigData = data
         self.levels: list[Level] = levels
         self.index: int = 0
         self.points = -10
+        self.maze_width = 0
         self.maze_height = 0
         self.map_width = 0
         self.map_height = 0
@@ -46,6 +47,7 @@ class Render:
         self.W = 8
         self.CELL_W: int
         self.CELL_H: int
+        self.pixel = 0
         self.gum_position: list[(int, int)] = []
         self.mlx = Mlx()
         self.app = self.mlx.mlx_init()
@@ -97,6 +99,7 @@ class Render:
             mlx=self.mlx,
             lives=self.data.lives
         )
+        self.bots: list[Bot] = []
         self.maze: MazeGenerator
         self.start_img, _, _ = self.mlx.mlx_png_file_to_image(
             self.app,
@@ -134,6 +137,7 @@ class Render:
             seed=self.data.seed
         )
         self.maze.generate()
+
         self.maze_height = height
         self.maze_width = width
         self.CELL_W = (self.WIDTH - 2 * self.OFFSET_X) // self.maze_width
@@ -163,6 +167,9 @@ class Render:
                 )
             ]
         )
+        pixel_data = {"SPEED": self.SPEED, "OFFSET_X": self.OFFSET_X, "OFFSET_Y":self.OFFSET_Y, "CELL_W":self.CELL_W ,"CELL_H":self.CELL_H}
+        for i in range(4):
+            self.bots.append(Bot(spam_x = self.cornes[i][0], spam_y = self.cornes[i][1], mlx_ptr=self.app, mlx=self.mlx, maze=self.maze, bot_id=i, pixel_data=pixel_data))
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 x, y = self.cell_position(i, j)
@@ -265,6 +272,43 @@ class Render:
         self.blip()
         self.draw_information()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
+
+        
+        #if colision(
+        #    self.bots[0],
+        #    self.OFFSET_X,
+        #    self.OFFSET_X + self.map_width,
+        #    self.OFFSET_Y,
+        #    self.OFFSET_Y + self.map_height,
+        #    self.V,
+        #    self.H
+        #):
+        #    self.bots[0].x -= self.SPEED
+        #if colision(
+        #    self.bots[0],
+        #    metadata.left,
+        #    metadata.right,
+        #    metadata.top,
+        #    metadata.bottom,
+        #    self.V,
+        #    self.H
+        #):
+        #    self.player.x -= 200
+        for b in self.bots:
+            if not colision(b, self.OFFSET_X, self.OFFSET_X + self.map_width, self.OFFSET_Y, self.OFFSET_Y + self.map_height):
+                b.move_bot()
+                self.pixel += self.SPEED
+                if (self.pixel >= self.CELL_H and b.current_direction in ("N", "S")):
+                    b.i += 1
+                    self.pixel = 0
+                    print(self.pixel)
+                    print("danilopo")
+                elif (self.pixel >= self.CELL_W and b.current_direction in ("W", "E")):
+                    b.i += 1
+                    self.pixel = 0
+                    print("danilopo")
+            self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x - 20, b.y - 20)
+
 
     def controls(self, key, param):
         if key ==  0xff1b:
@@ -379,6 +423,7 @@ class Render:
 
     def render_loop(self, param):
         self.move(self.player)
+        
         self.frames(self.player.x, self.player.y)
         return 0
 
