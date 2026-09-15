@@ -12,8 +12,8 @@ class Bot:
         spam_x: int,
         spam_y: int,
         maze: MazeGenerator,
-        mlx : Mlx = False,
-        mlx_ptr: Any = False,
+        mlx : Mlx,
+        mlx_ptr: Any,
         bot_id: int = 0,
         pixel_data: dict[str, int] = {}
     ):
@@ -29,10 +29,10 @@ class Bot:
         self.x = spam_x
         self.y = spam_y
         self.maze = maze
-        self.goal_coord = (1, 1)
-        self.grid = maze.maze
+        self.goal_coord = (11, 11)
+        self.grid = []
         self.pixel = 0
-        self.path = self.bfs(self.get_coord_to_maze_grid((spam_x, spam_y)), (self.goal_coord))
+        self.path = []
         self.current_direction = None
 
     @staticmethod
@@ -45,6 +45,11 @@ class Bot:
             return not (cell & 0b0100)
         elif direction == "W":
             return not (cell & 0b1000)
+
+    def call_bfs(self):
+        self.grid = self.maze.maze
+        self.path = self.bfs(self.get_coord_to_maze_grid((self.x, self.y)), (self.goal_coord))
+
 
     def get_valid_cells(self, current_position):
         valid_cells = []

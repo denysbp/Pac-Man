@@ -116,6 +116,9 @@ class Render:
             self.app,
             "src/ui/victory.png"
         )
+
+        for i in range(4):
+            self.bots.append(Bot(spam_x = 0, spam_y = 0, mlx_ptr=self.app, mlx=self.mlx, maze=[], bot_id=i, pixel_data={}))
         self.cornes: list = []
 
     def find_spawn_below_42(self):
@@ -181,10 +184,6 @@ class Render:
         )
         self.gum_position.extend(self.cornes)
 
-        pixel_data = {"SPEED": self.SPEED, "OFFSET_X": self.OFFSET_X, "OFFSET_Y":self.OFFSET_Y, "CELL_W":self.CELL_W ,"CELL_H":self.CELL_H}
-        for i in range(4):
-            self.bots.append(Bot(spam_x = self.cornes[i][0], spam_y = self.cornes[i][1], mlx_ptr=self.app, mlx=self.mlx, maze=self.maze, bot_id=i, pixel_data=pixel_data))
-            print(self.bots[i].path)
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 x, y = self.cell_position(i, j)
@@ -198,6 +197,13 @@ class Render:
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
+        pixel_data = {"SPEED": self.SPEED, "OFFSET_X": self.OFFSET_X, "OFFSET_Y":self.OFFSET_Y, "CELL_W":self.CELL_W ,"CELL_H":self.CELL_H}
+        for i in range(4):
+            self.bots[i].x = self.cornes[i][0]
+            self.bots[i].y = self.cornes[i][1]
+            self.bots[i].maze=self.maze
+            self.bots[i].pixel_data=pixel_data
+            self.bots[i].call_bfs()
 
     def cell_position(self, row, col):
         x = self.OFFSET_X + col * self.CELL_W
@@ -316,7 +322,7 @@ class Render:
         self.blip()
         self.draw_information()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
-        if len(self.heated_big + self.heated_small) == len(self.gum_position):
+        if len(self.heated_big + self.heated_small) == len(self.gum_position) - 200:
             self.coodown = 200
             self.victory = True
             self.gum_position.clear()
