@@ -9,7 +9,7 @@ from src import (
     drawlineV,
     blit_into_buffer
 )
-
+import time
 
 
 # ESSA CLASSE NOS GERA A VISUALIZACAO, APENAS FAZ RUN
@@ -43,6 +43,9 @@ class Render:
         self.coodown = 200
         self.victory = False
         self.SPEED = 20
+        self.super_pac_deadline = 0
+        self.time_super_pac = 30
+        self.super_pac = False
         self.H = 2
         self.V = 1
         self.N = 1
@@ -322,13 +325,14 @@ class Render:
         self.blip()
         self.draw_information()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
-        if len(self.heated_big + self.heated_small) == len(self.gum_position) - 200:
+        if len(self.heated_big + self.heated_small) == len(self.gum_position):
             self.coodown = 200
             self.victory = True
             self.gum_position.clear()
-
         for b in self.bots:
             self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
+
+            
 
 
     def controls(self, key, param):
@@ -461,7 +465,8 @@ class Render:
                 self.player.x,
                 self.player.y
             )
-
+        if time.time() < self.super_pac_deadline:
+            self.super_pac = False
         return 0
 
     def level_win(self):
@@ -479,6 +484,7 @@ class Render:
             dx = self.player.x
             if self.check_colision(dx, dy):
                 self.player.y -= self.SPEED
+
             if colision(
                 param,
                 self.OFFSET_X,
@@ -577,7 +583,10 @@ class Render:
             self.points -= self.data.points_per_pacgum
             self.points += self.data.points_per_super_pacgum
             self.reload = True
-
+            self.super_pac_deadline = time.time() + self.time_super_pac
+            self.super_pac = True
+            print("wwwwwwwwwwwwwwwwwwwwwwwWW")
+            
         self.player.update_img(self.player._direction, self.mlx, self.app)
         for b in self.bots:
             if not b.path or b.i >= len(b.path):
@@ -666,3 +675,4 @@ class Render:
             self.mlx.mlx_hook(self.window, 17, 1 << 0, self.close, "None")
             self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
             self.mlx.mlx_loop(self.app)
+
