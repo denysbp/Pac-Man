@@ -36,14 +36,15 @@ class Render:
         self.map_width = 0
         self.map_height = 0
         self.color = 0xFF0000FF
-        self.heated_small = []
-        self.heated_big = []
+        self.heated_small = set()
+        self.heated_big = set()
+        self.gums_eated = 0
         self.reload = False
         self.start = True
         self.coodown = 200
         self.victory = False
         self.SPEED = 10
-        self.BOT_SPEED = 8
+        self.BOT_SPEED = 10
         self.super_pac_deadline = 0
         self.time_super_pac = 6
         self.super_pac = False
@@ -146,6 +147,10 @@ class Render:
 
     def start_level(self):
         level = self.levels[self.index % len(self.levels)]
+        self.index += 1
+        self.gums_eated = 0
+        if self.cornes:
+            self.cornes.clear()
         width, height = level.width, level.height
         if self.data.seed is None:
             self.data.seed = 0
@@ -165,24 +170,27 @@ class Render:
         self.map_width = self.CELL_W * self.maze_width
         self.heated_small.clear()
         self.heated_big.clear()
+        self.gum_position.clear()
         margin_x = round(self.CELL_W * 0.5)
         margin_y = round(self.CELL_H * 0.5)
+        last_col = self.maze_width
+        last_row = self.maze_height
         self.cornes.extend(
             [
                 (
                     self.OFFSET_X  + margin_x,
                     self.OFFSET_Y + margin_y),
                 (
-                    self.OFFSET_X + self.maze_width * self.CELL_W - margin_x,
+                    self.OFFSET_X + last_col * self.CELL_W - margin_x,
                     self.OFFSET_Y + margin_y
                 ),
                 (
                     self.OFFSET_X + margin_x,
-                    self.OFFSET_Y + self.maze_height * self.CELL_H - margin_y
+                    self.OFFSET_Y + last_row * self.CELL_H - margin_y
                 ),
                 (
-                    self.OFFSET_X + self.maze_width * self.CELL_W - margin_x,
-                    self.OFFSET_Y + self.maze_height * self.CELL_H - margin_y
+                    self.OFFSET_X + last_col * self.CELL_W - margin_x,
+                    self.OFFSET_Y + last_row * self.CELL_H - margin_y
                 )
             ]
         )
@@ -201,12 +209,19 @@ class Render:
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
-        pixel_data = {"SPEED": self.BOT_SPEED, "OFFSET_X": self.OFFSET_X, "OFFSET_Y":self.OFFSET_Y, "CELL_W":self.CELL_W ,"CELL_H":self.CELL_H}
+        pixel_data = {
+            "SPEED": self.BOT_SPEED,
+            "OFFSET_X": self.OFFSET_X,
+            "OFFSET_Y":self.OFFSET_Y,
+            "CELL_W":self.CELL_W,
+            "CELL_H":self.CELL_H
+        }
         for i in range(4):
             self.bots[i].x = self.cornes[i][0]
             self.bots[i].y = self.cornes[i][1]
             self.bots[i].maze=self.maze
             self.bots[i].pixel_data=pixel_data
+            self.bots[i].current_direction = None
             self.bots[i].call_bfs()
 
     def cell_position(self, row, col):
@@ -326,14 +341,14 @@ class Render:
         self.blip()
         self.draw_information()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
-        if len(self.heated_big + self.heated_small) == len(self.gum_position):
+        if self.gum_position and self.gums_eated == len(self.gum_position):
             self.coodown = 200
             self.victory = True
             self.gum_position.clear()
         for b in self.bots:
             self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
 
-            
+
 
 
     def controls(self, key, param):
@@ -343,21 +358,17 @@ class Render:
         if key in (65362, 119):
             # up
             self.player.update_img("UP", self.mlx, self.app)
-            self.frames(self.player.x, self.player.y)
 
         if key in (65361, 97):
             # left
             self.player.update_img("LEFT", self.mlx, self.app)
-            self.frames(self.player.x, self.player.y)
         if key in (65363, 100):
             # right
             self.player.update_img("RIGHT", self.mlx, self.app)
-            self.frames(self.player.x, self.player.y)
 
         if key in (65364,115):
             # down
             self.player.update_img("DOWN", self.mlx, self.app)
-            self.frames(self.player.x, self.player.y)
 
         return 0
 
@@ -466,7 +477,7 @@ class Render:
                 self.player.x,
                 self.player.y
             )
-        if time.time() >= self.super_pac_deadline:
+        if self.super_pac and time.time() >= self.super_pac_deadline:
             self.super_pac = False
             for bot in self.bots:
                 bot.reset_img(self.mlx, self.app)
@@ -477,9 +488,15 @@ class Render:
             self.app,
             self.window,
             self.victory_img,
-            round((self.WIDTH // 2) * 0.50),
+            round((self.WIDTH // 2) * 0.60),
             round((self.HEIGHT // 2) * 0.95)
         )
+
+    def is_near_player(self, bot, player, distance):
+        dx = bot.x - player.x
+        dy = bot.y - player.y
+
+        return dx * dx + dy * dy <= distance * distance
 
     def move(self, param) -> None:
         if self.player._direction in "UP":
@@ -577,12 +594,14 @@ class Render:
                 break
 
         if gum is not None and gum not in self.heated_small:
-            self.heated_small.append(gum)
+            self.heated_small.add(gum)
+            self.gums_eated += 1
             self.points += self.data.points_per_pacgum
             self.reload = True
 
         if big is not None and big not in self.heated_big:
-            self.heated_big.append(big)
+            self.heated_big.add(big)
+            self.gums_eated += 1
             self.points -= self.data.points_per_pacgum
             self.points += self.data.points_per_super_pacgum
             self.reload = True
@@ -590,15 +609,38 @@ class Render:
             self.super_pac = True
             for bot in self.bots:
                 bot.powerup_img(self.mlx, self.app)
-            
+
         self.player.update_img(self.player._direction, self.mlx, self.app)
+        last_path = []
         for b in self.bots:
             if self.super_pac:
                 if not b.path or b.i >= len(b.path):
                     b.scape((self.player.x, self.player.y))
             else:
                 if not b.path or b.i >= len(b.path):
-                    b.recalculate_rote((b.x, b.y), (self.player.x -3, self.player.y - 3))
+                    if self.is_near_player(b, self.player, 10):
+                        target_x = self.player.x
+                        target_y = self.player.y
+                    else:
+                        target_x = randint(
+                            self.OFFSET_X,
+                            self.OFFSET_X + self.map_width
+                        )
+                        target_y = randint(
+                            self.OFFSET_Y,
+                            self.OFFSET_Y + self.map_height
+                        )
+
+                    b.recalculate_rote(
+                        (b.x, b.y),
+                        (target_x, target_y)
+                    )
+
+            if last_path == b.path:
+                b.recalculate_rote(
+                    (b.x, b.y),
+                    (self.player.x, self.player.y)
+                )
             direction, dx, dy = b.next_position()
 
             if self.check_colision_to_bot(b, dx, dy):
@@ -609,10 +651,12 @@ class Render:
                     b.i += 1
                     b.pixel = 0
             else:
-                b.i += 1
-                b.pixel = 0
+                b.recalculate_rote(
+                    (b.x, b.y),
+                    (self.player.x, self.player.y)
+                )
+            last_path = b.path
 
-        self.frames(self.player.x, self.player.y)
 
     def draw_information(self) -> None:
         margin_x = round(self.WIDTH * 0.02)

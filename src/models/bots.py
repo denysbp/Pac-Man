@@ -25,7 +25,14 @@ class Bot:
             ]
         self.id = bot_id
         self.pixel_data = pixel_data
-        self.img, self.width, self.height = mlx.mlx_png_file_to_image(mlx_ptr, self.images[self.id % len(self.images)])
+        self.normal_img =  mlx.mlx_png_file_to_image(
+            mlx_ptr, self.images[self.id % len(self.images)]
+        )
+        self.img, self.width, self.height = self.normal_img
+        self.powerup_img_data = mlx.mlx_png_file_to_image(
+            mlx_ptr,
+            "src/models/assets/ghost_images/powerup.png"
+        )
         self.i = 0
         self.x = spam_x
         self.y = spam_y
@@ -153,15 +160,11 @@ class Bot:
             self.pixel = 0
 
     def powerup_img(self, mlx: Mlx, mlx_ptr):
-        self.img, self.width, self.height = mlx.mlx_png_file_to_image(
-            mlx_ptr,
-            "src/models/assets/ghost_images/powerup.png"
-        )
+        self.img, self.width, self.height = self.powerup_img_data
 
     def reset_img(self, mlx: Mlx, mlx_ptr):
-        self.img, self.width, self.height = mlx.mlx_png_file_to_image(
-            mlx_ptr, self.images[self.id % len(self.images)]
-        )
+        self.img, self.width, self.height = self.normal_img
+
     def get_coord_to_maze_grid(self, coord: tuple[int, int]):
         x = (coord[0] - self.pixel_data.get("OFFSET_X")) // self.pixel_data.get("CELL_W") # calculo para tirar de pixels e se encaixar na grid em cordenadas
         y = (coord[1] - self.pixel_data.get("OFFSET_Y")) // self.pixel_data.get("CELL_H") # calculo para tirar de pixels e se encaixar na grid em cordenadas
