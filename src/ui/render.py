@@ -40,7 +40,7 @@ class Render:
         self.heated_big = []
         self.reload = False
         self.start = True
-        self.coodown = 10
+        self.coodown = 200
         self.victory = False
         self.SPEED = 16
         self.H = 2
@@ -190,6 +190,9 @@ class Render:
                     self.gum_position.append(
                         (small_gum_y, small_gum_x)
                     )
+        row, col = self.find_spawn_below_42()
+        self.player.x = self.OFFSET_X + col * self.CELL_W + 25
+        self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
     def cell_position(self, row, col):
         x = self.OFFSET_X + col * self.CELL_W
@@ -271,6 +274,8 @@ class Render:
         return 0
 
     def key_press(self, keycode, param):
+        if self.victory:
+            return
         return self.controls(keycode, param)
 
     def  frames(self, x, y):
@@ -279,16 +284,14 @@ class Render:
             self.clear_buffer()
             self.draw_board()
             self.reload = False
-        if self.victory and self.coodown != 0:
-            self.level_win()
-            self.victory = False
-        else:
-            self.blip()
-            self.draw_information()
-            self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
-            if len(self.heated_big + self.heated_small) == len(self.gum_position) - 200:
-                self.coodown = 10
-                self.victory = True
+
+        self.blip()
+        self.draw_information()
+        self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
+        if len(self.heated_big + self.heated_small) == len(self.gum_position) - 200:
+            self.coodown = 200
+            self.victory = True
+            self.gum_position.clear()
     def controls(self, key, param):
         if key ==  0xff1b:
             self.close(param)
@@ -403,9 +406,22 @@ class Render:
     def render_loop(self, param):
         if self.victory:
             self.coodown -= 1
-            print(self.coodown)
-        self.move(self.player)
-        self.frames(self.player.x, self.player.y)
+
+            if self.coodown <= 0:
+                self.victory = False
+                self.coodown = 200
+                self.start_level()
+            else:
+                self.level_win()
+
+        else:
+            self.move(self.player)
+
+            self.frames(
+                self.player.x,
+                self.player.y
+            )
+
         return 0
 
     def level_win(self):
@@ -416,7 +432,6 @@ class Render:
             round((self.WIDTH // 2) * 0.50),
             round((self.HEIGHT // 2) * 0.95)
         )
-        self.mlx.mlx_loop(self.app)
 
     def move(self, param) -> None:
         if self.player._direction in "UP":
@@ -522,7 +537,7 @@ class Render:
             self.points -= self.data.points_per_pacgum
             self.points += self.data.points_per_super_pacgum
             self.reload = True
-        
+
         self.player.update_img(self.player._direction, self.mlx, self.app)
         self.frames(self.player.x, self.player.y)
 
@@ -589,9 +604,6 @@ class Render:
 
         if not self.start:
             self.start_level()
-            row, col = self.find_spawn_below_42()
-            self.player.x = self.OFFSET_X + col * self.CELL_W + 25
-            self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
             self.draw_board()
             self.mlx.mlx_do_key_autorepeatoff(self.app)
             self.mlx.mlx_mouse_move
