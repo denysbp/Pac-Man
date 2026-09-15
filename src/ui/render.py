@@ -42,7 +42,7 @@ class Render:
         self.start = True
         self.coodown = 200
         self.victory = False
-        self.SPEED = 16
+        self.SPEED = 20
         self.H = 2
         self.V = 1
         self.N = 1
@@ -288,7 +288,7 @@ class Render:
         self.blip()
         self.draw_information()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
-        if len(self.heated_big + self.heated_small) == len(self.gum_position) - 200:
+        if len(self.heated_big + self.heated_small) == len(self.gum_position):
             self.coodown = 200
             self.victory = True
             self.gum_position.clear()
@@ -411,6 +411,7 @@ class Render:
                 self.victory = False
                 self.coodown = 200
                 self.start_level()
+                self.draw_board()
             else:
                 self.level_win()
 
