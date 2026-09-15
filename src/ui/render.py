@@ -3,12 +3,15 @@ from mazegenerator.mazegenerator import MazeGenerator
 from random import randint
 import ctypes
 from ..models import Player, Memory, Rect, Level, ConfigData
+from time import sleep
 from src import (
     colision,
     drawlineH,
     drawlineV,
     blit_into_buffer
 )
+
+
 
 # ESSA CLASSE NOS GERA A VISUALIZACAO, APENAS FAZ RUN
 class Render:
@@ -37,7 +40,9 @@ class Render:
         self.heated_big = []
         self.reload = False
         self.start = True
-        self.SPEED = 15
+        self.coodown = 10
+        self.victory = False
+        self.SPEED = 16
         self.H = 2
         self.V = 1
         self.N = 1
@@ -102,6 +107,14 @@ class Render:
             self.app,
             "src/ui/start-game.png"
         )
+        self.img_controls, _, _ = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/controls.png"
+        )
+        self.victory_img, _, _ = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/victory.png"
+        )
         self.cornes: list = []
 
     def find_spawn_below_42(self):
@@ -142,6 +155,8 @@ class Render:
         self.CELL_H = (self.CELL_H // self.SPEED) * self.SPEED
         self.map_height = self.CELL_H * self.maze_height
         self.map_width = self.CELL_W * self.maze_width
+        self.heated_small.clear()
+        self.heated_big.clear()
         margin_x = round(self.CELL_W * 0.5)
         margin_y = round(self.CELL_H * 0.5)
         self.cornes.extend(
@@ -163,6 +178,8 @@ class Render:
                 )
             ]
         )
+        self.gum_position.extend(self.cornes)
+
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 x, y = self.cell_position(i, j)
@@ -256,16 +273,22 @@ class Render:
     def key_press(self, keycode, param):
         return self.controls(keycode, param)
 
-    def frames(self, x, y):
+    def  frames(self, x, y):
         self.mlx.mlx_clear_window(self.app, self.window)
         if self.reload:
             self.clear_buffer()
             self.draw_board()
             self.reload = False
-        self.blip()
-        self.draw_information()
-        self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
-
+        if self.victory and self.coodown != 0:
+            self.level_win()
+            self.victory = False
+        else:
+            self.blip()
+            self.draw_information()
+            self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
+            if len(self.heated_big + self.heated_small) == len(self.gum_position) - 200:
+                self.coodown = 10
+                self.victory = True
     def controls(self, key, param):
         if key ==  0xff1b:
             self.close(param)
@@ -378,9 +401,22 @@ class Render:
             )
 
     def render_loop(self, param):
+        if self.victory:
+            self.coodown -= 1
+            print(self.coodown)
         self.move(self.player)
         self.frames(self.player.x, self.player.y)
         return 0
+
+    def level_win(self):
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.victory_img,
+            round((self.WIDTH // 2) * 0.50),
+            round((self.HEIGHT // 2) * 0.95)
+        )
+        self.mlx.mlx_loop(self.app)
 
     def move(self, param) -> None:
         if self.player._direction in "UP":
@@ -486,6 +522,7 @@ class Render:
             self.points -= self.data.points_per_pacgum
             self.points += self.data.points_per_super_pacgum
             self.reload = True
+        
         self.player.update_img(self.player._direction, self.mlx, self.app)
         self.frames(self.player.x, self.player.y)
 
@@ -527,6 +564,10 @@ class Render:
             self.start = False
             self.mlx.mlx_loop_exit(self.app)
 
+        if keycode ==  0xff1b:
+            self.mlx.mlx_destroy_window(self.app, self.window)
+            self.mlx.mlx_loop_exit(self.app)
+
     def run(self):
         if self.start:
             self.mlx.mlx_put_image_to_window(
@@ -536,18 +577,25 @@ class Render:
                 round((self.WIDTH // 2) * 0.45),
                 0
             )
+            self.mlx.mlx_put_image_to_window(
+                self.app,
+                self.window,
+                self.img_controls,
+                round((self.WIDTH // 2) * 0.03),
+                round((self.HEIGHT // 2) * 1.10)
+            )
             self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
             self.mlx.mlx_loop(self.app)
 
-
-        self.start_level()
-        row, col = self.find_spawn_below_42()
-        self.player.x = self.OFFSET_X + col * self.CELL_W + 25
-        self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
-        self.draw_board()
-        self.mlx.mlx_do_key_autorepeatoff(self.app)
-        self.mlx.mlx_mouse_move
-        self.mlx.mlx_hook(self.window, 2, 1 << 0, self.key_press, self.player)
-        self.mlx.mlx_hook(self.window, 17, 1 << 0, self.close, "None")
-        self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
-        self.mlx.mlx_loop(self.app)
+        if not self.start:
+            self.start_level()
+            row, col = self.find_spawn_below_42()
+            self.player.x = self.OFFSET_X + col * self.CELL_W + 25
+            self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
+            self.draw_board()
+            self.mlx.mlx_do_key_autorepeatoff(self.app)
+            self.mlx.mlx_mouse_move
+            self.mlx.mlx_hook(self.window, 2, 1 << 0, self.key_press, self.player)
+            self.mlx.mlx_hook(self.window, 17, 1 << 0, self.close, "None")
+            self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
+            self.mlx.mlx_loop(self.app)
