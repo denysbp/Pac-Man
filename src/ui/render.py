@@ -2,8 +2,7 @@ from mlx.mlx import Mlx
 from mazegenerator.mazegenerator import MazeGenerator
 from random import randint
 import ctypes
-from ..models import Player, Memory, Rect, Level, ConfigData
-from time import sleep
+from ..models import Player, Memory, Rect, Level, ConfigData, Bot
 from src import (
     colision,
     drawlineH,
@@ -27,11 +26,12 @@ class Render:
         self.OFFSET_Y = 50
         self.WIDTH = w
         self.HEIGHT = h
-        self.maze_width = 0
+        self.cell_len = 0
         self.data: ConfigData = data
         self.levels: list[Level] = levels
         self.index: int = 0
         self.points = -10
+        self.maze_width = 0
         self.maze_height = 0
         self.map_width = 0
         self.map_height = 0
@@ -102,6 +102,7 @@ class Render:
             mlx=self.mlx,
             lives=self.data.lives
         )
+        self.bots: list[Bot] = []
         self.maze: MazeGenerator
         self.start_img, _, _ = self.mlx.mlx_png_file_to_image(
             self.app,
@@ -136,7 +137,6 @@ class Render:
     def clear_buffer(self):
         self.memory.data[:] = b'\x00' * len(self.memory.data)
 
-
     def start_level(self):
         level = self.levels[self.index % len(self.levels)]
         width, height = level.width, level.height
@@ -147,6 +147,7 @@ class Render:
             seed=self.data.seed
         )
         self.maze.generate()
+
         self.maze_height = height
         self.maze_width = width
         self.CELL_W = (self.WIDTH - 2 * self.OFFSET_X) // self.maze_width
@@ -180,6 +181,10 @@ class Render:
         )
         self.gum_position.extend(self.cornes)
 
+        pixel_data = {"SPEED": self.SPEED, "OFFSET_X": self.OFFSET_X, "OFFSET_Y":self.OFFSET_Y, "CELL_W":self.CELL_W ,"CELL_H":self.CELL_H}
+        for i in range(4):
+            self.bots.append(Bot(spam_x = self.cornes[i][0], spam_y = self.cornes[i][1], mlx_ptr=self.app, mlx=self.mlx, maze=self.maze, bot_id=i, pixel_data=pixel_data))
+            print(self.bots[i].path)
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 x, y = self.cell_position(i, j)
@@ -258,6 +263,29 @@ class Render:
                     return False
         return True
 
+    def check_colision_to_bot(self, bot, dx, dy) -> bool:
+        w = bot.width
+        h = bot.height
+        dest_rect = Rect(dx, dy, w, h)
+
+        corners = [
+            (dx, dy),
+            (dx + w - 1, dy),
+            (dx, dy + h - 1),
+            (dx + w - 1, dy + h - 1)
+        ]
+        cells = set()
+        for cx, cy in corners:
+            col = (cx - self.OFFSET_X) // self.CELL_W
+            row = (cy - self.OFFSET_Y) // self.CELL_H
+            cells.add((row, col))
+
+        for row, col in cells:
+            for wall in self.get_wall_rects(row, col):
+                if dest_rect.colliderect(wall):
+                    return False
+        return True
+
     def blip(self):
         self.mlx.mlx_put_image_to_window(
             self.app,
@@ -292,6 +320,11 @@ class Render:
             self.coodown = 200
             self.victory = True
             self.gum_position.clear()
+
+        for b in self.bots:
+            self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
+
+
     def controls(self, key, param):
         if key ==  0xff1b:
             self.close(param)
@@ -540,6 +573,21 @@ class Render:
             self.reload = True
 
         self.player.update_img(self.player._direction, self.mlx, self.app)
+        for b in self.bots:
+            if not b.path or b.i >= len(b.path):
+                b.recalculate_rote((b.x, b.y), (self.player.x -3, self.player.y - 3))
+            direction, dx, dy = b.next_position()
+
+            if self.check_colision_to_bot(b, dx, dy):
+                b.move_bot()
+                b.pixel += self.SPEED
+                cell_size = self.CELL_H if direction in ("N", "S") else self.CELL_W
+                if b.pixel >= cell_size:
+                    b.i += 1
+                    b.pixel = 0
+            else:
+                b.i += 1
+                b.pixel = 0
         self.frames(self.player.x, self.player.y)
 
     def draw_information(self) -> None:

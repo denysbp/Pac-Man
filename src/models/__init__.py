@@ -7,3 +7,4 @@ from .metadata import (
     create_config
 )
 from .player import Player
+from .bots import Bot
