@@ -3,6 +3,7 @@ from mazegenerator.mazegenerator import MazeGenerator
 from random import randint
 import ctypes
 from ..models import Player, Memory, Rect, Level, ConfigData, Bot
+from ..data_base import DATA_BASE
 from src import (
     colision,
     drawlineH,
@@ -22,6 +23,7 @@ class Render:
         levels,
         data
     ):
+        self.db: DATA_BASE = DATA_BASE()
         self.OFFSET_X = 30
         self.OFFSET_Y = 50
         self.WIDTH = w
@@ -701,6 +703,25 @@ class Render:
             self.mlx.mlx_loop_exit(self.app)
 
     def run(self):
+        data = self.db.get_scores()
+        i = 0
+        for i, (name, score) in enumerate(data):
+            spacing = 40
+
+            text = f"{name} - {score}"
+
+            text_width = len(text) * 10
+            x = (self.WIDTH - text_width) // 2
+            y = self.HEIGHT // 2 + i * spacing
+
+            self.mlx.mlx_string_put(
+                self.app,
+                self.window,
+                x,
+                y,
+                150,
+                text
+            )
         if self.start:
             self.mlx.mlx_put_image_to_window(
                 self.app,

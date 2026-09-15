@@ -17,3 +17,4 @@ from .helps import (
     blit_into_buffer
 )
 from .ui import Render
+from .data_base import DATA_BASE
