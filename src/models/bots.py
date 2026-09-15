@@ -54,21 +54,26 @@ class Bot:
     def get_valid_cells(self, current_position):
         valid_cells = []
         x, y = current_position
+
+        height = len(self.grid)
+        width = len(self.grid[0])
+
         cell = self.grid[y][x]
 
-        if self.can_advance(cell, "N"):
+        if y > 0 and self.can_advance(cell, "N"):
             valid_cells.append(("N", (x, y - 1)))
 
-        if self.can_advance(cell, "E"):
+        if x < width - 1 and self.can_advance(cell, "E"):
             valid_cells.append(("E", (x + 1, y)))
 
-        if self.can_advance(cell, "S"):
+        if y < height - 1 and self.can_advance(cell, "S"):
             valid_cells.append(("S", (x, y + 1)))
 
-        if self.can_advance(cell, "W"):
+        if x > 0 and self.can_advance(cell, "W"):
             valid_cells.append(("W", (x - 1, y)))
 
         return valid_cells
+
 
     def bfs(self, bot_coord, goal_coord):
         visited = {bot_coord}
@@ -92,10 +97,7 @@ class Bot:
             return None, self.x, self.y
         direction = self.path[self.i % len(self.path)]
         bx, by = self.x, self.y
-        #x_grid, y_grid = self.get_coord_to_maze_grid((bx, by))
-#
-        #if (x_grid, y_grid) == self.goal_coord:
-        #    direction = None
+
         if direction == "N":
             by -= self.pixel_data.get("SPEED")
         elif direction == "E":
@@ -118,6 +120,30 @@ class Bot:
             self.i = 0
             self.pixel = 0
 
+    def scape(self, player_cordintaes):
+        bot = self.get_coord_to_maze_grid((self.x, self.y))
+        player = self.get_coord_to_maze_grid(player_cordintaes)
+
+        valid_cells = self.get_valid_cells(bot)
+
+        if not valid_cells:
+            return
+
+        px, py = player
+
+        direction, escape_cell = max(
+            valid_cells,
+            key=lambda item: (
+                abs(item[1][0] - px) +
+                abs(item[1][1] - py)
+            )
+        )
+        new = self.bfs(bot, escape_cell)
+
+        if new:
+            self.path = new
+            self.i = 0
+            self.pixel = 0
     def get_coord_to_maze_grid(self, coord: tuple[int, int]):
         x = (coord[0] - self.pixel_data.get("OFFSET_X")) // self.pixel_data.get("CELL_W") # calculo para tirar de pixels e se encaixar na grid em cordenadas
         y = (coord[1] - self.pixel_data.get("OFFSET_Y")) // self.pixel_data.get("CELL_H") # calculo para tirar de pixels e se encaixar na grid em cordenadas

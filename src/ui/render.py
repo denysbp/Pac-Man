@@ -42,7 +42,8 @@ class Render:
         self.start = True
         self.coodown = 200
         self.victory = False
-        self.SPEED = 20
+        self.SPEED = 15
+        self.BOT_SPEED = 13
         self.H = 2
         self.V = 1
         self.N = 1
@@ -197,7 +198,7 @@ class Render:
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
-        pixel_data = {"SPEED": self.SPEED, "OFFSET_X": self.OFFSET_X, "OFFSET_Y":self.OFFSET_Y, "CELL_W":self.CELL_W ,"CELL_H":self.CELL_H}
+        pixel_data = {"SPEED": self.BOT_SPEED, "OFFSET_X": self.OFFSET_X, "OFFSET_Y":self.OFFSET_Y, "CELL_W":self.CELL_W ,"CELL_H":self.CELL_H}
         for i in range(4):
             self.bots[i].x = self.cornes[i][0]
             self.bots[i].y = self.cornes[i][1]
@@ -322,7 +323,7 @@ class Render:
         self.blip()
         self.draw_information()
         self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
-        if len(self.heated_big + self.heated_small) == len(self.gum_position) - 200:
+        if len(self.heated_big + self.heated_small) == len(self.gum_position):
             self.coodown = 200
             self.victory = True
             self.gum_position.clear()
