@@ -3,50 +3,41 @@ from mazegenerator.mazegenerator import MazeGenerator
 from random import randint
 import ctypes
 from ..models import Player, Memory, Rect, Level, ConfigData, Bot
+import time
 from src import (
     colision,
     drawlineH,
     drawlineV,
     blit_into_buffer
 )
-import time
-
 
 # ESSA CLASSE NOS GERA A VISUALIZACAO, APENAS FAZ RUN
 class Render:
 
     def __init__(
         self,
-        w,
-        h,
-        levels,
+        w: int,
+        h: int,
+        levels: list[Level],
         data
     ):
-        self.OFFSET_X = 30
-        self.OFFSET_Y = 50
-        self.WIDTH = w
-        self.HEIGHT = h
-        self.cell_len = 0
+        self.set_global_positions_sizes(w, h)
+        self.mlx = Mlx()
+        self.app = self.mlx.mlx_init()
         self.data: ConfigData = data
         self.levels: list[Level] = levels
+        self.cornes: list = []
         self.index: int = 0
         self.points = -10
-        self.maze_width = 0
-        self.maze_height = 0
-        self.map_width = 0
-        self.map_height = 0
+        self.coodown = 200
         self.color = 0xFF0000FF
-        self.heated_small = []
-        self.heated_big = []
+        self.victory = False
         self.reload = False
         self.start = True
-        self.coodown = 200
-        self.victory = False
-        self.SPEED = 10
-        self.BOT_SPEED = 8
-        self.super_pac_deadline = 0
-        self.time_super_pac = 6
-        self.super_pac = False
+        self.set_images()
+        self.create_classes_and_classes_atributes()
+
+    def set_global_positions_sizes(self, w: int, h: int):
         self.H = 2
         self.V = 1
         self.N = 1
@@ -55,75 +46,88 @@ class Render:
         self.W = 8
         self.CELL_W: int
         self.CELL_H: int
-        self.gum_position: list[(int, int)] = []
-        self.mlx = Mlx()
-        self.app = self.mlx.mlx_init()
+        self.OFFSET_X = 30
+        self.OFFSET_Y = 50
+        self.WIDTH = w
+        self.HEIGHT = h
+        self.cell_len = 0
+        self.maze_width = 0
+        self.maze_height = 0
+        self.map_width = 0
+        self.map_height = 0
+
+    def set_images(self):
         self.window = self.mlx.mlx_new_window(
             self.app,
             self.WIDTH,
             self.HEIGHT,
-            "PAC Man"
+            "PAC Man")
+        self.small_gun, self.m_w, self.m_h  = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/models/assets/gums/pacgum-small.png")
+        self.player_img, self.player_w, self.player_h= self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/models/assets/player/right-3.png"
         )
+        self.start_img, _, _ = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/start-game.png")
+        self.img_controls, _, _ = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/controls.png")
+        self.victory_img, _, _ = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/victory.png")
+        self.big_gum, self.b_w, self.b_h  = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/models/assets/gums/pacgum-big.png")
         self.buffer = self.mlx.mlx_new_image(
             self.app,
             self.WIDTH,
-            self.HEIGHT
-        )
+            self.HEIGHT)
+
+    def create_classes_and_classes_atributes(self):
+        self.player: Player = Player(
+            span_x= 0,
+            span_y= 0,
+            image=self.player_img,
+            width=self.player_w,
+            height=self.player_h,
+            mlx_ptr=self.app,
+            mlx=self.mlx,
+            lives=self.data.lives)
+        self.super_pac_deadline = 0
+        self.time_super_pac = 8
+        self.super_pac = False
+        self.SPEED = 10
+
+        self.bots: list[Bot] = []
+        for i in range(4):
+            self.bots.append(Bot(spam_x = 0, spam_y = 0, mlx_ptr=self.app, mlx=self.mlx, maze=[], bot_id=i, pixel_data={}))
+        self.BOT_SPEED = 8
+
         self.memory: Memory = Memory()
         self.memory.save(
             self.mlx.mlx_get_data_addr,
             self.buffer
         )
-        self.small_gun, self.m_w, self.m_h  = self.mlx.mlx_png_file_to_image(
-            self.app,
-            "src/models/assets/gums/pacgum-small.png"
-        )
+
+        self.gum_position: list[(int, int)] = []
+        self.heated_small = []
         self.small_gun_memory: Memory = Memory()
         self.small_gun_memory.save(
             self.mlx.mlx_get_data_addr,
             self.small_gun
         )
-        self.big_gum, self.b_w, self.b_h  = self.mlx.mlx_png_file_to_image(
-            self.app,
-            "src/models/assets/gums/pacgum-big.png"
-        )
+
+        self.heated_big = []
         self.big_gum_memory: Memory = Memory()
         self.big_gum_memory.save(
             self.mlx.mlx_get_data_addr,
             self.big_gum
         )
-        img, w, h= self.mlx.mlx_png_file_to_image(
-            self.app,
-            "src/models/assets/player/right-3.png"
-        )
-        self.player: Player = Player(
-            span_x= 0,
-            span_y= 0,
-            image=img,
-            width=w,
-            height=h,
-            mlx_ptr=self.app,
-            mlx=self.mlx,
-            lives=self.data.lives
-        )
-        self.bots: list[Bot] = []
-        self.maze: MazeGenerator
-        self.start_img, _, _ = self.mlx.mlx_png_file_to_image(
-            self.app,
-            "src/ui/start-game.png"
-        )
-        self.img_controls, _, _ = self.mlx.mlx_png_file_to_image(
-            self.app,
-            "src/ui/controls.png"
-        )
-        self.victory_img, _, _ = self.mlx.mlx_png_file_to_image(
-            self.app,
-            "src/ui/victory.png"
-        )
-
-        for i in range(4):
-            self.bots.append(Bot(spam_x = 0, spam_y = 0, mlx_ptr=self.app, mlx=self.mlx, maze=[], bot_id=i, pixel_data={}))
-        self.cornes: list = []
+        if self.data.seed is None:
+            self.data.seed = 0
 
     def find_spawn_below_42(self):
         rows_with_42 = [i for i, row in enumerate(self.maze.maze) if 15 in row]
@@ -144,17 +148,7 @@ class Render:
     def clear_buffer(self):
         self.memory.data[:] = b'\x00' * len(self.memory.data)
 
-    def start_level(self):
-        level = self.levels[self.index % len(self.levels)]
-        width, height = level.width, level.height
-        if self.data.seed is None:
-            self.data.seed = 0
-        self.maze = MazeGenerator(
-            (width, height),
-            seed=self.data.seed
-        )
-        self.maze.generate()
-
+    def calcule_maze_dimetions(self, height: int, width: int):
         self.maze_height = height
         self.maze_width = width
         self.CELL_W = (self.WIDTH - 2 * self.OFFSET_X) // self.maze_width
@@ -163,8 +157,6 @@ class Render:
         self.CELL_H = (self.CELL_H // self.SPEED) * self.SPEED
         self.map_height = self.CELL_H * self.maze_height
         self.map_width = self.CELL_W * self.maze_width
-        self.heated_small.clear()
-        self.heated_big.clear()
         margin_x = round(self.CELL_W * 0.5)
         margin_y = round(self.CELL_H * 0.5)
         self.cornes.extend(
@@ -187,7 +179,6 @@ class Render:
             ]
         )
         self.gum_position.extend(self.cornes)
-
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 x, y = self.cell_position(i, j)
@@ -201,7 +192,27 @@ class Render:
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
-        pixel_data = {"SPEED": self.BOT_SPEED, "OFFSET_X": self.OFFSET_X, "OFFSET_Y":self.OFFSET_Y, "CELL_W":self.CELL_W ,"CELL_H":self.CELL_H}
+
+    def start_level(self):
+        level = self.levels[self.index % len(self.levels)]
+        width, height = level.width, level.height
+        self.maze = MazeGenerator(
+            (width, height),
+            seed=self.data.seed
+        )
+        self.maze.generate()
+        self.calcule_maze_dimetions(self.maze._height, self.maze._width)
+        
+        self.heated_small.clear()
+        self.heated_big.clear()
+
+        pixel_data = {
+            "SPEED": self.BOT_SPEED,
+            "OFFSET_X": self.OFFSET_X,
+            "OFFSET_Y":self.OFFSET_Y,
+            "CELL_W":self.CELL_W ,
+            "CELL_H":self.CELL_H
+            }
         for i in range(4):
             self.bots[i].x = self.cornes[i][0]
             self.bots[i].y = self.cornes[i][1]
@@ -215,7 +226,6 @@ class Render:
         return x, y
 
     def is_walkable(self, cell: int):
-
         return (
             not (cell & self.N) or
             not (cell & self.E) or
@@ -316,7 +326,7 @@ class Render:
             return
         return self.controls(keycode, param)
 
-    def  frames(self, x, y):
+    def frames(self, x, y):
         self.mlx.mlx_clear_window(self.app, self.window)
         if self.reload:
             self.clear_buffer()
@@ -332,9 +342,6 @@ class Render:
             self.gum_position.clear()
         for b in self.bots:
             self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
-
-            
-
 
     def controls(self, key, param):
         if key ==  0xff1b:
@@ -466,10 +473,6 @@ class Render:
                 self.player.x,
                 self.player.y
             )
-        if time.time() >= self.super_pac_deadline:
-            self.super_pac = False
-            for bot in self.bots:
-                bot.reset_img(self.mlx, self.app)
         return 0
 
     def level_win(self):
@@ -480,6 +483,52 @@ class Render:
             round((self.WIDTH // 2) * 0.50),
             round((self.HEIGHT // 2) * 0.95)
         )
+
+    def move_bots(self):
+        if time.time() >= self.super_pac_deadline:
+            self.super_pac = False
+            for bot in self.bots:
+                bot.reset_img(self.mlx, self.app)
+
+        for b in self.bots:
+            if time.time() >= b.bot_respaw and b.dead:
+                b.dead = False
+                b.reset_img(self.mlx, self.app)
+
+            if self.super_pac:
+                if not b.path or b.i >= len(b.path) and not b.dead:
+                    b.scape((self.player.x, self.player.y))
+                if (not colision(self.player, b.x - b.HEAT_BOX_BOT, b.x + b.HEAT_BOX_BOT,
+                                b.y - b.HEAT_BOX_BOT , b.y + b.HEAT_BOX_BOT)) and not b.dead:
+                    b.recalculate_rote((b.x, b.y), calcule_to_midle=True)
+                    b.kill_bot(self.mlx, self.app)
+                    b.bot_respaw = time.time() + b.BOT_TIME_DEAD
+            if (not colision(self.player, b.x - b.HEAT_BOX_BOT, b.x + b.HEAT_BOX_BOT,
+                                            b.y - b.HEAT_BOX_BOT , b.y + b.HEAT_BOX_BOT)):
+                        #No caso temos que por uma imagem de derrota, so coloquei pra exemplificar como nao temos a imagem.
+                        self.mlx.mlx_put_image_to_window(
+                            self.app,
+                            self.window,
+                            self.victory_img,
+                            round((self.WIDTH // 2) * 0.50),
+                            round((self.HEIGHT // 2) * 0.95)
+                        )
+                        #self.close(None)
+            else:
+                if not b.path or b.i >= len(b.path):
+                    b.recalculate_rote((b.x, b.y), (self.player.x -3, self.player.y - 3))
+
+            direction, dx, dy = b.next_position()
+            if self.check_colision_to_bot(b, dx, dy):
+                b.move_bot()
+                b.pixel += self.BOT_SPEED
+                cell_size = self.CELL_H if direction in ("N", "S") else self.CELL_W
+                if b.pixel >= cell_size:
+                    b.i += 1
+                    b.pixel = 0
+            else:
+                b.i += 1
+                b.pixel = 0
 
     def move(self, param) -> None:
         if self.player._direction in "UP":
@@ -530,6 +579,7 @@ class Render:
                 self.H
             ):
                 self.player.x -= self.SPEED
+
         if self.player._direction in "DOWN":
             dy = self.player.y + self.SPEED
             dx = self.player.x
@@ -555,15 +605,13 @@ class Render:
             self.m_h,
         )
 
-        big = None
-
         player_rect = Rect(
             self.player.x,
             self.player.y,
             self.player.img_width,
             self.player.img_height
         )
-
+        big = None
         for x, y in self.cornes:
             big_rect = Rect(
                 x - self.b_w // 2,
@@ -571,7 +619,6 @@ class Render:
                 self.b_w,
                 self.b_h
             )
-
             if player_rect.colliderect(big_rect):
                 big = (x, y)
                 break
@@ -592,26 +639,7 @@ class Render:
                 bot.powerup_img(self.mlx, self.app)
             
         self.player.update_img(self.player._direction, self.mlx, self.app)
-        for b in self.bots:
-            if self.super_pac:
-                if not b.path or b.i >= len(b.path):
-                    b.scape((self.player.x, self.player.y))
-            else:
-                if not b.path or b.i >= len(b.path):
-                    b.recalculate_rote((b.x, b.y), (self.player.x -3, self.player.y - 3))
-            direction, dx, dy = b.next_position()
-
-            if self.check_colision_to_bot(b, dx, dy):
-                b.move_bot()
-                b.pixel += self.BOT_SPEED
-                cell_size = self.CELL_H if direction in ("N", "S") else self.CELL_W
-                if b.pixel >= cell_size:
-                    b.i += 1
-                    b.pixel = 0
-            else:
-                b.i += 1
-                b.pixel = 0
-
+        self.move_bots()
         self.frames(self.player.x, self.player.y)
 
     def draw_information(self) -> None:
@@ -684,4 +712,5 @@ class Render:
             self.mlx.mlx_hook(self.window, 17, 1 << 0, self.close, "None")
             self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
             self.mlx.mlx_loop(self.app)
+
 

@@ -10,8 +10,8 @@ def colision(
     right: int,
     top: int,
     bottom: int,
-    V: int = False,
-    H: int = False
+    V: int = 0,
+    H: int = 0
 ):
     rect = player.rect
 
