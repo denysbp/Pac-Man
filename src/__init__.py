@@ -8,7 +8,6 @@ from .models import(
     create_config
 )
 keyboard: dict[str, int] = {
-    65505: "shift",
     65509: "capslock!",
     97: "a",
     98: "b",

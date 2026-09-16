@@ -3,6 +3,7 @@ from mazegenerator.mazegenerator import MazeGenerator
 from random import randint
 import ctypes
 from ..models import Player, Memory, Rect, Level, ConfigData, Bot
+from ..data_base import DATA_BASE
 import time
 from src import (
     colision,
@@ -24,6 +25,9 @@ class Render:
     ):
         self.set_global_positions_sizes(w, h)
         self.mlx = Mlx()
+        self.db = DATA_BASE()
+        self.db.create_table()
+        self.scores = self.db.get_scores()
         self.app = self.mlx.mlx_init()
         self.data: ConfigData = data
         self.levels: list[Level] = levels
@@ -92,6 +96,10 @@ class Render:
         self.gameover_img, _ , _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/gameover.png"
+        )
+        self.names_img, _, _ = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/names.png"
         )
 
     def create_classes_and_classes_atributes(self):
@@ -217,6 +225,7 @@ class Render:
 
         self.heated_small.clear()
         self.heated_big.clear()
+        self.points = 0
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
@@ -334,7 +343,7 @@ class Render:
         self.mlx.mlx_do_key_autorepeaton(self.app)
         self.mlx.mlx_destroy_window(self.app, self.window)
         self.mlx.mlx_loop_exit(self.app)
-        return 0
+        return 
 
     def key_press(self, keycode, param):
         if self.victory:
@@ -388,74 +397,77 @@ class Render:
             self.frames(self.player.x, self.player.y)
         return 0
 
+    def put_img(self, cell: int, x: int, y: int):
+        if cell & self.N:
+            drawlineH(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                x,
+                y,
+                x + self.CELL_W,
+                y,
+                self.color
+            )
+        if cell & self.S:
+            drawlineH(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                x,
+                y + self.CELL_H,
+                x + self.CELL_W,
+                y + self.CELL_H,
+                self.color
+            )
+        if cell & self.W:
+            drawlineV(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                x,
+                y,
+                x,
+                y + self.CELL_H,
+                self.color)
+        if cell & self.E:
+            drawlineV(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                x + self.CELL_W,
+                y,
+                x + self.CELL_W,
+                y + self.CELL_H,
+                self.color)
+        if self.is_walkable(cell):
+            small_gum_x = x + (self.CELL_W - self.m_w) // 2
+            small_gum_y = y + (self.CELL_H -self.m_h) // 2
+            if (small_gum_y, small_gum_x) in self.heated_small:
+                return
+            blit_into_buffer(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                self.WIDTH,
+                self.HEIGHT,
+                self.small_gun_memory.data,
+                self.small_gun_memory.bpp,
+                self.small_gun_memory.size_line,
+                self.m_w,
+                self.m_h,
+                small_gum_x,
+                small_gum_y
+            )
+
     def draw_board(self):
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 cell = self.maze.maze[i][j]
 
                 x, y = self.cell_position(i, j)
-                if cell & self.N:
-                    drawlineH(
-                        self.memory.data,
-                        self.memory.bpp,
-                        self.memory.size_line,
-                        x,
-                        y,
-                        x + self.CELL_W,
-                        y,
-                        self.color
-                    )
-                if cell & self.S:
-                    drawlineH(
-                        self.memory.data,
-                        self.memory.bpp,
-                        self.memory.size_line,
-                        x,
-                        y + self.CELL_H,
-                        x + self.CELL_W,
-                        y + self.CELL_H,
-                        self.color
-                    )
-                if cell & self.W:
-                    drawlineV(
-                        self.memory.data,
-                        self.memory.bpp,
-                        self.memory.size_line,
-                        x,
-                        y,
-                        x,
-                        y + self.CELL_H,
-                        self.color)
-                if cell & self.E:
-                    drawlineV(
-                        self.memory.data,
-                        self.memory.bpp,
-                        self.memory.size_line,
-                        x + self.CELL_W,
-                        y,
-                        x + self.CELL_W,
-                        y + self.CELL_H,
-                        self.color)
+                self.put_img(cell, x, y)
 
-                if self.is_walkable(cell):
-                    small_gum_x = x + (self.CELL_W - self.m_w) // 2
-                    small_gum_y = y + (self.CELL_H -self.m_h) // 2
-                    if (small_gum_y, small_gum_x) in self.heated_small:
-                       continue
-                    blit_into_buffer(
-                        self.memory.data,
-                        self.memory.bpp,
-                        self.memory.size_line,
-                        self.WIDTH,
-                        self.HEIGHT,
-                        self.small_gun_memory.data,
-                        self.small_gun_memory.bpp,
-                        self.small_gun_memory.size_line,
-                        self.m_w,
-                        self.m_h,
-                        small_gum_x,
-                        small_gum_y
-                    )
         for x, y in self.cornes:
             if (x, y) in self.heated_big:
                 continue
@@ -541,10 +553,18 @@ class Render:
             elif not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
                                             b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y ):
                         if not self.data.lives >= 0:
+                            self.db.insert_on_table(
+                                self.name_player,
+                                self.points
+                            )
                             self.gameover = True
                         else:
                             self.data.lives -= 1
                             self.time_to_restart = True
+                            self.db.insert_on_table(
+                                self.name_player,
+                                self.points
+                            )
                             self.start_level(next_level=False)
 
             else:
@@ -563,6 +583,50 @@ class Render:
                 b.i += 1
                 b.pixel = 0
 
+    def gums(self):
+        gum = self.player.hit_gum(
+            self.gum_position,
+            self.OFFSET_X,
+            self.OFFSET_Y,
+            self.CELL_W,
+            self.CELL_H,
+            self.m_w,
+            self.m_h,
+        )
+
+        player_rect = Rect(
+            self.player.x,
+            self.player.y,
+            self.player.img_width,
+            self.player.img_height
+        )
+        big = None
+        for x, y in self.cornes:
+            big_rect = Rect(
+                x - self.b_w // 2,
+                y - self.b_h // 2,
+                self.b_w,
+                self.b_h
+            )
+            if player_rect.colliderect(big_rect):
+                big = (x, y)
+                break
+
+        if gum is not None and gum not in self.heated_small:
+            self.heated_small.append(gum)
+            self.points += self.data.points_per_pacgum
+            self.reload = True
+
+        if big is not None and big not in self.heated_big:
+            self.heated_big.append(big)
+            self.points -= self.data.points_per_pacgum
+            self.points += self.data.points_per_super_pacgum
+            self.reload = True
+            self.super_pac_deadline = time.time() + self.time_super_pac
+            self.super_pac = True
+            for bot in self.bots:
+                bot.powerup_img(self.mlx, self.app)
+    
     def move(self, param) -> None:
         if self.player._direction in "UP":
             dy = self.player.y - self.SPEED
@@ -628,48 +692,8 @@ class Render:
                 self.H
             ):
                 self.player.y -= self.SPEED
-        gum = self.player.hit_gum(
-            self.gum_position,
-            self.OFFSET_X,
-            self.OFFSET_Y,
-            self.CELL_W,
-            self.CELL_H,
-            self.m_w,
-            self.m_h,
-        )
 
-        player_rect = Rect(
-            self.player.x,
-            self.player.y,
-            self.player.img_width,
-            self.player.img_height
-        )
-        big = None
-        for x, y in self.cornes:
-            big_rect = Rect(
-                x - self.b_w // 2,
-                y - self.b_h // 2,
-                self.b_w,
-                self.b_h
-            )
-            if player_rect.colliderect(big_rect):
-                big = (x, y)
-                break
-
-        if gum is not None and gum not in self.heated_small:
-            self.heated_small.append(gum)
-            self.points += self.data.points_per_pacgum
-            self.reload = True
-
-        if big is not None and big not in self.heated_big:
-            self.heated_big.append(big)
-            self.points -= self.data.points_per_pacgum
-            self.points += self.data.points_per_super_pacgum
-            self.reload = True
-            self.super_pac_deadline = time.time() + self.time_super_pac
-            self.super_pac = True
-            for bot in self.bots:
-                bot.powerup_img(self.mlx, self.app)
+        self.gums()
             
         self.player.update_img(self.player._direction, self.mlx, self.app)
         self.move_bots()
@@ -708,53 +732,97 @@ class Render:
     def mouse_handler(self, mouse_code: int, x: int, y: int, param):
         pass
 
+    def redraw_start_screen(self):
+        self.mlx.mlx_clear_window(self.app, self.window)
+        self.start_screen()
+
+        self.mlx.mlx_string_put(
+            self.app,
+            self.window,
+            round((self.WIDTH // 2) * 0.69),
+            round((self.HEIGHT // 2) * 0.73),
+            0x00FFFFFF,
+            self.name_player
+        )
+    
     def start_game(self, keycode, param):
         if keycode ==  0xff1b:
-            self.mlx.mlx_destroy_window(self.app, self.window)
-            self.mlx.mlx_loop_exit(self.app)
+            self.close(param)
+            return
 
-        if keycode == 65293:
+        elif keycode == 65293:
             self.name_already_set = True
-        if not self.name_already_set:
+
+        elif keycode == 65288:
+            # apagar
+            if len(self.name_player) > 0:
+                self.name_player = self.name_player[:- 1]
+        elif not self.name_already_set:
             self.set_name_player(keycode)
 
         elif keycode == 32:
             self.start = False
             self.mlx.mlx_loop_exit(self.app)
+        self.redraw_start_screen()
 
     def set_name_player(self, keycode):
         # Set the name player until the user put enter
         k: str = keyboard.get(keycode)
         if not k:
             return
+        if len(self.name_player) > 10:
+            return
         if k == "capslock!":
             self.capslock = not self.capslock
         if k.isalpha() or k == " ":
             self.name_player += (k.upper() if self.capslock else k.lower())
 
+    def start_screen(self):
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.start_img,
+            round((self.WIDTH // 2) * 0.45),
+            0
+        )
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.img_controls,
+            round((self.WIDTH // 2) * 0.03),
+            round((self.HEIGHT // 2) * 1.10)
+        )
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.names_img,
+            round((self.WIDTH // 2) * 0.45),
+            round((self.HEIGHT // 2) * 0.65),
+        )
+        if self.scores:
+            space_line = 20
+            for i, (name, score) in enumerate(self.scores):
+                string = f"{name} - {score}"
+                self.mlx.mlx_string_put(
+                    self.app,
+                    self.window,
+                    round((self.WIDTH // 2) * 0.90),
+                    round((self.HEIGHT // 2) * 0.80 + (i * space_line)),
+                    0xFFFFFF,
+                    string
+                )
+
     def run(self):
+        self.mlx.mlx_do_key_autorepeatoff(self.app)
+
         if self.start:
-            self.mlx.mlx_put_image_to_window(
-                self.app,
-                self.window,
-                self.start_img,
-                round((self.WIDTH // 2) * 0.45),
-                0
-            )
-            self.mlx.mlx_put_image_to_window(
-                self.app,
-                self.window,
-                self.img_controls,
-                round((self.WIDTH // 2) * 0.03),
-                round((self.HEIGHT // 2) * 1.10)
-            )
+            self.start_screen()
             self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
             self.mlx.mlx_loop(self.app)
 
         if not self.start:
             self.start_level()
             self.draw_board()
-            self.mlx.mlx_do_key_autorepeatoff(self.app)
             self.mlx.mlx_mouse_move
             self.mlx.mlx_hook(self.window, 2, 1 << 0, self.key_press, self.player)
             self.mlx.mlx_hook(self.window, 17, 1 << 0, self.close, "None")
