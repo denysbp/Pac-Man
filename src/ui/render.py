@@ -8,7 +8,8 @@ from src import (
     colision,
     drawlineH,
     drawlineV,
-    blit_into_buffer
+    blit_into_buffer,
+    keyboard
 )
 
 # ESSA CLASSE NOS GERA A VISUALIZACAO, APENAS FAZ RUN
@@ -35,6 +36,8 @@ class Render:
         self.reload = False
         self.start = True
         self.gameover = False
+        self.time_to_restart = False
+        self.capslock = False
         self.set_images()
         self.create_classes_and_classes_atributes()
 
@@ -91,7 +94,6 @@ class Render:
             "src/ui/gameover.png"
         )
 
-
     def create_classes_and_classes_atributes(self):
         self.player: Player = Player(
             span_x= 0,
@@ -106,6 +108,8 @@ class Render:
         self.time_super_pac = 8
         self.super_pac = False
         self.SPEED = 10
+        self.name_player = ""
+        self.name_already_set = False
 
         self.bots: list[Bot] = []
         for i in range(4):
@@ -199,18 +203,23 @@ class Render:
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
-    def start_level(self):
-        level = self.levels[self.index % len(self.levels)]
-        width, height = level.width, level.height
-        self.maze = MazeGenerator(
-            (width, height),
-            seed=self.data.seed
-        )
-        self.maze.generate()
-        self.calcule_maze_dimetions(self.maze._height, self.maze._width)
+    def start_level(self, next_level: bool = True):
+        if next_level:
+            level = self.levels[self.index % len(self.levels)]
+            width, height = level.width, level.height
+            self.maze = MazeGenerator(
+                (width, height),
+                seed=self.data.seed
+            )
+
+            self.maze.generate()
+            self.calcule_maze_dimetions(self.maze._height, self.maze._width)
+
         self.heated_small.clear()
         self.heated_big.clear()
-
+        row, col = self.find_spawn_below_42()
+        self.player.x = self.OFFSET_X + col * self.CELL_W + 25
+        self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
         pixel_data = {
             "SPEED": self.BOT_SPEED,
             "OFFSET_X": self.OFFSET_X,
@@ -224,6 +233,7 @@ class Render:
             self.bots[i].maze=self.maze
             self.bots[i].pixel_data=pixel_data
             self.bots[i].call_bfs()
+        
 
     def cell_position(self, row, col):
         x = self.OFFSET_X + col * self.CELL_W
@@ -350,6 +360,9 @@ class Render:
                 self.gum_position.clear()
             for b in self.bots:
                 self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
+            if self.time_to_restart:
+                time.sleep(3)
+                self.time_to_restart = False
 
     def controls(self, key, param):
         if key ==  0xff1b:
@@ -373,7 +386,6 @@ class Render:
             # down
             self.player.update_img("DOWN", self.mlx, self.app)
             self.frames(self.player.x, self.player.y)
-
         return 0
 
     def draw_board(self):
@@ -502,12 +514,10 @@ class Render:
             round((self.HEIGHT // 2) * 0.95)
         )
 
-
     def is_near_player(self, bot, player, distance):
         dx = bot.x - player.x
         dy = bot.y - player.y
         return dx * dx + dy * dy <= distance * distance
-
 
     def move_bots(self):
         if time.time() >= self.super_pac_deadline:
@@ -528,17 +538,15 @@ class Render:
                     b.recalculate_rote((b.x, b.y), calcule_to_midle=True)
                     b.kill_bot(self.mlx, self.app)
                     b.bot_respaw = time.time() + b.BOT_TIME_DEAD
-            if (not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
-                                            b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y )):
-                        #No caso temos que por uma imagem de derrota, so coloquei pra exemplificar como nao temos a imagem.
-                        self.mlx.mlx_put_image_to_window(
-                            self.app,
-                            self.window,
-                            self.victory_img,
-                            round((self.WIDTH // 2) * 0.50),
-                            round((self.HEIGHT // 2) * 0.95)
-                        )
-                        #self.close(None)
+            elif not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
+                                            b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y ):
+                        if not self.data.lives >= 0:
+                            self.gameover = True
+                        else:
+                            self.data.lives -= 1
+                            self.time_to_restart = True
+                            self.start_level(next_level=False)
+
             else:
                 if not b.path or b.i >= len(b.path):
                     b.recalculate_rote((b.x, b.y), (self.player.x -3, self.player.y - 3))
@@ -701,13 +709,28 @@ class Render:
         pass
 
     def start_game(self, keycode, param):
-        if keycode == 32:
-            self.start = False
-            self.mlx.mlx_loop_exit(self.app)
-
         if keycode ==  0xff1b:
             self.mlx.mlx_destroy_window(self.app, self.window)
             self.mlx.mlx_loop_exit(self.app)
+
+        if keycode == 65293:
+            self.name_already_set = True
+        if not self.name_already_set:
+            self.set_name_player(keycode)
+
+        elif keycode == 32:
+            self.start = False
+            self.mlx.mlx_loop_exit(self.app)
+
+    def set_name_player(self, keycode):
+        # Set the name player until the user put enter
+        k: str = keyboard.get(keycode)
+        if not k:
+            return
+        if k == "capslock!":
+            self.capslock = not self.capslock
+        if k.isalpha() or k == " ":
+            self.name_player += (k.upper() if self.capslock else k.lower())
 
     def run(self):
         if self.start:
