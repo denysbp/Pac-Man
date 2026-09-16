@@ -24,6 +24,7 @@ class Render:
         data
     ):
         self.db: DATA_BASE = DATA_BASE()
+        self.db.create_table()
         self.OFFSET_X = 30
         self.OFFSET_Y = 50
         self.WIDTH = w
@@ -45,7 +46,7 @@ class Render:
         self.start = True
         self.coodown = 200
         self.victory = False
-        self.SPEED = 10
+        self.SPEED = 15
         self.BOT_SPEED = 10
         self.super_pac_deadline = 0
         self.time_super_pac = 6
@@ -151,6 +152,7 @@ class Render:
         level = self.levels[self.index % len(self.levels)]
         self.index += 1
         self.gums_eated = 0
+        self.points = 0
         if self.cornes:
             self.cornes.clear()
         width, height = level.width, level.height
@@ -166,8 +168,6 @@ class Render:
         self.maze_width = width
         self.CELL_W = (self.WIDTH - 2 * self.OFFSET_X) // self.maze_width
         self.CELL_H = (self.HEIGHT - 2 * self.OFFSET_Y) // self.maze_height
-        self.CELL_W = (self.CELL_W // self.SPEED) * self.SPEED
-        self.CELL_H = (self.CELL_H // self.SPEED) * self.SPEED
         self.map_height = self.CELL_H * self.maze_height
         self.map_width = self.CELL_W * self.maze_width
         self.heated_small.clear()
@@ -346,6 +346,7 @@ class Render:
         if self.gum_position and self.gums_eated == len(self.gum_position):
             self.coodown = 200
             self.victory = True
+            # self.db.insert_on_table(name, self.points)
             self.gum_position.clear()
         for b in self.bots:
             self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
@@ -497,7 +498,6 @@ class Render:
     def is_near_player(self, bot, player, distance):
         dx = bot.x - player.x
         dy = bot.y - player.y
-
         return dx * dx + dy * dy <= distance * distance
 
     def move(self, param) -> None:
@@ -620,7 +620,7 @@ class Render:
                     b.scape((self.player.x, self.player.y))
             else:
                 if not b.path or b.i >= len(b.path):
-                    if self.is_near_player(b, self.player, 10):
+                    if self.is_near_player(b, self.player, 100):
                         target_x = self.player.x
                         target_y = self.player.y
                     else:
@@ -646,9 +646,22 @@ class Render:
             direction, dx, dy = b.next_position()
 
             if self.check_colision_to_bot(b, dx, dy):
-                b.move_bot()
-                b.pixel += self.BOT_SPEED
                 cell_size = self.CELL_H if direction in ("N", "S") else self.CELL_W
+
+                remaining = cell_size - b.pixel
+                step = min(self.BOT_SPEED, remaining)
+
+                if direction == "N":
+                    b.y -= step
+                elif direction == "S":
+                    b.y += step
+                elif direction == "E":
+                    b.x += step
+                elif direction == "W":
+                    b.x -= step
+
+                b.pixel += step
+
                 if b.pixel >= cell_size:
                     b.i += 1
                     b.pixel = 0
@@ -657,6 +670,12 @@ class Render:
                     (b.x, b.y),
                     (self.player.x, self.player.y)
                 )
+                b.move_bot()
+                b.pixel += self.BOT_SPEED
+                cell_size = self.CELL_H if direction in ("N", "S") else self.CELL_W
+                if b.pixel >= cell_size:
+                    b.i += 1
+                    b.pixel = 0
             last_path = b.path
 
 
