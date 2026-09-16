@@ -119,7 +119,6 @@ class Bot:
             bx -= self.pixel_data.get("SPEED")
         return direction, bx, by
 
-
     def move_bot(self):
         direction, dx, dy = self.next_position()
         self.x, self.y = dx, dy
@@ -174,6 +173,14 @@ class Bot:
         )
         self.dead = True
 
+    def kill_bot(self, mlx: Mlx, mlx_ptr):
+        self.img, self.width, self.height = mlx.mlx_png_file_to_image(
+            mlx_ptr,
+            "src/models/assets/ghost_images/dead.png"
+        )
+        self.dead = True
+
+        
     def reset_img(self, mlx: Mlx, mlx_ptr):
         self.img, self.width, self.height = mlx.mlx_png_file_to_image(
             mlx_ptr, self.images[self.id % len(self.images)]
