@@ -34,6 +34,7 @@ class Render:
         self.victory = False
         self.reload = False
         self.start = True
+        self.gameover = False
         self.set_images()
         self.create_classes_and_classes_atributes()
 
@@ -51,7 +52,7 @@ class Render:
         self.WIDTH = w
         self.HEIGHT = h
         self.cell_len = 0
-        self.maze_width = 0
+        self.maze_width = 0                                                                                                                         
         self.maze_height = 0
         self.map_width = 0
         self.map_height = 0
@@ -85,6 +86,10 @@ class Render:
             self.app,
             self.WIDTH,
             self.HEIGHT)
+        self.gameover_img, _ , _ = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/gameover.png"
+        )
 
 
     def create_classes_and_classes_atributes(self):
@@ -328,21 +333,24 @@ class Render:
         return self.controls(keycode, param)
 
     def frames(self, x, y):
-        self.mlx.mlx_clear_window(self.app, self.window)
-        if self.reload:
-            self.clear_buffer()
-            self.draw_board()
-            self.reload = False
+        if self.gameover:
+            self.game_over()
+        else:
+            self.mlx.mlx_clear_window(self.app, self.window)
+            if self.reload:
+                self.clear_buffer()
+                self.draw_board()
+                self.reload = False
 
-        self.blip()
-        self.draw_information()
-        self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
-        if len(self.heated_big + self.heated_small) == len(self.gum_position):
-            self.coodown = 200
-            self.victory = True
-            self.gum_position.clear()
-        for b in self.bots:
-            self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
+            self.blip()
+            self.draw_information()
+            self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
+            if len(self.heated_big + self.heated_small) == len(self.gum_position):
+                self.coodown = 200
+                self.victory = True
+                self.gum_position.clear()
+            for b in self.bots:
+                self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
 
     def controls(self, key, param):
         if key ==  0xff1b:
@@ -485,6 +493,17 @@ class Render:
             round((self.HEIGHT // 2) * 0.95)
         )
 
+    def game_over(self):
+        self.mlx.mlx_clear_window(self.app, self.window)
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.gameover_img,
+            round((self.WIDTH // 2) * 0.50),
+            round((self.HEIGHT // 2) * 0.95)
+        )
+
+
     def is_near_player(self, bot, player, distance):
         dx = bot.x - player.x
         dy = bot.y - player.y
@@ -511,16 +530,10 @@ class Render:
                     b.recalculate_rote((b.x, b.y), calcule_to_midle=True)
                     b.kill_bot(self.mlx, self.app)
                     b.bot_respaw = time.time() + b.BOT_TIME_DEAD
-            if (not colision(self.player, b.x - b.HEAT_BOX_BOT, b.x + b.HEAT_BOX_BOT,
-                                            b.y - b.HEAT_BOX_BOT , b.y + b.HEAT_BOX_BOT)):
+            elif (not colision(self.player, b.x - b.HEAT_BOX_BOT, b.x + b.HEAT_BOX_BOT,
+                                            b.y - b.HEAT_BOX_BOT , b.y + b.HEAT_BOX_BOT)) and not b.dead:
                         #No caso temos que por uma imagem de derrota, so coloquei pra exemplificar como nao temos a imagem.
-                        self.mlx.mlx_put_image_to_window(
-                            self.app,
-                            self.window,
-                            self.victory_img,
-                            round((self.WIDTH // 2) * 0.50),
-                            round((self.HEIGHT // 2) * 0.95)
-                        )
+                        self.gameover = True
                         #self.close(None)
             else:
                 if not b.path or b.i >= len(b.path):
