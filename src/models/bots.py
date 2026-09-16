@@ -24,10 +24,13 @@ class Bot:
             "src/models/assets/ghost_images/blue.png",
             ]
         self.id = bot_id
-        self.img, self.width, self.height = mlx.mlx_png_file_to_image(
+        self.img, self.img_width, self.img_height = mlx.mlx_png_file_to_image(
             mlx_ptr,
             self.images[self.id % len(self.images)]
             )
+        self.spam_x = spam_x
+        self.spam_y = spam_y
+
         self.x = spam_x
         self.y = spam_y
         self.pixel_data = pixel_data
@@ -38,7 +41,8 @@ class Bot:
         self.path = []
         self.pixel = 0
         self.dead = False
-        self.HEAT_BOX_BOT = 70
+        self.HEAT_BOX_BOT_X = self.img_width + 25
+        self.HEAT_BOX_BOT_Y = self.img_height + 25
         self.BOT_TIME_DEAD = 8
         self.bot_respaw = 0
 
@@ -122,8 +126,9 @@ class Bot:
         self.current_direction = direction
 
     def recalculate_rote(self, bot_coord: tuple[int, int], goal_coord: tuple[int, int] = False, calcule_to_midle: bool = False):
+        # calculate to midle send the ghost to the spam
         if calcule_to_midle:
-            new = self.bfs(self.get_coord_to_maze_grid(bot_coord), (self.maze._width // 2, self.maze._height // 2))
+            new = self.bfs(self.get_coord_to_maze_grid(bot_coord), self.get_coord_to_maze_grid((self.spam_x, self.spam_y)))
         else:
             new = self.bfs(self.get_coord_to_maze_grid(bot_coord), self.get_coord_to_maze_grid(goal_coord))
         if new:
@@ -168,7 +173,6 @@ class Bot:
             "src/models/assets/ghost_images/dead.png"
         )
         self.dead = True
-
 
     def reset_img(self, mlx: Mlx, mlx_ptr):
         self.img, self.width, self.height = mlx.mlx_png_file_to_image(

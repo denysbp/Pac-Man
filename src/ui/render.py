@@ -86,7 +86,6 @@ class Render:
             self.WIDTH,
             self.HEIGHT)
 
-
     def create_classes_and_classes_atributes(self):
         self.player: Player = Player(
             span_x= 0,
@@ -203,7 +202,6 @@ class Render:
         )
         self.maze.generate()
         self.calcule_maze_dimetions(self.maze._height, self.maze._width)
-
         self.heated_small.clear()
         self.heated_big.clear()
 
@@ -502,17 +500,16 @@ class Render:
                 b.dead = False
                 b.reset_img(self.mlx, self.app)
 
-
             if self.super_pac:
                 if not b.path or b.i >= len(b.path) and not b.dead:
                     b.scape((self.player.x, self.player.y))
-                if (not colision(self.player, b.x - b.HEAT_BOX_BOT, b.x + b.HEAT_BOX_BOT,
-                                b.y - b.HEAT_BOX_BOT , b.y + b.HEAT_BOX_BOT)) and not b.dead:
+                if (not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
+                                            b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y )) and not b.dead:
                     b.recalculate_rote((b.x, b.y), calcule_to_midle=True)
                     b.kill_bot(self.mlx, self.app)
                     b.bot_respaw = time.time() + b.BOT_TIME_DEAD
-            if (not colision(self.player, b.x - b.HEAT_BOX_BOT, b.x + b.HEAT_BOX_BOT,
-                                            b.y - b.HEAT_BOX_BOT , b.y + b.HEAT_BOX_BOT)):
+            if (not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
+                                            b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y )):
                         #No caso temos que por uma imagem de derrota, so coloquei pra exemplificar como nao temos a imagem.
                         self.mlx.mlx_put_image_to_window(
                             self.app,
