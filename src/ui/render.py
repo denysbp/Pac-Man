@@ -70,6 +70,7 @@ class Render:
         self.new_game_input: bool = False
         self.high_scores_input: bool = False
         self.show_controls_input: bool = False
+        self.show_modes: bool =  False
 
     def set_images(self):
         menu_imgs = [
@@ -109,6 +110,11 @@ class Render:
         self.names_img, _, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/names.png"
+        )
+
+        self.modes_img, self.md_w, self.md_h = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/menu/modes.png"
         )
         for img in menu_imgs:
             information = self.mlx.mlx_png_file_to_image(
@@ -415,6 +421,12 @@ class Render:
             # up
             self.player.update_img("UP", self.mlx, self.app)
             self.frames(self.player.x, self.player.y)
+
+        if key == 109 and not self.show_modes:
+            self.show_modes = True
+
+        elif key == 109 and self.show_modes:
+             self.show_modes = False
 
         if key in (65361, 97):
             # left
@@ -748,7 +760,17 @@ class Render:
             150,
             "Points: " + str(self.points)
         )
-        if self.data.lives <= 32:
+        if self.show_modes:
+            x = (self.WIDTH - self.md_w) // 2
+            y = (self.HEIGHT - self.md_h) // 2
+            self.mlx.mlx_put_image_to_window(
+                self.app,
+                self.window,
+                self.modes_img,
+                x,
+                round(y * 11.5)
+            )
+        if self.data.lives <= 3:
             for i in range(0, self.data.lives):
                 self.mlx.mlx_put_image_to_window(
                     self.app,
