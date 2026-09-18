@@ -5,7 +5,7 @@ db = DATA_BASE()
 
 db.create_table()
 db.insert_on_table("Luis", 500)
-db.insert_on_table("Denys", 1500)
+db.insert_on_table("Denys", 10000)
 db.insert_on_table("Carlos", 850)
 db.insert_on_table("Miguel", 1200)
 db.insert_on_table("Joao", 300)

@@ -46,6 +46,7 @@ class Render:
         self.CELL_H: int
         self.OFFSET_X = 30
         self.OFFSET_Y = 50
+        self.HUD_HEIGHT = 120
         self.WIDTH = w
         self.HEIGHT = h
         self.cell_len = 0
@@ -88,10 +89,10 @@ class Render:
             self.app,
             "src/models/assets/player/right-3.png"
         )
-        self.img_controls, _, _ = self.mlx.mlx_png_file_to_image(
+        self.img_controls, self.c_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/controls.png")
-        self.victory_img, _, _ = self.mlx.mlx_png_file_to_image(
+        self.victory_img, self.v_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/victory.png")
         self.big_gum, self.b_w, self.b_h  = self.mlx.mlx_png_file_to_image(
@@ -101,7 +102,7 @@ class Render:
             self.app,
             self.WIDTH,
             self.HEIGHT)
-        self.gameover_img, _ , _ = self.mlx.mlx_png_file_to_image(
+        self.gameover_img, self.over_width , _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/gameover.png"
         )
@@ -132,17 +133,31 @@ class Render:
             mlx_ptr=self.app,
             mlx=self.mlx,
             lives=self.data.lives)
-        self.player_sheat: dict = {"super_speed": False, "invincibility": True}
+        self.player_sheat: dict = {
+            "super_speed": False,
+            "invincibility": False
+        }
         self.super_pac_deadline = 0
         self.time_super_pac = 8
         self.super_pac = False
-        self.SPEED = 10
+        self.PLAYER_SPEED = 10
+        self.BOT_SPEED = 8
         self.name_player = ""
         self.name_already_set = False
 
         self.bots: list[Bot] = []
         for i in range(4):
-            self.bots.append(Bot(spam_x = 0, spam_y = 0, mlx_ptr=self.app, mlx=self.mlx, maze=[], bot_id=i, pixel_data={}))
+            self.bots.append(
+                Bot(
+                    spam_x = 0,
+                    spam_y = 0,
+                    mlx_ptr=self.app,
+                    mlx=self.mlx,
+                    maze=[],
+                    bot_id=i,
+                    pixel_data={}
+                )
+            )
         self.BOT_SPEED = 8
 
         self.memory: Memory = Memory()
@@ -191,9 +206,7 @@ class Render:
         self.maze_height = height
         self.maze_width = width
         self.CELL_W = (self.WIDTH - 2 * self.OFFSET_X) // self.maze_width
-        self.CELL_H = (self.HEIGHT - 2 * self.OFFSET_Y) // self.maze_height
-        self.CELL_W = (self.CELL_W // self.SPEED) * self.SPEED
-        self.CELL_H = (self.CELL_H // self.SPEED) * self.SPEED
+        self.CELL_H = (self.HEIGHT - self.OFFSET_Y - self.HUD_HEIGHT) // self.maze_height
         self.map_height = self.CELL_H * self.maze_height
         self.map_width = self.CELL_W * self.maze_width
         margin_x = round(self.CELL_W * 0.5)
@@ -328,9 +341,9 @@ class Render:
                     return False
         return True
 
-    def check_colision_to_bot(self, bot, dx, dy) -> bool:
-        w = bot.width
-        h = bot.height
+    def check_colision_to_bot(self, bot: Bot, dx, dy) -> bool:
+        w = bot.img_width
+        h = bot.img_height
         dest_rect = Rect(dx, dy, w, h)
 
         corners = [
@@ -529,21 +542,23 @@ class Render:
         return 0
 
     def level_win(self):
+        x = (self.WIDTH - self.v_w) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
             self.window,
             self.victory_img,
-            round((self.WIDTH // 2) * 0.50),
+            x,
             round((self.HEIGHT // 2) * 0.95)
         )
 
     def game_over(self):
         self.mlx.mlx_clear_window(self.app, self.window)
+        x = (self.WIDTH - self.over_width) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
             self.window,
             self.gameover_img,
-            round((self.WIDTH // 2) * 0.50),
+            x,
             round((self.HEIGHT // 2) * 0.95)
         )
 
@@ -551,6 +566,24 @@ class Render:
         dx = bot.x - player.x
         dy = bot.y - player.y
         return dx * dx + dy * dy <= distance * distance
+
+
+    def check_bot_player_collision(self, bot) -> bool:
+        player_rect = Rect(
+            self.player.x,
+            self.player.y,
+            self.player.img_width,
+            self.player.img_height
+        )
+        bot_center_x = bot.x + bot.img_width // 2
+        bot_center_y = bot.y + bot.img_height // 2
+        bot_rect = Rect(
+            bot_center_x - bot.HEAT_BOX_BOT_X,
+            bot_center_y - bot.HEAT_BOX_BOT_Y,
+            bot.HEAT_BOX_BOT_X * 2,
+            bot.HEAT_BOX_BOT_Y * 2
+        )
+        return player_rect.colliderect(bot_rect)
 
     def move_bots(self):
         if time.time() >= self.super_pac_deadline:
@@ -562,48 +595,40 @@ class Render:
                 b.dead = False
                 b.reset_img(self.mlx, self.app)
 
+            touching = self.check_bot_player_collision(b)
+            invincible = self.player_sheat.get("invincibility")
+
             if self.super_pac:
                 if not b.path or b.i >= len(b.path) and not b.dead:
                     b.scape((self.player.x, self.player.y))
-                if not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
-                                           b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y,
-                                           colision_bot_player=True,
-                                           invecibility=self.player_sheat.get("invincibility")) and not bot.dead:
+                if touching and not b.dead:
                     b.recalculate_rote((b.x, b.y), calcule_to_midle=True)
                     b.kill_bot(self.mlx, self.app)
                     self.points += self.data.points_per_ghost
                     b.bot_respaw = time.time() + b.BOT_TIME_DEAD
-            elif not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
-                                           b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y,
-                                           colision_bot_player=True,
-                                           invecibility=self.player_sheat.get("invincibility")):
-                        if not self.data.lives >= 0:
-                            self.db.insert_on_table(
-                                self.name_player,
-                                self.points
-                            )
-                            self.gameover = True
-                        else:
-                            self.data.lives -= 1
-                            self.time_to_restart = True
-                            self.db.insert_on_table(
-                                self.name_player,
-                                self.points
-                            )
-                            self.start_level(next_level=False)
+
+            elif touching and not invincible:
+                if not self.data.lives > 0:
+                    self.db.insert_on_table(self.name_player, self.points)
+                    self.gameover = True
+                else:
+                    self.data.lives -= 1
+                    self.time_to_restart = True
+                    self.db.insert_on_table(self.name_player, self.points)
+                    self.start_level(next_level=False)
 
             else:
                 if not b.path or b.i >= len(b.path):
-                    b.recalculate_rote((b.x, b.y), (self.player.x -3, self.player.y - 3))
+                    b.recalculate_rote((b.x, b.y), (self.player.x - 3, self.player.y - 3))
 
             direction, dx, dy = b.next_position()
             if self.check_colision_to_bot(b, dx, dy):
                 b.move_bot()
                 b.pixel += self.BOT_SPEED
                 cell_size = self.CELL_H if direction in ("N", "S") else self.CELL_W
-                if b.pixel >= cell_size:
+                while b.pixel >= cell_size:
+                    b.pixel -= cell_size
                     b.i += 1
-                    b.pixel = 0
             else:
                 b.i += 1
                 b.pixel = 0
@@ -652,86 +677,74 @@ class Render:
             for bot in self.bots:
                 bot.powerup_img(self.mlx, self.app)
 
+
+    def try_move_step(self, dx_dir: int, dy_dir: int, step: int) -> bool:
+        """
+        Tenta mover o player por 'step' pixels na direção (dx_dir, dy_dir).
+        Retorna True se o movimento foi aceito, False se bateu em parede
+        ou saiu do mapa (e nesse caso já desfaz o movimento).
+        """
+        dx = self.player.x + dx_dir * step
+        dy = self.player.y + dy_dir * step
+
+        if not self.check_colision(dx, dy):
+            return False
+
+        self.player.x = dx
+        self.player.y = dy
+
+        if colision(
+            self.player,
+            self.OFFSET_X,
+            self.OFFSET_X + self.map_width,
+            self.OFFSET_Y,
+            self.OFFSET_Y + self.map_height,
+            self.V,
+            self.H
+        ):
+            self.player.x -= dx_dir * step
+            self.player.y -= dy_dir * step
+            return False
+
+        return True
+
+
     def move(self, param) -> None:
-        if self.player._direction in "UP":
-            dy = self.player.y - self.SPEED
-            dx = self.player.x
-            if self.check_colision(dx, dy):
-                self.player.y -= self.SPEED
+        direction_vectors = {
+            "UP":    (0, -1),
+            "DOWN":  (0, 1),
+            "LEFT":  (-1, 0),
+            "RIGHT": (1, 0),
+        }
 
-            if colision(
-                param,
-                self.OFFSET_X,
-                self.OFFSET_X + self.map_width,
-                self.OFFSET_Y,
-                self.OFFSET_Y + self.map_height,
-                self.V,
-                self.H
-            ):
-                self.player.y += self.SPEED
+        direction = self.player._direction
+        if direction in direction_vectors:
+            dx_dir, dy_dir = direction_vectors[direction]
 
-        if self.player._direction in "LEFT":
-            dy = self.player.y
-            dx = self.player.x - self.SPEED
-            if self.check_colision(dx, dy):
-                self.player.x -= self.SPEED
-            if colision(
-                param,
-                self.OFFSET_X,
-                self.OFFSET_X + self.map_width,
-                self.OFFSET_Y,
-                self.OFFSET_Y + self.map_height,
-                self.V,
-                self.H
-            ):
-                self.player.x += self.SPEED
+            MAX_STEP = 4
 
-        if self.player._direction in "RIGHT":
-            dy = self.player.y
-            dx = self.player.x + self.SPEED
-            if self.check_colision(dx, dy):
-                self.player.x += self.SPEED
-            if colision(
-                param,
-                self.OFFSET_X,
-                self.OFFSET_X + self.map_width,
-                self.OFFSET_Y,
-                self.OFFSET_Y + self.map_height,
-                self.V,
-                self.H
-            ):
-                self.player.x -= self.SPEED
-
-        if self.player._direction in "DOWN":
-            dy = self.player.y + self.SPEED
-            dx = self.player.x
-            if self.check_colision(dx, dy):
-                self.player.y += self.SPEED
-            if colision(
-                param,
-                self.OFFSET_X,
-                self.OFFSET_X + self.map_width,
-                self.OFFSET_Y,
-                self.OFFSET_Y + self.map_height,
-                self.V,
-                self.H
-            ):
-                self.player.y -= self.SPEED
+            remaining = self.PLAYER_SPEED
+            while remaining > 0:
+                step = min(MAX_STEP, remaining)
+                moved = self.try_move_step(dx_dir, dy_dir, step)
+                remaining -= step
+                if not moved:
+                    break
 
         self.gums()
-
         self.player.update_img(self.player._direction, self.mlx, self.app)
         self.move_bots()
         self.frames(self.player.x, self.player.y)
 
     def draw_information(self) -> None:
+        hud_top = self.HEIGHT - self.HUD_HEIGHT
         margin_x = round(self.WIDTH * 0.02)
-        margin_y = round(self.HEIGHT * 0.85)
+
         self.mlx.mlx_string_put(
             self.app,
             self.window,
             margin_x,
-            margin_y + 50,
+            hud_top + 20,
             150,
             "Points: " + str(self.points)
         )
@@ -742,14 +755,14 @@ class Render:
                     self.window,
                     self.player.static,
                     (margin_x + 150) + (i * 50),
-                    margin_y + 40
+                    hud_top + 10
                 )
         else:
             self.mlx.mlx_string_put(
                 self.app,
                 self.window,
                 margin_x,
-                margin_y + 10,
+                hud_top + 60,
                 150,
                 "Lives: " + str(self.data.lives)
             )
@@ -792,11 +805,12 @@ class Render:
                 )
 
     def show_controls(self):
+        x = (self.WIDTH - self.c_w) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
             self.window,
             self.img_controls,
-            round((self.WIDTH // 2) * 0.80),
+            x,
             round((self.HEIGHT // 2) * 0.60)
         )
 
@@ -857,7 +871,6 @@ class Render:
         self.redraw_start_screen()
 
     def set_name_player(self, keycode):
-        # Set the name player until the user put enter
         k: str = keyboard.get(keycode)
         if not k:
             return

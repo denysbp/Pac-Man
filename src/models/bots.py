@@ -41,8 +41,9 @@ class Bot:
         self.path = []
         self.pixel = 0
         self.dead = False
-        self.HEAT_BOX_BOT_X = self.img_width + 18
-        self.HEAT_BOX_BOT_Y = self.img_height + 18
+        margin = 4
+        self.HEAT_BOX_BOT_X = self.img_width // 2 + margin
+        self.HEAT_BOX_BOT_Y = self.img_height // 2 + margin
         self.BOT_TIME_DEAD = 8
         self.bot_respaw = 0
 
@@ -81,13 +82,15 @@ class Bot:
 
         return valid_cells
 
-    def bfs(self, bot_coord: tuple[int, int], goal_coord: tuple[int, int]):
+    def bfs(self, bot_coord, goal_coord):
+        if bot_coord == goal_coord:
+            return []
+
         visited = {bot_coord}
         queue = deque([(bot_coord, [])])
 
         while queue:
             current_position, path = queue.popleft()
-
             if current_position == goal_coord:
                 return path
 
@@ -96,11 +99,10 @@ class Bot:
                     visited.add(next_cell)
                     queue.append((next_cell, path + [direction]))
 
-        return []
+        return None
 
     def next_position(self):
-                            # se chegou no goal
-        if not self.path or self.i > len(self.path):
+        if not self.path or self.i >= len(self.path):
             return None, self.x, self.y
         direction = self.path[self.i % len(self.path)]
 
@@ -120,13 +122,23 @@ class Bot:
         self.x, self.y = dx, dy
         self.current_direction = direction
 
-    def recalculate_rote(self, bot_coord: tuple[int, int], goal_coord: tuple[int, int] = False, calcule_to_midle: bool = False):
-        # calculate to midle send the ghost to the spam
+    def recalculate_rote(
+        self,
+        bot_coord,
+        goal_coord=False,
+        calcule_to_midle=False
+    ):
         if calcule_to_midle:
-            new = self.bfs(self.get_coord_to_maze_grid(bot_coord), self.get_coord_to_maze_grid((self.spam_x, self.spam_y)))
+            new = self.bfs(
+                self.get_coord_to_maze_grid(bot_coord),
+                self.get_coord_to_maze_grid((self.spam_x, self.spam_y))
+            )
         else:
-            new = self.bfs(self.get_coord_to_maze_grid(bot_coord), self.get_coord_to_maze_grid(goal_coord))
-        if new:
+            new = self.bfs(
+                self.get_coord_to_maze_grid(bot_coord),
+                self.get_coord_to_maze_grid(goal_coord)
+            )
+        if new is not None:
             self.path = new
             self.i = 0
             self.pixel = 0
@@ -149,8 +161,7 @@ class Bot:
             )
         )
         new = self.bfs(bot, escape_cell)
-
-        if new:
+        if new is not None:
             self.path = new
             self.i = 0
             self.pixel = 0
@@ -168,7 +179,7 @@ class Bot:
         )
         self.dead = True
 
-        
+
     def reset_img(self, mlx: Mlx, mlx_ptr):
         self.img, self.width, self.height = mlx.mlx_png_file_to_image(
             mlx_ptr, self.images[self.id % len(self.images)]
