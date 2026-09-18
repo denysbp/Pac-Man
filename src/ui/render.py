@@ -284,7 +284,7 @@ class Render:
             "OFFSET_Y":self.OFFSET_Y,
             "CELL_W":self.CELL_W ,
             "CELL_H":self.CELL_H
-            }
+        }
         for i in range(4):
             self.bots[i].x = self.cornes[i][0]
             self.bots[i].y = self.cornes[i][1]
@@ -414,13 +414,25 @@ class Render:
 
             self.blip()
             self.draw_information()
-            self.mlx.mlx_put_image_to_window(self.app, self.window, self.player.img, x, y)
+            self.mlx.mlx_put_image_to_window(
+                self.app,
+                self.window,
+                self.player.img,
+                x,
+                y
+            )
             if len(self.heated_big + self.heated_small) == len(self.gum_position):
                 self.coodown = 200
                 self.victory = True
                 self.gum_position.clear()
             for b in self.bots:
-                self.mlx.mlx_put_image_to_window(self.app, self.window, b.img, b.x, b.y)
+                self.mlx.mlx_put_image_to_window(
+                    self.app,
+                    self.window,
+                    b.img,
+                    b.x,
+                    b.y
+                )
             if self.time_to_restart:
                 time.sleep(3)
                 self.time_to_restart = False
@@ -786,7 +798,10 @@ class Render:
                     break
 
         self.gums()
-        self.player.update_img(self.player._direction, self.mlx, self.app)
+        self.player.update_img(
+            self.player._direction,
+            self.mlx, self.app
+        )
         self.move_bots()
         self.frames(self.player.x, self.player.y)
 
