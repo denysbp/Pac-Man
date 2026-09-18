@@ -556,7 +556,6 @@ class Render:
             self.super_pac = False
             for bot in self.bots:
                 bot.reset_img(self.mlx, self.app)
-
         for b in self.bots:
             if time.time() >= b.bot_respaw and b.dead:
                 b.dead = False
@@ -569,6 +568,7 @@ class Render:
                                             b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y )) and not b.dead:
                     b.recalculate_rote((b.x, b.y), calcule_to_midle=True)
                     b.kill_bot(self.mlx, self.app)
+                    self.points += 50
                     b.bot_respaw = time.time() + b.BOT_TIME_DEAD
             elif not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
                                             b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y ):

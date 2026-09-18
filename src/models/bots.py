@@ -41,8 +41,8 @@ class Bot:
         self.path = []
         self.pixel = 0
         self.dead = False
-        self.HEAT_BOX_BOT_X = self.img_width + 19
-        self.HEAT_BOX_BOT_Y = self.img_height + 22
+        self.HEAT_BOX_BOT_X = self.img_width + 18
+        self.HEAT_BOX_BOT_Y = self.img_height + 18
         self.BOT_TIME_DEAD = 8
         self.bot_respaw = 0
 
@@ -164,13 +164,6 @@ class Bot:
             mlx_ptr,
             "src/models/assets/ghost_images/powerup.png"
         )
-
-    def kill_bot(self, mlx: Mlx, mlx_ptr):
-        self.img, self.width, self.height = mlx.mlx_png_file_to_image(
-            mlx_ptr,
-            "src/models/assets/ghost_images/dead.png"
-        )
-        self.dead = True
 
     def kill_bot(self, mlx: Mlx, mlx_ptr):
         self.img, self.width, self.height = mlx.mlx_png_file_to_image(
