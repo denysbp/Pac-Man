@@ -657,7 +657,22 @@ class Render:
 
             else:
                 if not b.path or b.i >= len(b.path):
-                    b.recalculate_rote((b.x, b.y), (self.player.x - 3, self.player.y - 3))
+                    if self.is_near_player(
+                        b,
+                        self.player,
+                        250
+                    ):
+                        b.recalculate_rote(
+                            (b.x, b.y),
+                            (self.player.x, self.player.y)
+                        )
+                    else:
+                        x = randint(0, self.player.x)
+                        y = randint(0, self.player.y)
+                        b.recalculate_rote(
+                            (b.x, b.y),
+                            (x, y)
+                        )
 
             direction, dx, dy = b.next_position()
             if self.check_colision_to_bot(b, dx, dy):
