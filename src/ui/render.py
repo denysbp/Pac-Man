@@ -71,6 +71,7 @@ class Render:
         self.high_scores_input: bool = False
         self.show_controls_input: bool = False
         self.show_modes: bool =  False
+        self.gamewin: bool = False
 
     def set_images(self):
         menu_imgs = [
@@ -92,10 +93,10 @@ class Render:
         )
         self.img_controls, self.c_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
-            "src/ui/controls.png")
+            "src/ui/menu/keys.png")
         self.victory_img, self.v_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
-            "src/ui/victory.png")
+            "src/ui/menu/victory.png")
         self.big_gum, self.b_w, self.b_h  = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/models/assets/gums/pacgum-big.png")
@@ -105,16 +106,20 @@ class Render:
             self.HEIGHT)
         self.gameover_img, self.over_width , _ = self.mlx.mlx_png_file_to_image(
             self.app,
-            "src/ui/gameover.png"
+            "src/ui/menu/gameover.png"
         )
         self.names_img, _, _ = self.mlx.mlx_png_file_to_image(
             self.app,
-            "src/ui/names.png"
+            "src/ui/menu/names.png"
         )
 
         self.modes_img, self.md_w, self.md_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/modes.png"
+        )
+        self.win_img, self.win_w, self.win_h = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/menu/gamewin.png"
         )
         for img in menu_imgs:
             information = self.mlx.mlx_png_file_to_image(
@@ -209,6 +214,7 @@ class Render:
         self.memory.data[:] = b'\x00' * len(self.memory.data)
 
     def calcule_maze_dimetions(self, height: int, width: int):
+        self.cornes.clear()
         self.maze_height = height
         self.maze_width = width
         self.CELL_W = (self.WIDTH - 2 * self.OFFSET_X) // self.maze_width
@@ -252,6 +258,9 @@ class Render:
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
     def start_level(self, next_level: bool = True):
+        if self.index == len(self.levels):
+            self.gamewin = True
+            return
         if next_level:
             level = self.levels[self.index % len(self.levels)]
             width, height = level.width, level.height
@@ -282,6 +291,7 @@ class Render:
             self.bots[i].maze=self.maze
             self.bots[i].pixel_data=pixel_data
             self.bots[i].call_bfs()
+        self.index += 1
 
 
     def cell_position(self, row, col):
@@ -393,6 +403,8 @@ class Render:
     def frames(self, x, y):
         if self.gameover:
             self.game_over()
+        elif self.gamewin:
+            self.game_win()
         else:
             self.mlx.mlx_clear_window(self.app, self.window)
             if self.reload:
@@ -563,6 +575,20 @@ class Render:
             round((self.HEIGHT // 2) * 0.95)
         )
 
+    def game_win(self):
+        self.mlx.mlx_clear_window(
+            self.app,
+            self.window
+        )
+        x = (self.WIDTH - self.win_w) // 2
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.win_img,
+            x,
+            round((self.HEIGHT // 2) * 0.95)
+        )
+
     def game_over(self):
         self.mlx.mlx_clear_window(self.app, self.window)
         x = (self.WIDTH - self.over_width) // 2
@@ -687,7 +713,8 @@ class Render:
             self.super_pac_deadline = time.time() + self.time_super_pac
             self.super_pac = True
             for bot in self.bots:
-                bot.powerup_img(self.mlx, self.app)
+                if not bot.dead:
+                    bot.powerup_img(self.mlx, self.app)
 
 
     def try_move_step(self, dx_dir: int, dy_dir: int, step: int) -> bool:
@@ -939,6 +966,5 @@ class Render:
             self.draw_board()
             self.mlx.mlx_mouse_move
             self.mlx.mlx_hook(self.window, 2, 1 << 0, self.key_press, self.player)
-            self.mlx.mlx_hook(self.window, 17, 1 << 0, self.close, "None")
             self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
             self.mlx.mlx_loop(self.app)

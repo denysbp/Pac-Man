@@ -34,6 +34,21 @@ def colision(
     return False
 
 def put_pixel(data, bpp, size_line, x, y, color):
+    """
+        Draws a pixel directly into an image memory buffer.
+
+        Args:
+            data: Image memory buffer where the pixel will be written.
+            bpp: Bits per pixel of the image.
+            size_line: Number of bytes occupied by one image row.
+            x: Horizontal coordinate of the pixel.
+            y: Vertical coordinate of the pixel.
+            color: 32-bit integer representing the pixel color.
+
+        The pixel position is calculated using the row size and the
+        number of bytes occupied by each pixel. The color is then
+        split into four bytes and written individually into the buffer.
+    """
     offset = y * size_line + x * 4
 
     data[offset] = color & 0xFF
@@ -140,6 +155,17 @@ def blit_into_buffer(
     dst_x,
     dst_y
 ):
+
+    """
+    Copies a source image into a destination image buffer.
+
+    The source image is placed at the given destination coordinates.
+    Pixels outside the destination boundaries are ignored.
+
+    Transparent source pixels are skipped using their alpha value.
+    Each visible pixel is converted into a 32-bit color and written
+    directly into the destination buffer.
+    """
     src_bytes_per_pixel = src_bpp // 8
     for row in range(src_h):
         py = dst_y + row
