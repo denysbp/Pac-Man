@@ -65,22 +65,18 @@ class Bot:
         valid_cells = []
         x, y = current_position
 
-        height = len(self.grid)
-        width = len(self.grid[0])
-        if not (0 <= x < width and 0 <= y < height):
-            return []
 
         cell = self.grid[y][x]
-        if y > 0 and self.can_advance(cell, "N"):
+        if self.can_advance(cell, "N"):
             valid_cells.append(("N", (x, y - 1)))
 
-        if x < width - 1 and self.can_advance(cell, "E"):
+        if self.can_advance(cell, "E"):
             valid_cells.append(("E", (x + 1, y)))
 
-        if y < height - 1 and self.can_advance(cell, "S"):
+        if self.can_advance(cell, "S"):
             valid_cells.append(("S", (x, y + 1)))
 
-        if x > 0 and self.can_advance(cell, "W"):
+        if self.can_advance(cell, "W"):
             valid_cells.append(("W", (x - 1, y)))
 
         return valid_cells

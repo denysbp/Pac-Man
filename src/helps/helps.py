@@ -11,8 +11,12 @@ def colision(
     top: int,
     bottom: int,
     V: int = 0,
-    H: int = 0
-):
+    H: int = 0,
+    colision_bot_player: bool = False,
+    invecibility: bool = False):
+    if colision_bot_player:
+        if invecibility:
+            return True
     rect = player.rect
 
     if rect.left < left:

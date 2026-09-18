@@ -24,13 +24,13 @@ class Render:
         levels: list[Level],
         data
     ):
+        self.data: ConfigData = data
         self.set_global_positions_sizes(w, h)
         self.mlx = Mlx()
         self.db = DATA_BASE()
         self.db.create_table()
         self.scores = self.db.get_scores()
         self.app = self.mlx.mlx_init()
-        self.data: ConfigData = data
         self.levels: list[Level] = levels
         self.set_images()
         self.create_classes_and_classes_atributes()
@@ -55,7 +55,7 @@ class Render:
         self.map_height = 0
         self.cornes: list = []
         self.index: int = 0
-        self.points = -10
+        self.points = -self.data.points_per_pacgum
         self.coodown = 200
         self.color = 0xFF0000FF
         self.victory = False
@@ -132,6 +132,7 @@ class Render:
             mlx_ptr=self.app,
             mlx=self.mlx,
             lives=self.data.lives)
+        self.player_sheat: dict = {"super_speed": False, "invincibility": True}
         self.super_pac_deadline = 0
         self.time_super_pac = 8
         self.super_pac = False
@@ -564,14 +565,18 @@ class Render:
             if self.super_pac:
                 if not b.path or b.i >= len(b.path) and not b.dead:
                     b.scape((self.player.x, self.player.y))
-                if (not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
-                                            b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y )) and not b.dead:
+                if not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
+                                           b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y,
+                                           colision_bot_player=True,
+                                           invecibility=self.player_sheat.get("invincibility")) and not bot.dead:
                     b.recalculate_rote((b.x, b.y), calcule_to_midle=True)
                     b.kill_bot(self.mlx, self.app)
-                    self.points += 50
+                    self.points += self.data.points_per_ghost
                     b.bot_respaw = time.time() + b.BOT_TIME_DEAD
             elif not colision(self.player, b.x - b.HEAT_BOX_BOT_X, b.x + b.HEAT_BOX_BOT_X,
-                                            b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y ):
+                                           b.y - b.HEAT_BOX_BOT_Y , b.y + b.HEAT_BOX_BOT_Y,
+                                           colision_bot_player=True,
+                                           invecibility=self.player_sheat.get("invincibility")):
                         if not self.data.lives >= 0:
                             self.db.insert_on_table(
                                 self.name_player,
@@ -819,6 +824,7 @@ class Render:
         elif self.new_game_input:
             if keycode == 65293:
                 self.name_already_set = True
+                self.name_player.strip()
 
             elif keycode == 65288 and not self.name_already_set:
                 # Backspace
