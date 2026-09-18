@@ -12,6 +12,7 @@ from src import (
     blit_into_buffer,
     keyboard
 )
+from typing import Any
 
 # ESSA CLASSE NOS GERA A VISUALIZACAO, APENAS FAZ RUN
 class Render:
@@ -31,17 +32,6 @@ class Render:
         self.app = self.mlx.mlx_init()
         self.data: ConfigData = data
         self.levels: list[Level] = levels
-        self.cornes: list = []
-        self.index: int = 0
-        self.points = -10
-        self.coodown = 200
-        self.color = 0xFF0000FF
-        self.victory = False
-        self.reload = False
-        self.start = True
-        self.gameover = False
-        self.time_to_restart = False
-        self.capslock = False
         self.set_images()
         self.create_classes_and_classes_atributes()
 
@@ -59,12 +49,33 @@ class Render:
         self.WIDTH = w
         self.HEIGHT = h
         self.cell_len = 0
-        self.maze_width = 0                                                                                                                         
+        self.maze_width = 0
         self.maze_height = 0
         self.map_width = 0
         self.map_height = 0
+        self.cornes: list = []
+        self.index: int = 0
+        self.points = -10
+        self.coodown = 200
+        self.color = 0xFF0000FF
+        self.victory = False
+        self.reload = False
+        self.start = True
+        self.gameover = False
+        self.time_to_restart = False
+        self.capslock = False
+        self.menu = []
+        self.img_index: int = 0
+        self.new_game_input: bool = False
+        self.high_scores_input: bool = False
+        self.show_controls_input: bool = False
 
     def set_images(self):
+        menu_imgs = [
+            "new-game",
+            "scores",
+            "controls"
+        ]
         self.window = self.mlx.mlx_new_window(
             self.app,
             self.WIDTH,
@@ -77,9 +88,6 @@ class Render:
             self.app,
             "src/models/assets/player/right-3.png"
         )
-        self.start_img, _, _ = self.mlx.mlx_png_file_to_image(
-            self.app,
-            "src/ui/start-game.png")
         self.img_controls, _, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/controls.png")
@@ -101,6 +109,18 @@ class Render:
             self.app,
             "src/ui/names.png"
         )
+        for img in menu_imgs:
+            information = self.mlx.mlx_png_file_to_image(
+                self.app,
+                f"src/ui/menu/{img}.png"
+            )
+            self.menu.append(
+                information
+            )
+
+
+    def get_image(self) -> tuple[Any | None, int, int]:
+        return self.menu[self.img_index % len(self.menu)]
 
     def create_classes_and_classes_atributes(self):
         self.player: Player = Player(
@@ -242,7 +262,7 @@ class Render:
             self.bots[i].maze=self.maze
             self.bots[i].pixel_data=pixel_data
             self.bots[i].call_bfs()
-        
+
 
     def cell_position(self, row, col):
         x = self.OFFSET_X + col * self.CELL_W
@@ -343,7 +363,7 @@ class Render:
         self.mlx.mlx_do_key_autorepeaton(self.app)
         self.mlx.mlx_destroy_window(self.app, self.window)
         self.mlx.mlx_loop_exit(self.app)
-        return 
+        return
 
     def key_press(self, keycode, param):
         if self.victory:
@@ -626,7 +646,7 @@ class Render:
             self.super_pac = True
             for bot in self.bots:
                 bot.powerup_img(self.mlx, self.app)
-    
+
     def move(self, param) -> None:
         if self.player._direction in "UP":
             dy = self.player.y - self.SPEED
@@ -694,7 +714,7 @@ class Render:
                 self.player.y -= self.SPEED
 
         self.gums()
-            
+
         self.player.update_img(self.player._direction, self.mlx, self.app)
         self.move_bots()
         self.frames(self.player.x, self.player.y)
@@ -732,10 +752,14 @@ class Render:
     def mouse_handler(self, mouse_code: int, x: int, y: int, param):
         pass
 
-    def redraw_start_screen(self):
-        self.mlx.mlx_clear_window(self.app, self.window)
-        self.start_screen()
-
+    def new_game(self):
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.names_img,
+            round((self.WIDTH // 2) * 0.45),
+            round((self.HEIGHT // 2) * 0.65),
+        )
         self.mlx.mlx_string_put(
             self.app,
             self.window,
@@ -744,25 +768,86 @@ class Render:
             0x00FFFFFF,
             self.name_player
         )
-    
+
+    def high_scores(self):
+        if self.scores:
+
+            x = round((self.WIDTH // 2) * 0.90)
+            y = round((self.HEIGHT // 2) * 0.75)
+            space_line = 40
+
+            for i, (name, score) in enumerate(self.scores):
+                self.mlx.mlx_string_put(
+                    self.app,
+                    self.window,
+                    x,
+                    y + i * space_line,
+                    0xFFFFFF,
+                    f"{name} - {score}"
+                )
+
+    def show_controls(self):
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.img_controls,
+            round((self.WIDTH // 2) * 0.80),
+            round((self.HEIGHT // 2) * 0.60)
+        )
+
+    def redraw_start_screen(self):
+        self.mlx.mlx_clear_window(self.app, self.window)
+        self.start_screen()
+
+
     def start_game(self, keycode, param):
-        if keycode ==  0xff1b:
+        if keycode == 0xff1b and any(
+            [
+            self.new_game_input,
+            self.high_scores_input,
+            self.show_controls_input
+            ]
+        ):
+            self.new_game_input = False
+            self.high_scores_input = False
+            self.show_controls_input = False
+
+        elif keycode ==  0xff1b:
             self.close(param)
             return
 
-        elif keycode == 65293:
-            self.name_already_set = True
+        elif self.new_game_input:
+            if keycode == 65293:
+                self.name_already_set = True
 
-        elif keycode == 65288:
-            # apagar
-            if len(self.name_player) > 0:
-                self.name_player = self.name_player[:- 1]
-        elif not self.name_already_set:
-            self.set_name_player(keycode)
+            elif keycode == 65288 and not self.name_already_set:
+                # Backspace
+                if len(self.name_player) > 0:
+                    self.name_player = self.name_player[:-1]
 
-        elif keycode == 32:
+            elif not self.name_already_set:
+                self.set_name_player(keycode)
+        elif keycode == 65293 and self.img_index == 0:
+            self.new_game_input = True
+        elif keycode == 65293 and self.img_index == 1:
+            self.high_scores_input = True
+        elif keycode == 65293 and self.img_index == 2:
+            self.show_controls_input = True
+
+        elif keycode == 65362:
+            self.img_index -= 1
+            self.img_index = self.img_index % len(self.menu)
+
+        elif keycode == 65364:
+            self.img_index += 1
+            self.img_index = self.img_index % len(self.menu)
+
+        if keycode == 32 and self.name_already_set:
+            # Space
             self.start = False
             self.mlx.mlx_loop_exit(self.app)
+            self.redraw_start_screen()
+            return
         self.redraw_start_screen()
 
     def set_name_player(self, keycode):
@@ -778,39 +863,27 @@ class Render:
             self.name_player += (k.upper() if self.capslock else k.lower())
 
     def start_screen(self):
+        if self.new_game_input:
+            self.new_game()
+            return
+        elif self.high_scores_input:
+            self.high_scores()
+            return
+        elif self.show_controls_input:
+            self.show_controls()
+            return
+
+        img, img_width, img_height = self.get_image()
+
+        x = (self.WIDTH - img_width) // 2
+
         self.mlx.mlx_put_image_to_window(
             self.app,
             self.window,
-            self.start_img,
-            round((self.WIDTH // 2) * 0.45),
+            img,
+            x,
             0
         )
-        self.mlx.mlx_put_image_to_window(
-            self.app,
-            self.window,
-            self.img_controls,
-            round((self.WIDTH // 2) * 0.03),
-            round((self.HEIGHT // 2) * 1.10)
-        )
-        self.mlx.mlx_put_image_to_window(
-            self.app,
-            self.window,
-            self.names_img,
-            round((self.WIDTH // 2) * 0.45),
-            round((self.HEIGHT // 2) * 0.65),
-        )
-        if self.scores:
-            space_line = 20
-            for i, (name, score) in enumerate(self.scores):
-                string = f"{name} - {score}"
-                self.mlx.mlx_string_put(
-                    self.app,
-                    self.window,
-                    round((self.WIDTH // 2) * 0.90),
-                    round((self.HEIGHT // 2) * 0.80 + (i * space_line)),
-                    0xFFFFFF,
-                    string
-                )
 
     def run(self):
         self.mlx.mlx_do_key_autorepeatoff(self.app)
