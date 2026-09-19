@@ -126,6 +126,11 @@ class Render:
             self.app,
             "src/ui/menu/enter.png"
         )
+
+        self.pause_img, self.pause_w, self.pause_h = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/menu/pause.png"
+        )
         for img in menu_imgs:
             information = self.mlx.mlx_png_file_to_image(
                 self.app,
@@ -448,35 +453,35 @@ class Render:
             # space
             self.PAUSE = not self.PAUSE
 
-        if key == 49:
-            # tecla 1
-            self.PLAYER_SPEED = 10 if self.PLAYER_SPEED == 40 else 40
-
-        if key == 50:
-            # tecla 2
-            self.player_sheat["invincibility"] = not self.player_sheat["invincibility"]
-
-        if key == 51:
-            # tecla 3
-            self.data.lives += 1
-
-        if key == 52:
-            # tecla 4
-            self.start_level()
-
-        if key == 53:
-            # tecla 5
-            self.player_sheat["freeze_bots"] = not self.player_sheat["freeze_bots"]
-
-        if key == 54:
-            # tecla 6
-            self.player_sheat["intangibility"] = not self.player_sheat["intangibility"]
-
-        if key == 109:
-            # tecla m
-            self.show_modes = not self.show_modes
 
         if not self.PAUSE:
+            if key == 49:
+                # tecla 1
+                self.PLAYER_SPEED = 10 if self.PLAYER_SPEED == 40 else 40
+
+            if key == 50:
+                # tecla 2
+                self.player_sheat["invincibility"] = not self.player_sheat["invincibility"]
+
+            if key == 51:
+                # tecla 3
+                self.data.lives += 1
+
+            if key == 52:
+                # tecla 4
+                self.start_level()
+
+            if key == 53:
+                # tecla 5
+                self.player_sheat["freeze_bots"] = not self.player_sheat["freeze_bots"]
+
+            if key == 54:
+                # tecla 6
+                self.player_sheat["intangibility"] = not self.player_sheat["intangibility"]
+
+            if key == 109:
+                # tecla m
+                self.show_modes = not self.show_modes
             if key in (65362, 119):
                 # up
                 self.player.update_img("UP", self.mlx, self.app)
@@ -598,10 +603,7 @@ class Render:
                 self.level_win()
 
         elif self.PAUSE:
-            self.frames(
-                self.player.x,
-                self.player.y
-            )
+            self.pause()
 
         else:
             self.move(self.player)
@@ -647,12 +649,28 @@ class Render:
             round((self.HEIGHT // 2) * 0.95)
         )
 
+    def pause(self):
+        x = (self.WIDTH - self.pause_w) // 2
+        y = (self.HEIGHT - self.pause_h) // 2
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.pause_img,
+            x,
+            y
+        )
+
+
     def is_near_player(self, bot, player, distance):
         dx = bot.x - player.x
         dy = bot.y - player.y
         return dx * dx + dy * dy <= distance * distance
 
-    def check_bot_player_collision(self, bot, invencible: bool = False) -> bool:
+    def check_bot_player_collision(
+        self,
+        bot,
+        invencible: bool = False
+    ) -> bool:
         if invencible:
             return False
         player_rect = Rect(
@@ -682,7 +700,10 @@ class Render:
                 b.reset_img(self.mlx, self.app)
 
             invincible = self.player_sheat.get("invincibility")
-            touching = self.check_bot_player_collision(b, invencible=invincible)
+            touching = self.check_bot_player_collision(
+                b,
+                invencible=invincible
+            )
 
             if self.super_pac:
                 if not b.path or b.i >= len(b.path) and not b.dead:
@@ -779,7 +800,13 @@ class Render:
                 if not bot.dead:
                     bot.powerup_img(self.mlx, self.app)
 
-    def try_move_step(self, dx_dir: int, dy_dir: int, step: int, intangibility: bool) -> bool:
+    def try_move_step(
+        self,
+        dx_dir: int,
+        dy_dir: int,
+        step: int,
+        intangibility: bool
+    ) -> bool:
         self.player.x = dx = self.player.x + dx_dir * step
         self.player.y = dy = self.player.y + dy_dir * step
 
@@ -817,7 +844,12 @@ class Render:
             remaining = self.PLAYER_SPEED
             while remaining > 0:
                 step = min(MAX_STEP, remaining)
-                moved = self.try_move_step(dx_dir, dy_dir, step, self.player_sheat["intangibility"])
+                moved = self.try_move_step(
+                    dx_dir,
+                    dy_dir,
+                    step,
+                    self.player_sheat["intangibility"]
+                )
                 remaining -= step
                 if not moved:
                     break

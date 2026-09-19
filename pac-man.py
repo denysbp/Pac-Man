@@ -13,7 +13,9 @@ if __name__ == "__main__":
     data.load_json()
 
     mlx = Mlx()
-    _ , w, h = mlx.mlx_get_screen_size(mlx.mlx_init())
+    _ , w, h = mlx.mlx_get_screen_size(
+        mlx.mlx_init()
+    )
     game = Render(
         w,
         h,
