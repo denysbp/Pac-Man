@@ -4,6 +4,7 @@ from random import randint
 import ctypes
 from ..models import Player, Memory, Rect, Level, ConfigData, Bot
 from ..data_base import DATA_BASE
+from typing import Any
 import time
 from src import (
     colision,
@@ -12,9 +13,8 @@ from src import (
     blit_into_buffer,
     keyboard
 )
-from typing import Any
 
-# ESSA CLASSE NOS GERA A VISUALIZACAO, APENAS FAZ RUN
+
 class Render:
 
     def __init__(
@@ -150,14 +150,13 @@ class Render:
             mlx=self.mlx,
             lives=self.data.lives)
         self.player_sheat: dict = {
-            "super_speed": False,
-            "invincibility": False
-        }
+            "intangibility": False,
+            "invincibility": False,
+            "freeze_bots": False}
+        self.PLAYER_SPEED = 10
         self.super_pac_deadline = 0
         self.time_super_pac = 8
         self.super_pac = False
-        self.PLAYER_SPEED = 10
-        self.BOT_SPEED = 8
         self.name_player = ""
         self.name_already_set = False
 
@@ -297,7 +296,6 @@ class Render:
             self.bots[i].pixel_data=pixel_data
             self.bots[i].call_bfs()
         self.index += 1
-
 
     def cell_position(self, row, col):
         x = self.OFFSET_X + col * self.CELL_W
@@ -446,19 +444,17 @@ class Render:
         if key ==  0xff1b:
             self.close(param)
 
-
         if key == 32:
-            if not self.PAUSE:
-                self.PAUSE = True
-            else:
-                self.PAUSE = False
+            # space
+            self.PAUSE = not self.PAUSE
 
         if key == 49:
             # tecla 1
-            if self.PLAYER_SPEED == 10:
-                self.PLAYER_SPEED = 30
-            else:
-                self.PLAYER_SPEED = 10
+            self.PLAYER_SPEED = 10 if self.PLAYER_SPEED == 40 else 40
+
+        if key == 50:
+            # tecla 2
+            self.player_sheat["invincibility"] = not self.player_sheat["invincibility"]
 
         if key == 51:
             # tecla 3
@@ -467,11 +463,19 @@ class Render:
         if key == 52:
             # tecla 4
             self.start_level()
-        if key == 109 and not self.show_modes:
-            self.show_modes = True
 
-        elif key == 109 and self.show_modes:
-             self.show_modes = False
+        if key == 53:
+            # tecla 5
+            self.player_sheat["freeze_bots"] = not self.player_sheat["freeze_bots"]
+
+        if key == 54:
+            # tecla 6
+            self.player_sheat["intangibility"] = not self.player_sheat["intangibility"]
+
+        if key == 109:
+            # tecla m
+            self.show_modes = not self.show_modes
+
         if not self.PAUSE:
             if key in (65362, 119):
                 # up
@@ -648,8 +652,9 @@ class Render:
         dy = bot.y - player.y
         return dx * dx + dy * dy <= distance * distance
 
-
-    def check_bot_player_collision(self, bot) -> bool:
+    def check_bot_player_collision(self, bot, invencible: bool = False) -> bool:
+        if invencible:
+            return False
         player_rect = Rect(
             self.player.x,
             self.player.y,
@@ -676,8 +681,8 @@ class Render:
                 b.dead = False
                 b.reset_img(self.mlx, self.app)
 
-            touching = self.check_bot_player_collision(b)
             invincible = self.player_sheat.get("invincibility")
+            touching = self.check_bot_player_collision(b, invencible=invincible)
 
             if self.super_pac:
                 if not b.path or b.i >= len(b.path) and not b.dead:
@@ -774,21 +779,9 @@ class Render:
                 if not bot.dead:
                     bot.powerup_img(self.mlx, self.app)
 
-
-    def try_move_step(self, dx_dir: int, dy_dir: int, step: int) -> bool:
-        """
-        Tenta mover o player por 'step' pixels na direção (dx_dir, dy_dir).
-        Retorna True se o movimento foi aceito, False se bateu em parede
-        ou saiu do mapa (e nesse caso já desfaz o movimento).
-        """
-        dx = self.player.x + dx_dir * step
-        dy = self.player.y + dy_dir * step
-
-        if not self.check_colision(dx, dy):
-            return False
-
-        self.player.x = dx
-        self.player.y = dy
+    def try_move_step(self, dx_dir: int, dy_dir: int, step: int, intangibility: bool) -> bool:
+        self.player.x = dx = self.player.x + dx_dir * step
+        self.player.y = dy = self.player.y + dy_dir * step
 
         if colision(
             self.player,
@@ -802,9 +795,13 @@ class Render:
             self.player.x -= dx_dir * step
             self.player.y -= dy_dir * step
             return False
-
+        if intangibility:
+            return True
+        if not self.check_colision(dx, dy):
+            self.player.x -= dx_dir * step
+            self.player.y -= dy_dir * step
+            return False
         return True
-
 
     def move(self, param) -> None:
         direction_vectors = {
@@ -813,17 +810,14 @@ class Render:
             "LEFT":  (-1, 0),
             "RIGHT": (1, 0),
         }
-
         direction = self.player._direction
         if direction in direction_vectors:
             dx_dir, dy_dir = direction_vectors[direction]
-
             MAX_STEP = 4
-
             remaining = self.PLAYER_SPEED
             while remaining > 0:
                 step = min(MAX_STEP, remaining)
-                moved = self.try_move_step(dx_dir, dy_dir, step)
+                moved = self.try_move_step(dx_dir, dy_dir, step, self.player_sheat["intangibility"])
                 remaining -= step
                 if not moved:
                     break
@@ -833,7 +827,8 @@ class Render:
             self.player._direction,
             self.mlx, self.app
         )
-        self.move_bots()
+        if not self.player_sheat["freeze_bots"]:
+            self.move_bots()
         self.frames(self.player.x, self.player.y)
 
     def draw_information(self) -> None:
