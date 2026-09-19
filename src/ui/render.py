@@ -161,6 +161,8 @@ class Render:
         self.PLAYER_SPEED = 10
         self.super_pac_deadline = 0
         self.time_super_pac = 8
+        self.TIME: int = self.data.level_max_time
+        self.level_deadline = time.monotonic() + self.TIME
         self.super_pac = False
         self.name_player = ""
         self.name_already_set = False
@@ -295,6 +297,8 @@ class Render:
             "CELL_H":self.CELL_H
         }
         for i in range(4):
+            self.bots[i].spam_x = self.cornes[i][0]
+            self.bots[i].spam_y = self.cornes[i][1]
             self.bots[i].x = self.cornes[i][0]
             self.bots[i].y = self.cornes[i][1]
             self.bots[i].maze=self.maze
@@ -704,6 +708,8 @@ class Render:
                 b,
                 invencible=invincible
             )
+            if b.dead:
+                continue
 
             if self.super_pac:
                 if not b.path or b.i >= len(b.path) and not b.dead:
@@ -875,6 +881,17 @@ class Render:
             150,
             "Points: " + str(self.points)
         )
+        remaining = max(0, self.level_deadline - time.monotonic())
+        if remaining <= 0:
+            self.gameover = True
+        self.mlx.mlx_string_put(
+            self.app,
+            self.window,
+            margin_x,
+            hud_top + 40,
+            150,
+            "Time: " + str(round(remaining))
+        )
         if self.show_modes:
             x = (self.WIDTH - self.md_w) // 2
             y = (self.HEIGHT - self.md_h) // 2
@@ -898,8 +915,8 @@ class Render:
             self.mlx.mlx_string_put(
                 self.app,
                 self.window,
-                margin_x,
-                hud_top + 60,
+                margin_x + 155,
+                hud_top + 20,
                 150,
                 "Lives: " + str(self.data.lives)
             )

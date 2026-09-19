@@ -44,7 +44,7 @@ class Bot:
         margin = 4
         self.HEAT_BOX_BOT_X = self.img_width // 2 + margin
         self.HEAT_BOX_BOT_Y = self.img_height // 2 + margin
-        self.BOT_TIME_DEAD = 8
+        self.BOT_TIME_DEAD = 5
         self.bot_respaw = 0
 
     @staticmethod
@@ -129,6 +129,7 @@ class Bot:
         calcule_to_midle=False
     ):
         if calcule_to_midle:
+            self.x, self.y = self.spam_x, self.spam_y
             new = self.bfs(
                 self.get_coord_to_maze_grid(bot_coord),
                 self.get_coord_to_maze_grid((self.spam_x, self.spam_y))
@@ -189,6 +190,9 @@ class Bot:
         x = (coord[0] - self.pixel_data.get("OFFSET_X")) // self.pixel_data.get("CELL_W") # calculo para tirar de pixels e se encaixar na grid em cordenadas
         y = (coord[1] - self.pixel_data.get("OFFSET_Y")) // self.pixel_data.get("CELL_H") # calculo para tirar de pixels e se encaixar na grid em cordenadas
         return (x, y)
+
+    def can_reset(self) -> bool:
+        return (self.x, self.y) == (self.spam_x, self.spam_y)
 
     @property
     def rect(self):
