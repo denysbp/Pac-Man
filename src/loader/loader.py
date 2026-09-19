@@ -14,6 +14,10 @@ class ConfigLoader:
         *,
         path: str
     ):
+        if '.' not in path:
+            raise LoaderError(
+                f"You're supposed to pass a file."
+            )
         _, type = path.split(".", 1)
         if type != "json":
             raise LoaderError(
