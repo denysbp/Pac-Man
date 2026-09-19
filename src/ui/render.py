@@ -72,6 +72,7 @@ class Render:
         self.show_controls_input: bool = False
         self.show_modes: bool =  False
         self.gamewin: bool = False
+        self.PAUSE: bool = False
 
     def set_images(self):
         menu_imgs = [
@@ -120,6 +121,10 @@ class Render:
         self.win_img, self.win_w, self.win_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/gamewin.png"
+        )
+        self.enter_img, self.e_w, self.e_h = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/menu/enter.png"
         )
         for img in menu_imgs:
             information = self.mlx.mlx_png_file_to_image(
@@ -441,30 +446,50 @@ class Render:
         if key ==  0xff1b:
             self.close(param)
 
-        if key in (65362, 119):
-            # up
-            self.player.update_img("UP", self.mlx, self.app)
-            self.frames(self.player.x, self.player.y)
 
+        if key == 32:
+            if not self.PAUSE:
+                self.PAUSE = True
+            else:
+                self.PAUSE = False
+
+        if key == 49:
+            # tecla 1
+            if self.PLAYER_SPEED == 10:
+                self.PLAYER_SPEED = 30
+            else:
+                self.PLAYER_SPEED = 10
+
+        if key == 51:
+            # tecla 3
+            self.data.lives += 1
+
+        if key == 52:
+            # tecla 4
+            self.start_level()
         if key == 109 and not self.show_modes:
             self.show_modes = True
 
         elif key == 109 and self.show_modes:
              self.show_modes = False
+        if not self.PAUSE:
+            if key in (65362, 119):
+                # up
+                self.player.update_img("UP", self.mlx, self.app)
+                self.frames(self.player.x, self.player.y)
+            if key in (65361, 97):
+                # left
+                self.player.update_img("LEFT", self.mlx, self.app)
+                self.frames(self.player.x, self.player.y)
+            if key in (65363, 100):
+                # right
+                self.player.update_img("RIGHT", self.mlx, self.app)
+                self.frames(self.player.x, self.player.y)
 
-        if key in (65361, 97):
-            # left
-            self.player.update_img("LEFT", self.mlx, self.app)
-            self.frames(self.player.x, self.player.y)
-        if key in (65363, 100):
-            # right
-            self.player.update_img("RIGHT", self.mlx, self.app)
-            self.frames(self.player.x, self.player.y)
-
-        if key in (65364,115):
-            # down
-            self.player.update_img("DOWN", self.mlx, self.app)
-            self.frames(self.player.x, self.player.y)
+            if key in (65364,115):
+                # down
+                self.player.update_img("DOWN", self.mlx, self.app)
+                self.frames(self.player.x, self.player.y)
         return 0
 
     def put_img(self, cell: int, x: int, y: int):
@@ -567,6 +592,12 @@ class Render:
                 self.draw_board()
             else:
                 self.level_win()
+
+        elif self.PAUSE:
+            self.frames(
+                self.player.x,
+                self.player.y
+            )
 
         else:
             self.move(self.player)
@@ -850,21 +881,32 @@ class Render:
         pass
 
     def new_game(self):
-        self.mlx.mlx_put_image_to_window(
-            self.app,
-            self.window,
-            self.names_img,
-            round((self.WIDTH // 2) * 0.45),
-            round((self.HEIGHT // 2) * 0.65),
-        )
-        self.mlx.mlx_string_put(
-            self.app,
-            self.window,
-            round((self.WIDTH // 2) * 0.69),
-            round((self.HEIGHT // 2) * 0.73),
-            0x00FFFFFF,
-            self.name_player
-        )
+        if self.name_already_set:
+            x = (self.WIDTH - self.e_w) // 2
+            y = (self.HEIGHT - self.e_h) // 2
+            self.mlx.mlx_put_image_to_window(
+                self.app,
+                self.window,
+                self.enter_img,
+                x,
+                y
+            )
+        else:
+            self.mlx.mlx_put_image_to_window(
+                self.app,
+                self.window,
+                self.names_img,
+                round((self.WIDTH // 2) * 0.45),
+                round((self.HEIGHT // 2) * 0.65),
+            )
+            self.mlx.mlx_string_put(
+                self.app,
+                self.window,
+                round((self.WIDTH // 2) * 0.69),
+                round((self.HEIGHT // 2) * 0.73),
+                0x00FFFFFF,
+                self.name_player
+            )
 
     def high_scores(self):
         if self.scores:
