@@ -11,6 +11,7 @@ from src import (
     drawlineH,
     drawlineV,
     blit_into_buffer,
+    put_pixel,
     keyboard
 )
 
@@ -457,7 +458,9 @@ class Render:
                 self.time_to_restart = False
 
     def controls(self, key, param):
-        if key ==  0xff1b:
+        if key == 0xff1b and self.PAUSE:
+            self.back_to_menu()
+        elif key ==  0xff1b:
             self.close(param)
 
         if key == 32:
@@ -513,48 +516,6 @@ class Render:
         return 0
 
     def put_img(self, cell: int, x: int, y: int):
-        if cell & self.N:
-            drawlineH(
-                self.memory.data,
-                self.memory.bpp,
-                self.memory.size_line,
-                x,
-                y,
-                x + self.CELL_W,
-                y,
-                self.color
-            )
-        if cell & self.S:
-            drawlineH(
-                self.memory.data,
-                self.memory.bpp,
-                self.memory.size_line,
-                x,
-                y + self.CELL_H,
-                x + self.CELL_W,
-                y + self.CELL_H,
-                self.color
-            )
-        if cell & self.W:
-            drawlineV(
-                self.memory.data,
-                self.memory.bpp,
-                self.memory.size_line,
-                x,
-                y,
-                x,
-                y + self.CELL_H,
-                self.color)
-        if cell & self.E:
-            drawlineV(
-                self.memory.data,
-                self.memory.bpp,
-                self.memory.size_line,
-                x + self.CELL_W,
-                y,
-                x + self.CELL_W,
-                y + self.CELL_H,
-                self.color)
         if self.is_walkable(cell):
             small_gum_x = x + (self.CELL_W - self.m_w) // 2
             small_gum_y = y + (self.CELL_H -self.m_h) // 2
@@ -575,13 +536,75 @@ class Render:
                 small_gum_y
             )
 
+    def draw_cell_walls(self, cell, x, y):
+        if cell & self.N:
+            drawlineH(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                x, y,
+                x + self.CELL_W, y,
+                self.color
+            )
+
+        if cell & self.S:
+            drawlineH(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                x, y + self.CELL_H,
+                x + self.CELL_W, y + self.CELL_H,
+                self.color
+            )
+
+        if cell & self.W:
+            drawlineV(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                x, y,
+                x, y + self.CELL_H,
+                self.color
+            )
+
+        if cell & self.E:
+            drawlineV(
+                self.memory.data,
+                self.memory.bpp,
+                self.memory.size_line,
+                x + self.CELL_W, y,
+                x + self.CELL_W, y + self.CELL_H,
+                self.color
+            )
+    def fill_42(self):
+        for i in range(len(self.maze.maze)):
+            for j in range(len(self.maze.maze[i])):
+                cell = self.maze.maze[i][j]
+
+                if cell == 15:
+                    x, y = self.cell_position(i, j)
+
+                    center_x = x + self.CELL_W // 2
+                    center_y = y + self.CELL_H // 2
+
+                    put_pixel(
+                        self.memory.data,
+                        self.memory.bpp,
+                        self.memory.size_line,
+                        center_x,
+                        center_y,
+                        0xFFFFFFFF
+                    )
+
     def draw_board(self):
+        self.fill_42()
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 cell = self.maze.maze[i][j]
 
                 x, y = self.cell_position(i, j)
                 self.put_img(cell, x, y)
+                self.draw_cell_walls(cell, x, y)
 
         for x, y in self.cornes:
             if (x, y) in self.heated_big:
@@ -935,9 +958,17 @@ class Render:
             self.app,
             self.window,
             margin_x,
-            hud_top + 20,
+            hud_top + 10,
             150,
             "Points: " + str(self.points)
+        )
+        self.mlx.mlx_string_put(
+            self.app,
+            self.window,
+            margin_x,
+            hud_top + 50,
+            150,
+            "Level: " + str(self.index)
         )
         remaining = max(0, self.level_deadline - time.monotonic())
         if remaining <= 0:
@@ -946,7 +977,7 @@ class Render:
             self.app,
             self.window,
             margin_x,
-            hud_top + 40,
+            hud_top + 30,
             150,
             "Time: " + str(round(remaining))
         )
@@ -1115,7 +1146,7 @@ class Render:
             self.show_controls()
             return
 
-        img, img_width, img_height = self.get_image()
+        img, img_width, _ = self.get_image()
 
         x = (self.WIDTH - img_width) // 2
 
