@@ -73,6 +73,9 @@ class Render:
         self.show_modes: bool =  False
         self.gamewin: bool = False
         self.PAUSE: bool = False
+        self.quit = False
+        self.end_until = None
+        self.initial_lives = self.data.lives
 
     def set_images(self):
         menu_imgs = [
@@ -269,6 +272,7 @@ class Render:
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
     def start_level(self, next_level: bool = True):
+        self.level_deadline = time.monotonic() + self.TIME
         if self.index == len(self.levels):
             self.gamewin = True
             return
@@ -402,12 +406,15 @@ class Render:
         )
 
     def close(self, param):
+        self.quit = True
         self.mlx.mlx_do_key_autorepeaton(self.app)
         self.mlx.mlx_destroy_window(self.app, self.window)
         self.mlx.mlx_loop_exit(self.app)
         return
 
     def key_press(self, keycode, param):
+        if self.victory or self.gameover or self.gamewin:
+            return
         if self.victory:
             return
         return self.controls(keycode, param)
@@ -594,7 +601,58 @@ class Render:
                 y - self.b_h // 2
             )
 
+    def end_screen(self):
+        if self.end_until is None:
+            self.end_until = time.monotonic() + 3
+            self.db.insert_on_table(self.name_player, self.points)
+            if self.gameover:
+                self.game_over()
+            else:
+                self.game_win()
+            return
+        if time.monotonic() >= self.end_until:
+            self.back_to_menu()
+
+    def back_to_menu(self):
+        self.reset_game()
+        self.start = True
+        self.mlx.mlx_clear_window(self.app, self.window)
+        self.mlx.mlx_loop_exit(self.app)
+
+    def reset_game(self):
+        self.gameover = False
+        self.gamewin = False
+        self.victory = False
+        self.PAUSE = False
+        self.index = 0
+        self.data.lives = self.initial_lives
+        self.PLAYER_SPEED = 10
+        self.super_pac = False
+        self.super_pac_deadline = 0
+        self.time_to_restart = False
+        self.end_until = None
+        for k in self.player_sheat:
+            self.player_sheat[k] = False
+        self.gum_position.clear()
+        self.heated_small.clear()
+        self.heated_big.clear()
+        for b in self.bots:
+            b.dead = False
+            b.reset_img(self.mlx, self.app)
+        self.name_player = ""
+        self.name_already_set = False
+        self.new_game_input = False
+        self.high_scores_input = False
+        self.show_controls_input = False
+        self.img_index = 0
+        self.scores = self.db.get_scores()
+
     def render_loop(self, param):
+        if self.start:
+            return 0
+        if self.gameover or self.gamewin:
+            self.end_screen()
+            return 0
         if self.victory:
             self.coodown -= 1
 
@@ -1069,18 +1127,20 @@ class Render:
             0
         )
 
+    def game_menu(self):
+        self.start_screen()
+        self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
+        self.mlx.mlx_loop(self.app)
+
     def run(self):
         self.mlx.mlx_do_key_autorepeatoff(self.app)
-
-        if self.start:
-            self.start_screen()
-            self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
-            self.mlx.mlx_loop(self.app)
-
-        if not self.start:
+        while not self.quit:
+            self.game_menu()
+            if self.quit:
+                break
             self.start_level()
+            self.clear_buffer()
             self.draw_board()
-            self.mlx.mlx_mouse_move
             self.mlx.mlx_hook(self.window, 2, 1 << 0, self.key_press, self.player)
             self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
             self.mlx.mlx_loop(self.app)
