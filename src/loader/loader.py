@@ -59,9 +59,9 @@ class ConfigLoader:
             self.configs["points_per_super_pacgum"],
             self.configs["points_per_ghost"],
         ]
-        if self.configs["seed"] < 0:
+        if self.configs["seed"] <= 0:
             self.configs["seed"] = None
-        if self.configs["seed"] in (True, False):
+        if isinstance(self.configs["seed"], bool):
             raise LoaderError(
                 "WE DON'T ACCEPT BOOLEAN."
             )

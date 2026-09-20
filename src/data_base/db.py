@@ -2,8 +2,8 @@ import sqlite3
 
 
 class DATA_BASE:
-    def __init__(self):
-        self.connection = sqlite3.connect("pacman.db")
+    def __init__(self, file: str):
+        self.connection = sqlite3.connect(file)
         self.cursor = self.connection.cursor()
 
     def create_table(self):

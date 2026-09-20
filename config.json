@@ -1,14 +1,14 @@
 {
 	# file name for scores
-	"highscore_filename": "db.sql",
+	"highscore_filename": "pacman.db",
 
 	// Amount of lives
 	"lives": 3,
 
 	// Amount of pacgum
-	"pacgum": 42,
+	"pacgum": 80,
 
-	"seed": 42,
+	"seed": 0,
 
 	"level_max_time": 120,
 

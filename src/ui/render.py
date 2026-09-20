@@ -1,6 +1,6 @@
 from mlx.mlx import Mlx
 from mazegenerator.mazegenerator import MazeGenerator
-from random import randint
+from random import randint, random, choice
 import ctypes
 from ..models import Player, Memory, Rect, Level, ConfigData, Bot
 from ..data_base import DATA_BASE
@@ -28,7 +28,7 @@ class Render:
         self.data: ConfigData = data
         self.set_global_positions_sizes(w, h)
         self.mlx = Mlx()
-        self.db = DATA_BASE()
+        self.db = DATA_BASE(self.data.highscore_filename)
         self.db.create_table()
         self.scores = self.db.get_scores()
         self.app = self.mlx.mlx_init()
@@ -57,7 +57,7 @@ class Render:
         self.map_height = 0
         self.cornes: list = []
         self.index: int = 0
-        self.points = -self.data.points_per_pacgum
+        self.points = self.data.points_per_pacgum
         self.coodown = 200
         self.color = 0xFF0000FF
         self.victory = False
@@ -77,6 +77,7 @@ class Render:
         self.quit = False
         self.end_until = None
         self.initial_lives = self.data.lives
+
 
     def set_images(self):
         menu_imgs = [
@@ -166,10 +167,12 @@ class Render:
         self.super_pac_deadline = 0
         self.time_super_pac = 8
         self.TIME: int = self.data.level_max_time
+        self.PAUSED_TIME = 0
         self.level_deadline = time.monotonic() + self.TIME
         self.super_pac = False
         self.name_player = ""
         self.name_already_set = False
+        self.pacgums: int = 0
 
         self.bots: list[Bot] = []
         for i in range(4):
@@ -230,6 +233,7 @@ class Render:
 
     def calcule_maze_dimetions(self, height: int, width: int):
         self.cornes.clear()
+        self.gum_position.clear()
         self.maze_height = height
         self.maze_width = width
         self.CELL_W = (self.WIDTH - 2 * self.OFFSET_X) // self.maze_width
@@ -257,7 +261,6 @@ class Render:
                 )
             ]
         )
-        self.gum_position.extend(self.cornes)
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 x, y = self.cell_position(i, j)
@@ -268,15 +271,23 @@ class Render:
                     self.gum_position.append(
                         (small_gum_y, small_gum_x)
                     )
+
+        temp = []
+        while len(temp) < self.data.pacgum:
+            gum = choice(self.gum_position)
+            self.gum_position.remove(gum)
+            temp.append(gum)
+        self.gum_position = temp
+        self.gum_position.extend(self.cornes)
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
     def start_level(self, next_level: bool = True):
-        self.level_deadline = time.monotonic() + self.TIME
         if self.index == len(self.levels):
             self.gamewin = True
             return
+        self.level_deadline = time.monotonic() + self.TIME
         if next_level:
             level = self.levels[self.index % len(self.levels)]
             width, height = level.width, level.height
@@ -291,6 +302,7 @@ class Render:
         self.heated_small.clear()
         self.heated_big.clear()
         self.points = 0
+        self.pacgums = 0
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
@@ -302,13 +314,24 @@ class Render:
             "CELL_H":self.CELL_H
         }
         for i in range(4):
-            self.bots[i].spam_x = self.cornes[i][0]
-            self.bots[i].spam_y = self.cornes[i][1]
-            self.bots[i].x = self.cornes[i][0]
-            self.bots[i].y = self.cornes[i][1]
-            self.bots[i].maze=self.maze
-            self.bots[i].pixel_data=pixel_data
-            self.bots[i].call_bfs()
+            bot = self.bots[i]
+
+            bot.spam_x = self.cornes[i][0]
+            bot.spam_y = self.cornes[i][1]
+
+            bot.x = self.cornes[i][0]
+            bot.y = self.cornes[i][1]
+
+            bot.maze = self.maze
+            bot.pixel_data = pixel_data
+
+            bot.i = 0
+            bot.pixel = 0
+            bot.path = []
+
+            bot.dead = False
+
+            bot.call_bfs()
         self.index += 1
 
     def cell_position(self, row, col):
@@ -441,7 +464,7 @@ class Render:
                 x,
                 y
             )
-            if len(self.heated_big + self.heated_small) == len(self.gum_position):
+            if self.pacgums == len(self.gum_position):
                 self.coodown = 200
                 self.victory = True
                 self.gum_position.clear()
@@ -465,7 +488,11 @@ class Render:
 
         if key == 32:
             # space
-            self.PAUSE = not self.PAUSE
+            if self.PAUSE:
+                self.resume_game()
+            else:
+                self.pause_game()
+            return 0
 
 
         if not self.PAUSE:
@@ -483,7 +510,8 @@ class Render:
 
             if key == 52:
                 # tecla 4
-                self.start_level()
+                self.start_level(next_level=True)
+                self.reload = True
 
             if key == 53:
                 # tecla 5
@@ -515,10 +543,14 @@ class Render:
                 self.frames(self.player.x, self.player.y)
         return 0
 
-    def put_img(self, cell: int, x: int, y: int):
+    def pac_gums(self, cell: int, x: int, y: int):
         if self.is_walkable(cell):
             small_gum_x = x + (self.CELL_W - self.m_w) // 2
             small_gum_y = y + (self.CELL_H -self.m_h) // 2
+
+            if (small_gum_y, small_gum_x) not in self.gum_position:
+                return
+
             if (small_gum_y, small_gum_x) in self.heated_small:
                 return
             blit_into_buffer(
@@ -603,8 +635,9 @@ class Render:
                 cell = self.maze.maze[i][j]
 
                 x, y = self.cell_position(i, j)
-                self.put_img(cell, x, y)
                 self.draw_cell_walls(cell, x, y)
+                self.pac_gums(cell, x, y)
+
 
         for x, y in self.cornes:
             if (x, y) in self.heated_big:
@@ -874,12 +907,14 @@ class Render:
         if gum is not None and gum not in self.heated_small:
             self.heated_small.append(gum)
             self.points += self.data.points_per_pacgum
+            self.pacgums += 1
             self.reload = True
 
         if big is not None and big not in self.heated_big:
             self.heated_big.append(big)
             self.points -= self.data.points_per_pacgum
             self.points += self.data.points_per_super_pacgum
+            self.pacgums += 1
             self.reload = True
             self.super_pac_deadline = time.time() + self.time_super_pac
             self.super_pac = True
@@ -1157,6 +1192,20 @@ class Render:
             x,
             0
         )
+
+    def pause_game(self):
+        if not self.PAUSE:
+            self.PAUSED_TIME = max(
+                0,
+                self.level_deadline - time.monotonic()
+            )
+            self.PAUSE = True
+
+
+    def resume_game(self):
+        if self.PAUSE:
+            self.level_deadline = time.monotonic() + self.PAUSED_TIME
+            self.PAUSE = False
 
     def game_menu(self):
         self.start_screen()
