@@ -67,6 +67,8 @@ class Render:
         self.time_to_restart = False
         self.capslock = False
         self.menu = []
+        self.pause_imgs = []
+        self.pause_index: int = 0
         self.img_index: int = 0
         self.new_game_input: bool = False
         self.high_scores_input: bool = False
@@ -76,6 +78,7 @@ class Render:
         self.PAUSE: bool = False
         self.quit = False
         self.end_until = None
+        self.exit: bool = False
         self.initial_lives = self.data.lives
 
 
@@ -83,13 +86,15 @@ class Render:
         menu_imgs = [
             "new-game",
             "scores",
-            "controls"
+            "controls",
+            "exit"
         ]
         self.window = self.mlx.mlx_new_window(
             self.app,
             self.WIDTH,
             self.HEIGHT,
-            "PAC Man")
+            "PAC Man"
+        )
         self.small_gun, self.m_w, self.m_h  = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/models/assets/gums/pacgum-small.png")
@@ -119,10 +124,6 @@ class Render:
             "src/ui/menu/names.png"
         )
 
-        self.modes_img, self.md_w, self.md_h = self.mlx.mlx_png_file_to_image(
-            self.app,
-            "src/ui/menu/modes.png"
-        )
         self.win_img, self.win_w, self.win_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/gamewin.png"
@@ -132,9 +133,17 @@ class Render:
             "src/ui/menu/enter.png"
         )
 
-        self.pause_img, self.pause_w, self.pause_h = self.mlx.mlx_png_file_to_image(
-            self.app,
-            "src/ui/menu/pause.png"
+        self.pause_imgs.append(
+            self.mlx.mlx_png_file_to_image(
+                self.app,
+                "src/ui/menu/main-menu.png"
+            )
+        )
+        self.pause_imgs.append(
+            self.mlx.mlx_png_file_to_image(
+                self.app,
+                "src/ui/menu/resume.png"
+            )
         )
         for img in menu_imgs:
             information = self.mlx.mlx_png_file_to_image(
@@ -148,6 +157,9 @@ class Render:
 
     def get_image(self) -> tuple[Any | None, int, int]:
         return self.menu[self.img_index % len(self.menu)]
+
+    def get_pause_image(self) -> tuple[Any | None, int, int]:
+        return self.pause_imgs[self.pause_index % len(self.pause_imgs)]
 
     def create_classes_and_classes_atributes(self):
         self.player: Player = Player(
@@ -289,6 +301,7 @@ class Render:
             return
         self.level_deadline = time.monotonic() + self.TIME
         if next_level:
+            self.index += 1
             level = self.levels[self.index % len(self.levels)]
             width, height = level.width, level.height
             self.maze = MazeGenerator(
@@ -302,6 +315,10 @@ class Render:
         self.heated_small.clear()
         self.heated_big.clear()
         self.pacgums = 0
+        self.player_sheat["intangibility"] = False
+        self.player_sheat["invincibility"] = False
+        self.player_sheat["invincibility"] = False
+        self.PLAYER_SPEED = 10
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
@@ -331,7 +348,6 @@ class Render:
             bot.dead = False
 
             bot.call_bfs()
-        self.index += 1
 
     def cell_position(self, row, col):
         x = self.OFFSET_X + col * self.CELL_W
@@ -480,24 +496,27 @@ class Render:
                 self.time_to_restart = False
 
     def controls(self, key, param):
-        if key == 0xff1b and self.PAUSE:
-            self.back_to_menu()
-        elif key ==  0xff1b:
-            self.close(param)
 
         if key == 32:
             # space
-            if self.PAUSE:
-                self.resume_game()
-            else:
-                self.pause_game()
+            self.pause_game()
             return 0
 
+        if self.PAUSE:
+            if key == 65362:
+                self.pause_index += 1
+            
+            if key == 65364:
+                self.pause_index -= 1
+            if key == 65293 and self.pause_index == 0:
+                self.back_to_menu()
+            if key == 65293 and self.pause_index == 1:
+                self.resume_game()
 
         if not self.PAUSE:
             if key == 49:
                 # tecla 1
-                self.PLAYER_SPEED = 10 if self.PLAYER_SPEED == 40 else 40
+                self.PLAYER_SPEED = 10 if self.PLAYER_SPEED == 15 else 15
 
             if key == 50:
                 # tecla 2
@@ -520,9 +539,6 @@ class Render:
                 # tecla 6
                 self.player_sheat["intangibility"] = not self.player_sheat["intangibility"]
 
-            if key == 109:
-                # tecla m
-                self.show_modes = not self.show_modes
             if key in (65362, 119):
                 # up
                 self.player.update_img("UP", self.mlx, self.app)
@@ -703,6 +719,8 @@ class Render:
         self.high_scores_input = False
         self.show_controls_input = False
         self.img_index = 0
+        self.pacgums = 0
+        self.pause_index = 0
         self.scores = self.db.get_scores()
 
     def render_loop(self, param):
@@ -723,6 +741,10 @@ class Render:
                 self.level_win()
 
         elif self.PAUSE:
+            self.frames(
+                self.player.x,
+                self.player.y
+            )
             self.pause()
 
         else:
@@ -770,12 +792,14 @@ class Render:
         )
 
     def pause(self):
-        x = (self.WIDTH - self.pause_w) // 2
-        y = (self.HEIGHT - self.pause_h) // 2
+        pause_img, pause_w, pause_h = self.get_pause_image()
+        self.pause_index = self.pause_index % len(self.pause_imgs)
+        x = (self.WIDTH - pause_w) // 2
+        y = (self.HEIGHT - pause_h) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
             self.window,
-            self.pause_img,
+            pause_img,
             x,
             y
         )
@@ -837,7 +861,7 @@ class Render:
                     b.bot_respaw = time.time() + b.BOT_TIME_DEAD
 
             elif touching and not invincible:
-                if not self.data.lives > 0:
+                if not self.data.lives > 1:
                     self.gameover = True
                 else:
                     self.data.lives -= 1
@@ -993,16 +1017,16 @@ class Render:
             self.app,
             self.window,
             margin_x,
-            hud_top + 10,
-            150,
+            hud_top - 10,
+            0x00FFFFFF,
             "Points: " + str(self.points)
         )
         self.mlx.mlx_string_put(
             self.app,
             self.window,
             margin_x,
-            hud_top + 50,
-            150,
+            hud_top + 10,
+            0x00FFFFFF,
             "Level: " + str(self.index)
         )
         remaining = max(0, self.level_deadline - time.monotonic())
@@ -1013,19 +1037,9 @@ class Render:
             self.window,
             margin_x,
             hud_top + 30,
-            150,
+            0x00FFFFFF,
             "Time: " + str(round(remaining))
         )
-        if self.show_modes:
-            x = (self.WIDTH - self.md_w) // 2
-            y = (self.HEIGHT - self.md_h) // 2
-            self.mlx.mlx_put_image_to_window(
-                self.app,
-                self.window,
-                self.modes_img,
-                x,
-                round(y * 11.5)
-            )
         if self.data.lives <= 3:
             for i in range(0, self.data.lives):
                 self.mlx.mlx_put_image_to_window(
@@ -1041,7 +1055,7 @@ class Render:
                 self.window,
                 margin_x + 155,
                 hud_top + 20,
-                150,
+                0x00FFFFFF,
                 "Lives: " + str(self.data.lives)
             )
 
@@ -1049,32 +1063,31 @@ class Render:
         pass
 
     def new_game(self):
-        if self.name_already_set:
-            x = (self.WIDTH - self.e_w) // 2
-            y = (self.HEIGHT - self.e_h) // 2
-            self.mlx.mlx_put_image_to_window(
-                self.app,
-                self.window,
-                self.enter_img,
-                x,
-                y
-            )
-        else:
-            self.mlx.mlx_put_image_to_window(
-                self.app,
-                self.window,
-                self.names_img,
-                round((self.WIDTH // 2) * 0.45),
-                round((self.HEIGHT // 2) * 0.65),
-            )
-            self.mlx.mlx_string_put(
-                self.app,
-                self.window,
-                round((self.WIDTH // 2) * 0.69),
-                round((self.HEIGHT // 2) * 0.73),
-                0x00FFFFFF,
-                self.name_player
-            )
+        x = (self.WIDTH - self.e_w) // 2
+        y = (self.HEIGHT - self.e_h) // 2
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.enter_img,
+            x,
+            y
+        )
+        # else:
+        #     self.mlx.mlx_put_image_to_window(
+        #         self.app,
+        #         self.window,
+        #         self.names_img,
+        #         round((self.WIDTH // 2) * 0.45),
+        #         round((self.HEIGHT // 2) * 0.65),
+        #     )
+        #     self.mlx.mlx_string_put(
+        #         self.app,
+        #         self.window,
+        #         round((self.WIDTH // 2) * 0.69),
+        #         round((self.HEIGHT // 2) * 0.73),
+        #         0x00FFFFFF,
+        #         self.name_player
+        #     )
 
     def high_scores(self):
         if self.scores:
@@ -1100,7 +1113,7 @@ class Render:
             self.window,
             self.img_controls,
             x,
-            round((self.HEIGHT // 2) * 0.60)
+            0
         )
 
     def redraw_start_screen(self):
@@ -1125,14 +1138,20 @@ class Render:
             return
 
         elif self.new_game_input:
-            if keycode == 65293:
-                self.name_already_set = True
-                self.name_player.strip()
+            if keycode == 32:
+                # Space
+                self.start = False
+                self.mlx.mlx_loop_exit(self.app)
+                self.redraw_start_screen()
+                return
+            # if keycode == 65293:
+            #     self.name_already_set = True
+            #     self.name_player.strip()
 
-            elif keycode == 65288 and not self.name_already_set:
-                # Backspace
-                if len(self.name_player) > 0:
-                    self.name_player = self.name_player[:-1]
+            # elif keycode == 65288 and not self.name_already_set:
+            #     # Backspace
+            #     if len(self.name_player) > 0:
+            #         self.name_player = self.name_player[:-1]
 
             elif not self.name_already_set:
                 self.set_name_player(keycode)
@@ -1142,6 +1161,8 @@ class Render:
             self.high_scores_input = True
         elif keycode == 65293 and self.img_index == 2:
             self.show_controls_input = True
+        elif keycode == 65293 and self.img_index == 3:
+            self.exit = True
 
         elif keycode == 65362:
             self.img_index -= 1
@@ -1151,12 +1172,6 @@ class Render:
             self.img_index += 1
             self.img_index = self.img_index % len(self.menu)
 
-        if keycode == 32 and self.name_already_set:
-            # Space
-            self.start = False
-            self.mlx.mlx_loop_exit(self.app)
-            self.redraw_start_screen()
-            return
         self.redraw_start_screen()
 
     def set_name_player(self, keycode):
@@ -1180,6 +1195,9 @@ class Render:
         elif self.show_controls_input:
             self.show_controls()
             return
+        elif self.exit:
+            self.close(None)
+            return
 
         img, img_width, _ = self.get_image()
 
@@ -1189,7 +1207,7 @@ class Render:
             self.app,
             self.window,
             img,
-            x,
+            x - 100,
             0
         )
 
