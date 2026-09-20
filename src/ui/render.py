@@ -301,7 +301,6 @@ class Render:
 
         self.heated_small.clear()
         self.heated_big.clear()
-        self.points = 0
         self.pacgums = 0
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
@@ -660,7 +659,6 @@ class Render:
     def end_screen(self):
         if self.end_until is None:
             self.end_until = time.monotonic() + 3
-            self.db.insert_on_table(self.name_player, self.points)
             if self.gameover:
                 self.game_over()
             else:
@@ -670,6 +668,10 @@ class Render:
             self.back_to_menu()
 
     def back_to_menu(self):
+        self.db.insert_on_table(
+            self.name_player,
+            self.points
+        )
         self.reset_game()
         self.start = True
         self.mlx.mlx_clear_window(self.app, self.window)
@@ -836,12 +838,10 @@ class Render:
 
             elif touching and not invincible:
                 if not self.data.lives > 0:
-                    self.db.insert_on_table(self.name_player, self.points)
                     self.gameover = True
                 else:
                     self.data.lives -= 1
                     self.time_to_restart = True
-                    self.db.insert_on_table(self.name_player, self.points)
                     self.start_level(next_level=False)
 
             else:

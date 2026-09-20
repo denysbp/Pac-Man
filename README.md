@@ -1,9 +1,5 @@
-Abre as Definições do VS Code (Ctrl + ,).Pesquisa por python.analysis.packageIndexDepths.Clica em Edit in settings.json e adiciona estas linhas dentro do objeto de configuração:json"python.analysis.packageIndexDepths": [
-    {
-        "name": "mlx",
-        "depth": 5
-    }
-],
-"python.analysis.extraPaths": [
-    "./.venv/lib/python3.12/site-packages"
-]
+ADCIONAR O NAME NO FINAL DA PARTIDA
+MELHORAR MENU INICIAL
+MELHORAR MENU DE PAUSE GAME
+ADCIONAR IMAGEM DE PONTOS QUANDO GHOST FOR COMIDO
+OS PONTOS TEMD E SER ACUMULADO ATE O GAME WIN OU GAME OVER
