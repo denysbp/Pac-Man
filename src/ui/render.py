@@ -119,7 +119,7 @@ class Render:
             self.app,
             "src/ui/menu/gameover.png"
         )
-        self.names_img, _, _ = self.mlx.mlx_png_file_to_image(
+        self.names_img, self.n_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/names.png"
         )
@@ -180,6 +180,7 @@ class Render:
         self.time_super_pac = 8
         self.TIME: int = self.data.level_max_time
         self.PAUSED_TIME = 0
+        self.INPUT: bool = False
         self.level_deadline = time.monotonic() + self.TIME
         self.super_pac = False
         self.name_player = ""
@@ -452,51 +453,56 @@ class Render:
         return
 
     def key_press(self, keycode, param):
-        if self.victory or self.gameover or self.gamewin:
-            return
         if self.victory:
             return
         return self.controls(keycode, param)
 
     def frames(self, x, y):
-        if self.gameover:
-            self.game_over()
-        elif self.gamewin:
-            self.game_win()
-        else:
-            self.mlx.mlx_clear_window(self.app, self.window)
-            if self.reload:
-                self.clear_buffer()
-                self.draw_board()
-                self.reload = False
-
-            self.blip()
-            self.draw_information()
+        self.mlx.mlx_clear_window(self.app, self.window)
+        if self.reload:
+            self.clear_buffer()
+            self.draw_board()
+            self.reload = False
+        self.blip()
+        self.draw_information()
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.player.img,
+            x,
+            y
+        )
+        if self.pacgums == len(self.gum_position):
+            self.coodown = 200
+            self.victory = True
+            self.gum_position.clear()
+        for b in self.bots:
             self.mlx.mlx_put_image_to_window(
                 self.app,
                 self.window,
-                self.player.img,
-                x,
-                y
+                b.img,
+                b.x,
+                b.y
             )
-            if self.pacgums == len(self.gum_position):
-                self.coodown = 200
-                self.victory = True
-                self.gum_position.clear()
-            for b in self.bots:
-                self.mlx.mlx_put_image_to_window(
-                    self.app,
-                    self.window,
-                    b.img,
-                    b.x,
-                    b.y
-                )
-            if self.time_to_restart:
-                time.sleep(3)
-                self.time_to_restart = False
+        if self.time_to_restart:
+            time.sleep(3)
+            self.time_to_restart = False
 
     def controls(self, key, param):
+        if self.INPUT:
+            if key == 65293:
+                self.name_already_set = True
 
+            elif key == 65288 and not self.name_already_set:
+                # Backspace
+                if len(self.name_player) > 0:
+                    self.name_player = self.name_player[:-1]
+
+            elif not self.name_already_set:
+                self.set_name_player(key)
+            return
+        if self.gameover or self.gamewin:
+            return
         if key == 32:
             # space
             self.pause_game()
@@ -505,7 +511,7 @@ class Render:
         if self.PAUSE:
             if key == 65362:
                 self.pause_index += 1
-            
+
             if key == 65364:
                 self.pause_index -= 1
             if key == 65293 and self.pause_index == 0:
@@ -681,13 +687,48 @@ class Render:
                 self.game_win()
             return
         if time.monotonic() >= self.end_until:
+            self.get_user_name()
+
+    def get_user_name(self):
+        x = (self.WIDTH - self.n_w) // 2
+        self.mlx.mlx_clear_window(
+            self.app,
+            self.window
+        )
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.names_img,
+            x,
+            0,
+        )
+        self.mlx.mlx_string_put(
+            self.app,
+            self.window,
+            round((self.WIDTH // 2) * 0.80),
+            round((self.HEIGHT // 2) * 0.92),
+            0x00FFFFFF,
+            self.name_player
+        )
+        self.mlx.mlx_string_put(
+            self.app,
+            self.window,
+            round((self.WIDTH // 2) * 1.05),
+            round((self.HEIGHT // 2) * 0.60),
+            0x00FFFFFF,
+            str(self.points)
+        )
+        self.INPUT = True
+        if self.name_already_set:
+            if not self.name_player.strip():
+                self.name_player = "UNKNOWN"
+            self.db.insert_on_table(
+                self.name_player.strip(),
+                self.points
+            )
             self.back_to_menu()
 
     def back_to_menu(self):
-        self.db.insert_on_table(
-            self.name_player,
-            self.points
-        )
         self.reset_game()
         self.start = True
         self.mlx.mlx_clear_window(self.app, self.window)
@@ -697,6 +738,7 @@ class Render:
         self.gameover = False
         self.gamewin = False
         self.victory = False
+        self.INPUT = False
         self.PAUSE = False
         self.index = 0
         self.data.lives = self.initial_lives
@@ -726,10 +768,10 @@ class Render:
     def render_loop(self, param):
         if self.start:
             return 0
-        if self.gameover or self.gamewin:
+        elif self.gameover or self.gamewin:
             self.end_screen()
             return 0
-        if self.victory:
+        elif self.victory:
             self.coodown -= 1
 
             if self.coodown <= 0:
@@ -1064,30 +1106,13 @@ class Render:
 
     def new_game(self):
         x = (self.WIDTH - self.e_w) // 2
-        y = (self.HEIGHT - self.e_h) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
             self.window,
             self.enter_img,
             x,
-            y
+            0
         )
-        # else:
-        #     self.mlx.mlx_put_image_to_window(
-        #         self.app,
-        #         self.window,
-        #         self.names_img,
-        #         round((self.WIDTH // 2) * 0.45),
-        #         round((self.HEIGHT // 2) * 0.65),
-        #     )
-        #     self.mlx.mlx_string_put(
-        #         self.app,
-        #         self.window,
-        #         round((self.WIDTH // 2) * 0.69),
-        #         round((self.HEIGHT // 2) * 0.73),
-        #         0x00FFFFFF,
-        #         self.name_player
-        #     )
 
     def high_scores(self):
         if self.scores:
@@ -1144,17 +1169,6 @@ class Render:
                 self.mlx.mlx_loop_exit(self.app)
                 self.redraw_start_screen()
                 return
-            # if keycode == 65293:
-            #     self.name_already_set = True
-            #     self.name_player.strip()
-
-            # elif keycode == 65288 and not self.name_already_set:
-            #     # Backspace
-            #     if len(self.name_player) > 0:
-            #         self.name_player = self.name_player[:-1]
-
-            elif not self.name_already_set:
-                self.set_name_player(keycode)
         elif keycode == 65293 and self.img_index == 0:
             self.new_game_input = True
         elif keycode == 65293 and self.img_index == 1:
@@ -1178,7 +1192,7 @@ class Render:
         k: str = keyboard.get(keycode)
         if not k:
             return
-        if len(self.name_player) > 10:
+        if len(self.name_player) > 15:
             return
         if k == "capslock!":
             self.capslock = not self.capslock
