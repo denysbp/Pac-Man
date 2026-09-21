@@ -8,6 +8,8 @@ run:
 
 install:
 	python3 -m venv $(VENV)
+	$(PIP) install --upgrade pip
+	$(PIP) install -U pyinstaller
 	$(PIP) install -r requirements.txt
 
 clean:
@@ -24,6 +26,10 @@ fclean: clean
 
 debug:
 	$(PY) -m pdb pac-man.py config.json
+
+deploy:
+	.venv/bin/python -m PyInstaller pac2.spec
+
 
 lint:
 	@$(VENV)/bin/flake8 .

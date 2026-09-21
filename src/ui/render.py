@@ -64,7 +64,6 @@ class Render:
         self.reload = False
         self.start = True
         self.gameover = False
-        self.time_to_restart = False
         self.capslock = False
         self.menu = []
         self.pause_imgs = []
@@ -308,11 +307,11 @@ class Render:
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
     def start_level(self, next_level: bool = True):
-        if self.index == len(self.levels):
-            self.gamewin = True
-            return
-        self.level_deadline = time.monotonic() + self.TIME
         if next_level:
+            if self.index == len(self.levels):
+                self.gamewin = True
+                return
+            self.level_deadline = time.monotonic() + self.TIME
             self.index += 1
             level = self.levels[self.index % len(self.levels)]
             width, height = level.width, level.height
@@ -321,12 +320,38 @@ class Render:
                 seed=self.data.seed
             )
 
+            self.heated_small.clear()
+            self.heated_big.clear()
             self.maze.generate()
+            self.pacgums = 0
             self.calcule_maze_dimetions(self.maze._height, self.maze._width)
+            pixel_data = {
+                "SPEED": self.BOT_SPEED,
+                "OFFSET_X": self.OFFSET_X,
+                "OFFSET_Y":self.OFFSET_Y,
+                "CELL_W":self.CELL_W ,
+                "CELL_H":self.CELL_H
+            }
+            for i in range(4):
+                bot = self.bots[i]
+    
+                bot.spam_x = self.cornes[i][0]
+                bot.spam_y = self.cornes[i][1]
+    
+                bot.x = self.cornes[i][0]
+                bot.y = self.cornes[i][1]
+    
+                bot.maze = self.maze
+                bot.pixel_data = pixel_data
+    
+                bot.i = 0
+                bot.pixel = 0
+                bot.path = []
+    
+                bot.dead = False
+    
+                bot.call_bfs()
 
-        self.heated_small.clear()
-        self.heated_big.clear()
-        self.pacgums = 0
         self.player_sheat["intangibility"] = False
         self.player_sheat["invincibility"] = False
         self.player_sheat["invincibility"] = False
@@ -334,32 +359,7 @@ class Render:
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
-        pixel_data = {
-            "SPEED": self.BOT_SPEED,
-            "OFFSET_X": self.OFFSET_X,
-            "OFFSET_Y":self.OFFSET_Y,
-            "CELL_W":self.CELL_W ,
-            "CELL_H":self.CELL_H
-        }
-        for i in range(4):
-            bot = self.bots[i]
 
-            bot.spam_x = self.cornes[i][0]
-            bot.spam_y = self.cornes[i][1]
-
-            bot.x = self.cornes[i][0]
-            bot.y = self.cornes[i][1]
-
-            bot.maze = self.maze
-            bot.pixel_data = pixel_data
-
-            bot.i = 0
-            bot.pixel = 0
-            bot.path = []
-
-            bot.dead = False
-
-            bot.call_bfs()
 
     def cell_position(self, row, col):
         x = self.OFFSET_X + col * self.CELL_W
@@ -495,9 +495,6 @@ class Render:
                 b.x,
                 b.y
             )
-        if self.time_to_restart:
-            time.sleep(3)
-            self.time_to_restart = False
 
     def controls(self, key, param):
         if self.INPUT:
@@ -756,7 +753,6 @@ class Render:
         self.PLAYER_SPEED = 10
         self.super_pac = False
         self.super_pac_deadline = 0
-        self.time_to_restart = False
         self.end_until = None
         for k in self.player_sheat:
             self.player_sheat[k] = False
@@ -919,7 +915,6 @@ class Render:
                     self.gameover = True
                 else:
                     self.data.lives -= 1
-                    self.time_to_restart = True
                     self.start_level(next_level=False)
 
             else:

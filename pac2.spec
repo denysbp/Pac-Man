@@ -1,8 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
 
-mlx_path = "/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/mlx"
-mazegen_path = "/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/mazegenerator"
+mlx_path = ".venv/lib/python3.10/site-packages/mlx"
+mazegen_path = ".venv/lib/python3.10/site-packages/mazegenerator"
 binaries = [
     (os.path.join(mlx_path, "libmlx.so"), "mlx"),
 ]
@@ -37,7 +37,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='pac_man42.exe',
+    name='pac_man42',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
