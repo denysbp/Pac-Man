@@ -1,0 +1,314 @@
+44 INFO: PyInstaller: 6.22.3, contrib hooks: 2026.7
+44 INFO: Python: 3.10.12
+45 INFO: Platform: Linux-5.15.0-191-generic-x86_64-with-glibc2.35
+45 INFO: Python environment: /home/dosorio-/42/m4/Pac-Man/.venv
+45 DEBUG: Testing UPX availability ...
+46 DEBUG: UPX is not available.
+46 INFO: Removing temporary files and cleaning cache in /home/dosorio-/.cache/pyinstaller
+47 DEBUG: script: /home/dosorio-/42/m4/Pac-Man/pac-man.py
+47 INFO: Module search paths (PYTHONPATH):
+['/opt/pyenv/versions/3.10.12/lib/python310.zip',
+ '/opt/pyenv/versions/3.10.12/lib/python3.10',
+ '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload',
+ '/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages',
+ '/home/dosorio-/42/m4/Pac-Man']
+34 DEBUG: discover_hook_directories: Hook directories: [('/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/_pyinstaller_hooks_contrib/stdhooks', -1000), ('/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/_pyinstaller_hooks_contrib', -1000)]
+141 INFO: Appending 'binaries' from .spec
+141 INFO: Appending 'datas' from .spec
+142 INFO: checking Analysis
+142 INFO: Building Analysis because Analysis-00.toc is non existent
+142 INFO: Looking for Python shared library...
+146 INFO: Using Python shared library: /opt/pyenv/versions/3.10.12/lib/libpython3.10.so.1.0
+146 INFO: Running Analysis Analysis-00.toc
+146 INFO: Target bytecode optimization level: 0
+146 DEBUG: Excluding module 'mlx'
+146 DEBUG: Excluding module 'mlx.mlx'
+146 INFO: Initializing module dependency graph...
+147 INFO: Initializing module graph hook caches...
+155 INFO: Analyzing modules for base_library.zip ...
+156 DEBUG: Collecting submodules for encodings
+23 DEBUG: collect_submodules - scanning (sub)package encodings
+23 DEBUG: collect_submodules - scanning (sub)package encodings in location(s): ['/opt/pyenv/versions/3.10.12/lib/python3.10/encodings']
+249 DEBUG: collect_submodules - found submodules: ['encodings', 'encodings.aliases', 'encodings.ascii', 'encodings.base64_codec', 'encodings.big5', 'encodings.big5hkscs', 'encodings.bz2_codec', 'encodings.charmap', 'encodings.cp037', 'encodings.cp1006', 'encodings.cp1026', 'encodings.cp1125', 'encodings.cp1140', 'encodings.cp1250', 'encodings.cp1251', 'encodings.cp1252', 'encodings.cp1253', 'encodings.cp1254', 'encodings.cp1255', 'encodings.cp1256', 'encodings.cp1257', 'encodings.cp1258', 'encodings.cp273', 'encodings.cp424', 'encodings.cp437', 'encodings.cp500', 'encodings.cp720', 'encodings.cp737', 'encodings.cp775', 'encodings.cp850', 'encodings.cp852', 'encodings.cp855', 'encodings.cp856', 'encodings.cp857', 'encodings.cp858', 'encodings.cp860', 'encodings.cp861', 'encodings.cp862', 'encodings.cp863', 'encodings.cp864', 'encodings.cp865', 'encodings.cp866', 'encodings.cp869', 'encodings.cp874', 'encodings.cp875', 'encodings.cp932', 'encodings.cp949', 'encodings.cp950', 'encodings.euc_jis_2004', 'encodings.euc_jisx0213', 'encodings.euc_jp', 'encodings.euc_kr', 'encodings.gb18030', 'encodings.gb2312', 'encodings.gbk', 'encodings.hex_codec', 'encodings.hp_roman8', 'encodings.hz', 'encodings.idna', 'encodings.iso2022_jp', 'encodings.iso2022_jp_1', 'encodings.iso2022_jp_2', 'encodings.iso2022_jp_2004', 'encodings.iso2022_jp_3', 'encodings.iso2022_jp_ext', 'encodings.iso2022_kr', 'encodings.iso8859_1', 'encodings.iso8859_10', 'encodings.iso8859_11', 'encodings.iso8859_13', 'encodings.iso8859_14', 'encodings.iso8859_15', 'encodings.iso8859_16', 'encodings.iso8859_2', 'encodings.iso8859_3', 'encodings.iso8859_4', 'encodings.iso8859_5', 'encodings.iso8859_6', 'encodings.iso8859_7', 'encodings.iso8859_8', 'encodings.iso8859_9', 'encodings.johab', 'encodings.koi8_r', 'encodings.koi8_t', 'encodings.koi8_u', 'encodings.kz1048', 'encodings.latin_1', 'encodings.mac_arabic', 'encodings.mac_croatian', 'encodings.mac_cyrillic', 'encodings.mac_farsi', 'encodings.mac_greek', 'encodings.mac_iceland', 'encodings.mac_latin2', 'encodings.mac_roman', 'encodings.mac_romanian', 'encodings.mac_turkish', 'encodings.mbcs', 'encodings.oem', 'encodings.palmos', 'encodings.ptcp154', 'encodings.punycode', 'encodings.quopri_codec', 'encodings.raw_unicode_escape', 'encodings.rot_13', 'encodings.shift_jis', 'encodings.shift_jis_2004', 'encodings.shift_jisx0213', 'encodings.tis_620', 'encodings.undefined', 'encodings.unicode_escape', 'encodings.utf_16', 'encodings.utf_16_be', 'encodings.utf_16_le', 'encodings.utf_32', 'encodings.utf_32_be', 'encodings.utf_32_le', 'encodings.utf_7', 'encodings.utf_8', 'encodings.utf_8_sig', 'encodings.uu_codec', 'encodings.zlib_codec']
+249 DEBUG: Collecting submodules for collections
+23 DEBUG: collect_submodules - scanning (sub)package collections
+23 DEBUG: collect_submodules - scanning (sub)package collections in location(s): ['/opt/pyenv/versions/3.10.12/lib/python3.10/collections']
+340 DEBUG: collect_submodules - found submodules: ['collections', 'collections.abc']
+434 INFO: Processing standard module hook 'hook-heapq.py' from '/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/hooks'
+435 DEBUG: Suppressing import of 'doctest' from module 'heapq' due to excluded import 'doctest' specified in a hook for 'heapq' (or its parent package(s)).
+493 INFO: Processing standard module hook 'hook-encodings.py' from '/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/hooks'
+494 DEBUG: Collecting submodules for encodings
+24 DEBUG: collect_submodules - scanning (sub)package encodings
+24 DEBUG: collect_submodules - scanning (sub)package encodings in location(s): ['/opt/pyenv/versions/3.10.12/lib/python3.10/encodings']
+588 DEBUG: collect_submodules - found submodules: ['encodings', 'encodings.aliases', 'encodings.ascii', 'encodings.base64_codec', 'encodings.big5', 'encodings.big5hkscs', 'encodings.bz2_codec', 'encodings.charmap', 'encodings.cp037', 'encodings.cp1006', 'encodings.cp1026', 'encodings.cp1125', 'encodings.cp1140', 'encodings.cp1250', 'encodings.cp1251', 'encodings.cp1252', 'encodings.cp1253', 'encodings.cp1254', 'encodings.cp1255', 'encodings.cp1256', 'encodings.cp1257', 'encodings.cp1258', 'encodings.cp273', 'encodings.cp424', 'encodings.cp437', 'encodings.cp500', 'encodings.cp720', 'encodings.cp737', 'encodings.cp775', 'encodings.cp850', 'encodings.cp852', 'encodings.cp855', 'encodings.cp856', 'encodings.cp857', 'encodings.cp858', 'encodings.cp860', 'encodings.cp861', 'encodings.cp862', 'encodings.cp863', 'encodings.cp864', 'encodings.cp865', 'encodings.cp866', 'encodings.cp869', 'encodings.cp874', 'encodings.cp875', 'encodings.cp932', 'encodings.cp949', 'encodings.cp950', 'encodings.euc_jis_2004', 'encodings.euc_jisx0213', 'encodings.euc_jp', 'encodings.euc_kr', 'encodings.gb18030', 'encodings.gb2312', 'encodings.gbk', 'encodings.hex_codec', 'encodings.hp_roman8', 'encodings.hz', 'encodings.idna', 'encodings.iso2022_jp', 'encodings.iso2022_jp_1', 'encodings.iso2022_jp_2', 'encodings.iso2022_jp_2004', 'encodings.iso2022_jp_3', 'encodings.iso2022_jp_ext', 'encodings.iso2022_kr', 'encodings.iso8859_1', 'encodings.iso8859_10', 'encodings.iso8859_11', 'encodings.iso8859_13', 'encodings.iso8859_14', 'encodings.iso8859_15', 'encodings.iso8859_16', 'encodings.iso8859_2', 'encodings.iso8859_3', 'encodings.iso8859_4', 'encodings.iso8859_5', 'encodings.iso8859_6', 'encodings.iso8859_7', 'encodings.iso8859_8', 'encodings.iso8859_9', 'encodings.johab', 'encodings.koi8_r', 'encodings.koi8_t', 'encodings.koi8_u', 'encodings.kz1048', 'encodings.latin_1', 'encodings.mac_arabic', 'encodings.mac_croatian', 'encodings.mac_cyrillic', 'encodings.mac_farsi', 'encodings.mac_greek', 'encodings.mac_iceland', 'encodings.mac_latin2', 'encodings.mac_roman', 'encodings.mac_romanian', 'encodings.mac_turkish', 'encodings.mbcs', 'encodings.oem', 'encodings.palmos', 'encodings.ptcp154', 'encodings.punycode', 'encodings.quopri_codec', 'encodings.raw_unicode_escape', 'encodings.rot_13', 'encodings.shift_jis', 'encodings.shift_jis_2004', 'encodings.shift_jisx0213', 'encodings.tis_620', 'encodings.undefined', 'encodings.unicode_escape', 'encodings.utf_16', 'encodings.utf_16_be', 'encodings.utf_16_le', 'encodings.utf_32', 'encodings.utf_32_be', 'encodings.utf_32_le', 'encodings.utf_7', 'encodings.utf_8', 'encodings.utf_8_sig', 'encodings.uu_codec', 'encodings.zlib_codec']
+781 INFO: Processing standard module hook 'hook-math.py' from '/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/hooks'
+1352 INFO: Processing standard module hook 'hook-pickle.py' from '/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/hooks'
+1360 DEBUG: Suppressing import of 'doctest' from module 'pickle' due to excluded import 'doctest' specified in a hook for 'pickle' (or its parent package(s)).
+1360 DEBUG: Suppressing import of 'argparse' from module 'pickle' due to excluded import 'argparse' specified in a hook for 'pickle' (or its parent package(s)).
+2159 INFO: Caching module dependency graph...
+2198 INFO: Analyzing /home/dosorio-/42/m4/Pac-Man/pac-man.py
+2297 INFO: Processing standard module hook 'hook-_ctypes.py' from '/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/hooks'
+2301 INFO: Processing standard module hook 'hook-sqlite3.py' from '/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/hooks'
+2301 DEBUG: Collecting submodules for sqlite3
+23 DEBUG: collect_submodules - scanning (sub)package sqlite3
+24 DEBUG: collect_submodules - scanning (sub)package sqlite3 in location(s): ['/opt/pyenv/versions/3.10.12/lib/python3.10/sqlite3']
+24 DEBUG: collect_submodules - scanning (sub)package sqlite3.test
+25 DEBUG: collect_submodules - scanning (sub)package sqlite3.test in location(s): ['/opt/pyenv/versions/3.10.12/lib/python3.10/sqlite3/test']
+2395 DEBUG: collect_submodules - found submodules: ['sqlite3', 'sqlite3.dbapi2', 'sqlite3.dump', 'sqlite3.test', 'sqlite3.test.backup', 'sqlite3.test.dbapi', 'sqlite3.test.dump', 'sqlite3.test.factory', 'sqlite3.test.hooks', 'sqlite3.test.regression', 'sqlite3.test.transactions', 'sqlite3.test.types', 'sqlite3.test.userfunctions']
+2400 INFO: Processing module hooks (post-graph stage)...
+2408 INFO: Performing binary vs. data reclassification (4 entries)
+2452 INFO: Looking for ctypes DLLs
+2452 DEBUG: Scanning src.ui.render for ctypes-based references to shared libraries
+2458 INFO: Analyzing run-time hooks ...
+2459 INFO: Including run-time hook 'pyi_rth_inspect.py' from '/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/hooks/rthooks'
+2462 DEBUG: Module collection settings: {}
+2462 DEBUG: Target optimization level 0 matches run-time optimization level 0 - using modulegraph's code-object cache.
+2463 INFO: Creating base_library.zip...
+2478 INFO: Looking for dynamic libraries
+2479 DEBUG: Analyzing binary '/home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/mlx/libmlx.so'
+2484 DEBUG: Processing dependency, name: 'libvulkan.so.1', resolved path: '/lib/x86_64-linux-gnu/libvulkan.so.1'
+2484 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libvulkan.so.1' as 'libvulkan.so.1'.
+2484 DEBUG: Processing dependency, name: 'libbsd.so.0', resolved path: '/lib/x86_64-linux-gnu/libbsd.so.0'
+2484 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libbsd.so.0' as 'libbsd.so.0'.
+2484 DEBUG: Processing dependency, name: 'libm.so.6', resolved path: '/lib/x86_64-linux-gnu/libm.so.6'
+2484 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libm.so.6' due to global exclusion rules.
+2484 DEBUG: Processing dependency, name: 'libz.so.1', resolved path: '/lib/x86_64-linux-gnu/libz.so.1'
+2484 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libz.so.1' as 'libz.so.1'.
+2484 DEBUG: Processing dependency, name: 'libxcb.so.1', resolved path: '/lib/x86_64-linux-gnu/libxcb.so.1'
+2484 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libxcb.so.1' due to global exclusion rules.
+2484 DEBUG: Processing dependency, name: 'libXdmcp.so.6', resolved path: '/lib/x86_64-linux-gnu/libXdmcp.so.6'
+2484 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libXdmcp.so.6' as 'libXdmcp.so.6'.
+2485 DEBUG: Processing dependency, name: 'libmd.so.0', resolved path: '/lib/x86_64-linux-gnu/libmd.so.0'
+2485 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libmd.so.0' as 'libmd.so.0'.
+2485 DEBUG: Processing dependency, name: 'libxcb-keysyms.so.1', resolved path: '/lib/x86_64-linux-gnu/libxcb-keysyms.so.1'
+2485 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libxcb-keysyms.so.1' as 'libxcb-keysyms.so.1'.
+2485 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2485 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2485 DEBUG: Processing dependency, name: 'libXau.so.6', resolved path: '/lib/x86_64-linux-gnu/libXau.so.6'
+2485 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libXau.so.6' as 'libXau.so.6'.
+2485 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/libpython3.10.so.1.0'
+2488 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2489 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2489 DEBUG: Processing dependency, name: 'libm.so.6', resolved path: '/lib/x86_64-linux-gnu/libm.so.6'
+2489 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libm.so.6' due to global exclusion rules.
+2489 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_statistics.cpython-310-x86_64-linux-gnu.so'
+2492 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_contextvars.cpython-310-x86_64-linux-gnu.so'
+2495 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_decimal.cpython-310-x86_64-linux-gnu.so'
+2499 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2499 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2499 DEBUG: Processing dependency, name: 'libm.so.6', resolved path: '/lib/x86_64-linux-gnu/libm.so.6'
+2499 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libm.so.6' due to global exclusion rules.
+2499 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_pickle.cpython-310-x86_64-linux-gnu.so'
+2503 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2503 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2503 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_hashlib.cpython-310-x86_64-linux-gnu.so'
+2507 DEBUG: Processing dependency, name: 'libcrypto.so.3', resolved path: '/lib/x86_64-linux-gnu/libcrypto.so.3'
+2507 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libcrypto.so.3' as 'libcrypto.so.3'.
+2507 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2507 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2507 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_sha3.cpython-310-x86_64-linux-gnu.so'
+2510 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2510 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2510 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_blake2.cpython-310-x86_64-linux-gnu.so'
+2514 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2514 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2514 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_sha256.cpython-310-x86_64-linux-gnu.so'
+2517 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2517 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2518 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_md5.cpython-310-x86_64-linux-gnu.so'
+2521 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2521 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2521 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_sha1.cpython-310-x86_64-linux-gnu.so'
+2524 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2524 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2524 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_sha512.cpython-310-x86_64-linux-gnu.so'
+2528 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2528 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2528 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_random.cpython-310-x86_64-linux-gnu.so'
+2531 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2531 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2532 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_bisect.cpython-310-x86_64-linux-gnu.so'
+2535 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2535 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2535 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/math.cpython-310-x86_64-linux-gnu.so'
+2539 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2539 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2539 DEBUG: Processing dependency, name: 'libm.so.6', resolved path: '/lib/x86_64-linux-gnu/libm.so.6'
+2539 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libm.so.6' due to global exclusion rules.
+2539 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/unicodedata.cpython-310-x86_64-linux-gnu.so'
+2542 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2542 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2542 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_datetime.cpython-310-x86_64-linux-gnu.so'
+2546 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2546 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2546 DEBUG: Processing dependency, name: 'libm.so.6', resolved path: '/lib/x86_64-linux-gnu/libm.so.6'
+2546 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libm.so.6' due to global exclusion rules.
+2546 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/array.cpython-310-x86_64-linux-gnu.so'
+2549 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2549 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2549 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/select.cpython-310-x86_64-linux-gnu.so'
+2553 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2553 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2553 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_socket.cpython-310-x86_64-linux-gnu.so'
+2556 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2556 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2556 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_csv.cpython-310-x86_64-linux-gnu.so'
+2560 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2560 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2560 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/resource.cpython-310-x86_64-linux-gnu.so'
+2563 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2564 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2564 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_lzma.cpython-310-x86_64-linux-gnu.so'
+2567 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2567 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2567 DEBUG: Processing dependency, name: 'liblzma.so.5', resolved path: '/lib/x86_64-linux-gnu/liblzma.so.5'
+2567 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/liblzma.so.5' as 'liblzma.so.5'.
+2567 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_bz2.cpython-310-x86_64-linux-gnu.so'
+2571 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2571 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2571 DEBUG: Processing dependency, name: 'libbz2.so.1.0', resolved path: '/lib/x86_64-linux-gnu/libbz2.so.1.0'
+2571 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libbz2.so.1.0' as 'libbz2.so.1.0'.
+2571 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/zlib.cpython-310-x86_64-linux-gnu.so'
+2575 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2575 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2575 DEBUG: Processing dependency, name: 'libz.so.1', resolved path: '/lib/x86_64-linux-gnu/libz.so.1'
+2575 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libz.so.1' due to prior processing.
+2575 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/grp.cpython-310-x86_64-linux-gnu.so'
+2578 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2578 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2578 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_struct.cpython-310-x86_64-linux-gnu.so'
+2582 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2582 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2582 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/binascii.cpython-310-x86_64-linux-gnu.so'
+2585 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2585 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2585 DEBUG: Processing dependency, name: 'libz.so.1', resolved path: '/lib/x86_64-linux-gnu/libz.so.1'
+2586 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libz.so.1' due to prior processing.
+2586 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_opcode.cpython-310-x86_64-linux-gnu.so'
+2589 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2589 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2589 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_posixsubprocess.cpython-310-x86_64-linux-gnu.so'
+2592 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2592 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2593 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/fcntl.cpython-310-x86_64-linux-gnu.so'
+2596 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2596 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2596 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_heapq.cpython-310-x86_64-linux-gnu.so'
+2600 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_multibytecodec.cpython-310-x86_64-linux-gnu.so'
+2603 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2603 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2603 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_codecs_jp.cpython-310-x86_64-linux-gnu.so'
+2607 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2607 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2607 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_codecs_kr.cpython-310-x86_64-linux-gnu.so'
+2610 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2610 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2610 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_codecs_iso2022.cpython-310-x86_64-linux-gnu.so'
+2614 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2614 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2614 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_codecs_cn.cpython-310-x86_64-linux-gnu.so'
+2618 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2618 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2618 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_codecs_tw.cpython-310-x86_64-linux-gnu.so'
+2621 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2621 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2621 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_codecs_hk.cpython-310-x86_64-linux-gnu.so'
+2625 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2625 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2625 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_sqlite3.cpython-310-x86_64-linux-gnu.so'
+2628 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2629 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2629 DEBUG: Processing dependency, name: 'libsqlite3.so.0', resolved path: '/lib/x86_64-linux-gnu/libsqlite3.so.0'
+2629 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libsqlite3.so.0' as 'libsqlite3.so.0'.
+2629 DEBUG: Processing dependency, name: 'libm.so.6', resolved path: '/lib/x86_64-linux-gnu/libm.so.6'
+2629 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libm.so.6' due to global exclusion rules.
+2629 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_ctypes.cpython-310-x86_64-linux-gnu.so'
+2632 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2632 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2632 DEBUG: Processing dependency, name: 'libffi.so.8', resolved path: '/lib/x86_64-linux-gnu/libffi.so.8'
+2632 DEBUG: Collecting dependency '/lib/x86_64-linux-gnu/libffi.so.8' as 'libffi.so.8'.
+2632 DEBUG: Analyzing binary '/opt/pyenv/versions/3.10.12/lib/python3.10/lib-dynload/_json.cpython-310-x86_64-linux-gnu.so'
+2636 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2636 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2636 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libvulkan.so.1'
+2640 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2640 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2640 DEBUG: Processing dependency, name: 'libm.so.6', resolved path: '/lib/x86_64-linux-gnu/libm.so.6'
+2640 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libm.so.6' due to global exclusion rules.
+2640 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libbsd.so.0'
+2644 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2644 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2644 DEBUG: Processing dependency, name: 'libmd.so.0', resolved path: '/lib/x86_64-linux-gnu/libmd.so.0'
+2644 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libmd.so.0' due to prior processing.
+2644 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libz.so.1'
+2648 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2648 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2648 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libXdmcp.so.6'
+2651 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2651 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2651 DEBUG: Processing dependency, name: 'libbsd.so.0', resolved path: '/lib/x86_64-linux-gnu/libbsd.so.0'
+2651 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libbsd.so.0' due to prior processing.
+2651 DEBUG: Processing dependency, name: 'libmd.so.0', resolved path: '/lib/x86_64-linux-gnu/libmd.so.0'
+2651 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libmd.so.0' due to prior processing.
+2651 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libmd.so.0'
+2655 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2655 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2655 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libxcb-keysyms.so.1'
+2659 DEBUG: Processing dependency, name: 'libbsd.so.0', resolved path: '/lib/x86_64-linux-gnu/libbsd.so.0'
+2659 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libbsd.so.0' due to prior processing.
+2659 DEBUG: Processing dependency, name: 'libxcb.so.1', resolved path: '/lib/x86_64-linux-gnu/libxcb.so.1'
+2659 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libxcb.so.1' due to global exclusion rules.
+2659 DEBUG: Processing dependency, name: 'libXdmcp.so.6', resolved path: '/lib/x86_64-linux-gnu/libXdmcp.so.6'
+2659 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libXdmcp.so.6' due to prior processing.
+2659 DEBUG: Processing dependency, name: 'libmd.so.0', resolved path: '/lib/x86_64-linux-gnu/libmd.so.0'
+2659 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libmd.so.0' due to prior processing.
+2659 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2659 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2659 DEBUG: Processing dependency, name: 'libXau.so.6', resolved path: '/lib/x86_64-linux-gnu/libXau.so.6'
+2659 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libXau.so.6' due to prior processing.
+2659 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libXau.so.6'
+2663 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2663 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2663 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libcrypto.so.3'
+2666 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2666 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2666 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/liblzma.so.5'
+2670 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2670 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2670 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libbz2.so.1.0'
+2674 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2674 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2674 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libsqlite3.so.0'
+2678 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2678 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2678 DEBUG: Processing dependency, name: 'libm.so.6', resolved path: '/lib/x86_64-linux-gnu/libm.so.6'
+2678 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libm.so.6' due to global exclusion rules.
+2678 DEBUG: Analyzing binary '/lib/x86_64-linux-gnu/libffi.so.8'
+2681 DEBUG: Processing dependency, name: 'libc.so.6', resolved path: '/lib/x86_64-linux-gnu/libc.so.6'
+2681 DEBUG: Skipping dependency '/lib/x86_64-linux-gnu/libc.so.6' due to global exclusion rules.
+2687 INFO: Warnings written to /home/dosorio-/42/m4/Pac-Man/build/pac2/warn-pac2.txt
+2698 INFO: Graph cross-reference written to /home/dosorio-/42/m4/Pac-Man/build/pac2/xref-pac2.html
+2702 INFO: Graph drawing written to /home/dosorio-/42/m4/Pac-Man/build/pac2/graph-pac2.dot
+2712 INFO: checking PYZ
+2712 INFO: Building PYZ because PYZ-00.toc is non existent
+2712 INFO: Building PYZ (ZlibArchive) /home/dosorio-/42/m4/Pac-Man/build/pac2/PYZ-00.pyz
+2780 INFO: Building PYZ (ZlibArchive) /home/dosorio-/42/m4/Pac-Man/build/pac2/PYZ-00.pyz completed successfully.
+2786 INFO: checking PKG
+2786 INFO: Building PKG because PKG-00.toc is non existent
+2786 INFO: Building PKG (CArchive) pacpac.pkg
+2788 DEBUG: Compiling python script/module file /home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/loader/pyiboot01_bootstrap.py
+2789 DEBUG: Compiling python script/module file /home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/hooks/rthooks/pyi_rth_inspect.py
+2789 DEBUG: Compiling python script/module file /home/dosorio-/42/m4/Pac-Man/pac-man.py
+2790 INFO: Building PKG (CArchive) pacpac.pkg completed successfully.
+2790 INFO: Bootloader /home/dosorio-/42/m4/Pac-Man/.venv/lib/python3.10/site-packages/PyInstaller/bootloader/Linux-64bit-intel/run
+2790 INFO: checking EXE
+2790 INFO: Building EXE because EXE-00.toc is non existent
+2790 INFO: Building EXE from EXE-00.toc
+2790 INFO: Copying bootloader EXE to /home/dosorio-/42/m4/Pac-Man/build/pac2/pacpac
+2791 INFO: Appending PKG archive to custom ELF section in EXE
+2794 INFO: Building EXE from EXE-00.toc completed successfully.
+2795 INFO: checking COLLECT
+2795 INFO: Building COLLECT because COLLECT-00.toc is non existent
+2795 INFO: Building COLLECT COLLECT-00.toc
+2814 INFO: Building COLLECT COLLECT-00.toc completed successfully.
+2815 INFO: Build complete! The results are available in: /home/dosorio-/42/m4/Pac-Man/dist
