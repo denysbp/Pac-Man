@@ -43,10 +43,6 @@ class Player:
                     str(path)
                 )
 
-    @property
-    def static(self) -> Any:
-        return self._image_cache[self._img_name][0]
-
     def update_img(self, direction, mlx: Mlx, mlx_ptr: Any) -> None:
         if direction != self._direction:
             self._direction = direction

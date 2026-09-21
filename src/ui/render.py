@@ -68,6 +68,8 @@ class Render:
         self.capslock = False
         self.menu = []
         self.pause_imgs = []
+        self.enter_imgs = []
+        self.enter_deadline = 0
         self.pause_index: int = 0
         self.img_index: int = 0
         self.new_game_input: bool = False
@@ -128,10 +130,14 @@ class Render:
             self.app,
             "src/ui/menu/gamewin.png"
         )
-        self.enter_img, self.e_w, self.e_h = self.mlx.mlx_png_file_to_image(
+        self.enter_imgs.append(self.mlx.mlx_png_file_to_image(
             self.app,
-            "src/ui/menu/enter.png"
-        )
+            "src/ui/menu/enter-00.png"
+        ))
+        self.enter_imgs.append(self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/menu/enter-01.png"
+        ))
 
         self.pause_imgs.append(
             self.mlx.mlx_png_file_to_image(
@@ -161,6 +167,10 @@ class Render:
     def get_pause_image(self) -> tuple[Any | None, int, int]:
         return self.pause_imgs[self.pause_index % len(self.pause_imgs)]
 
+    def get_enter_image(self) -> tuple[Any | None, int, int]:
+        self.enter_index += 1
+        return self.enter_imgs[self.enter_index % len(self.enter_imgs)]
+
     def create_classes_and_classes_atributes(self):
         self.player: Player = Player(
             span_x= 0,
@@ -186,6 +196,7 @@ class Render:
         self.name_player = ""
         self.name_already_set = False
         self.pacgums: int = 0
+        self.enter_index = 0
 
         self.bots: list[Bot] = []
         for i in range(4):
@@ -763,6 +774,7 @@ class Render:
         self.img_index = 0
         self.pacgums = 0
         self.pause_index = 0
+        self.enter_index = 0
         self.scores = self.db.get_scores()
 
     def render_loop(self, param):
@@ -1071,48 +1083,50 @@ class Render:
             0x00FFFFFF,
             "Level: " + str(self.index)
         )
-        remaining = max(0, self.level_deadline - time.monotonic())
-        if remaining <= 0:
-            self.gameover = True
-        self.mlx.mlx_string_put(
-            self.app,
-            self.window,
-            margin_x,
-            hud_top + 30,
-            0x00FFFFFF,
-            "Time: " + str(round(remaining))
-        )
-        if self.data.lives <= 3:
-            for i in range(0, self.data.lives):
-                self.mlx.mlx_put_image_to_window(
-                    self.app,
-                    self.window,
-                    self.player.static,
-                    (margin_x + 150) + (i * 50),
-                    hud_top + 10
-                )
-        else:
+        if not self.PAUSE:
+            remaining = max(0, self.level_deadline - time.monotonic())
+            if remaining <= 0:
+                self.gameover = True
             self.mlx.mlx_string_put(
                 self.app,
                 self.window,
-                margin_x + 155,
-                hud_top + 20,
+                margin_x + 160,
+                hud_top + 10,
                 0x00FFFFFF,
-                "Lives: " + str(self.data.lives)
+                "Time: " + str(round(remaining))
             )
+        self.mlx.mlx_string_put(
+            self.app,
+            self.window,
+            margin_x + 160,
+            hud_top - 10,
+            0x00FFFFFF,
+            "Lives: " + str(self.data.lives)
+        )
 
     def mouse_handler(self, mouse_code: int, x: int, y: int, param):
         pass
 
-    def new_game(self):
-        x = (self.WIDTH - self.e_w) // 2
-        self.mlx.mlx_put_image_to_window(
-            self.app,
-            self.window,
-            self.enter_img,
-            x,
-            0
-        )
+    def new_game(self, param):
+        if not self.new_game_input:
+            return
+        if self.enter_deadline == 0:
+            self.enter_deadline = time.monotonic() + 0.5
+        if time.monotonic() >= self.enter_deadline:
+            enter_img, w, _ = self.get_enter_image()
+            x = (self.WIDTH - w) // 2
+            self.mlx.mlx_clear_window(
+                self.app,
+                self.window
+            )
+            self.mlx.mlx_put_image_to_window(
+                self.app,
+                self.window,
+                enter_img,
+                x,
+                0
+            )
+            self.enter_deadline = 0
 
     def high_scores(self):
         if self.scores:
@@ -1167,7 +1181,6 @@ class Render:
                 # Space
                 self.start = False
                 self.mlx.mlx_loop_exit(self.app)
-                self.redraw_start_screen()
                 return
         elif keycode == 65293 and self.img_index == 0:
             self.new_game_input = True
@@ -1201,7 +1214,24 @@ class Render:
 
     def start_screen(self):
         if self.new_game_input:
-            self.new_game()
+            enter_img, w, _ = self.get_enter_image()
+            x = (self.WIDTH - w) // 2
+            self.mlx.mlx_clear_window(
+                self.app,
+                self.window
+            )
+            self.mlx.mlx_put_image_to_window(
+                self.app,
+                self.window,
+                enter_img,
+                x,
+                0
+            )
+            self.mlx.mlx_loop_hook(
+                self.app,
+                self.new_game,
+                None
+            )
             return
         elif self.high_scores_input:
             self.high_scores()
