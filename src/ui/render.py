@@ -596,40 +596,55 @@ class Render:
         if not self.PAUSE:
             if key == 49:
                 # tecla 1
-                self.PLAYER_SPEED = 10 if self.PLAYER_SPEED == 15 else 15
-                self.current_power = self.power_imgs["speed"]
-                self.POWER = True
+                if not self.PLAYER_SPEED == 15:
+                    self.PLAYER_SPEED = 15
+                    self.current_power = self.power_imgs["speed"]
+                    self.POWER = True
+                else:
+                    self.PLAYER_SPEED = 10
+
 
             if key == 50:
                 # tecla 2
-                self.player_sheat["invincibility"] = not self.player_sheat["invincibility"]
-                self.current_power = self.power_imgs["invincibility"]
-                self.POWER = True
+                if not self.player_sheat["invincibility"]:
+                    self.player_sheat["invincibility"] = True
+                    self.current_power = self.power_imgs["invincibility"]
+                    self.POWER = True
+                else:
+                    self.player_sheat["invincibility"] = False
 
             if key == 51:
                 # tecla 3
-                self.data.lives += 1
-                self.current_power = self.power_imgs["lives_plus1"]
-                self.POWER = True
+                if not self.POWER:
+                    self.data.lives += 1
+                    self.current_power = self.power_imgs["lives_plus1"]
+                    self.POWER = True
 
             if key == 52:
                 # tecla 4
-                self.start_level(next_level=True)
-                self.reload = True
-                self.current_power = self.power_imgs["level_plus1"]
-                self.POWER = True
+                if not self.POWER:
+                    self.start_level(next_level=True)
+                    self.reload = True
+                    self.current_power = self.power_imgs["level_plus1"]
+                    self.POWER = True
 
             if key == 53:
                 # tecla 5
-                self.player_sheat["freeze_bots"] = not self.player_sheat["freeze_bots"]
-                self.current_power = self.power_imgs["freeze_bots"]
-                self.POWER = True
+                if not self.player_sheat["freeze_bots"]:
+                    self.player_sheat["freeze_bots"] = True
+                    self.current_power = self.power_imgs["freeze_bots"]
+                    self.POWER = True
+                else:
+                    self.player_sheat["freeze_bots"] = False
 
             if key == 54:
                 # tecla 6
-                self.player_sheat["intangibility"] = not self.player_sheat["intangibility"]
-                self.current_power = self.power_imgs["intangibility"]
-                self.POWER = True
+                if not self.player_sheat["intangibility"]:
+                    self.player_sheat["intangibility"] = True
+                    self.current_power = self.power_imgs["intangibility"]
+                    self.POWER = True
+                else:
+                    self.player_sheat["intangibility"] = False
 
             if key in (65362, 119):
                 # up
@@ -675,7 +690,6 @@ class Render:
         if cell & self.N:
             drawlineH(
                 self.memory.data,
-                self.memory.bpp,
                 self.memory.size_line,
                 x, y,
                 x + self.CELL_W, y,
@@ -685,7 +699,6 @@ class Render:
         if cell & self.S:
             drawlineH(
                 self.memory.data,
-                self.memory.bpp,
                 self.memory.size_line,
                 x, y + self.CELL_H,
                 x + self.CELL_W, y + self.CELL_H,
@@ -695,7 +708,6 @@ class Render:
         if cell & self.W:
             drawlineV(
                 self.memory.data,
-                self.memory.bpp,
                 self.memory.size_line,
                 x, y,
                 x, y + self.CELL_H,
@@ -705,7 +717,6 @@ class Render:
         if cell & self.E:
             drawlineV(
                 self.memory.data,
-                self.memory.bpp,
                 self.memory.size_line,
                 x + self.CELL_W, y,
                 x + self.CELL_W, y + self.CELL_H,
@@ -725,7 +736,6 @@ class Render:
 
                     put_pixel(
                         self.memory.data,
-                        self.memory.bpp,
                         self.memory.size_line,
                         center_x,
                         center_y,
@@ -989,9 +999,9 @@ class Render:
                     self.eaten_popups.append((
                         b.x + b.img_width // 2 - self.spam_w // 2,
                         b.y + b.img_height // 2 - self.spam_h // 2,
-                        time.monotonic() + 0.3
+                        time.monotonic() + 0.9
                     ))
-                    b.recalculate_rote((b.x, b.y), calcule_to_midle=True)
+                    b.recalculate_rote((b.x, b.y), respaw=True)
                     b.kill_bot(self.mlx, self.app)
                     self.points += self.data.points_per_ghost
                     b.bot_respaw = time.time() + b.BOT_TIME_DEAD
@@ -1079,6 +1089,7 @@ class Render:
             self.super_pac = True
             for bot in self.bots:
                 if not bot.dead:
+                    bot.scape((self.player.x, self.player.y))
                     bot.powerup_img(self.mlx, self.app)
 
     def try_move_step(
@@ -1097,8 +1108,6 @@ class Render:
             self.OFFSET_X + self.map_width,
             self.OFFSET_Y,
             self.OFFSET_Y + self.map_height,
-            self.V,
-            self.H
         ):
             self.player.x -= dx_dir * step
             self.player.y -= dy_dir * step
@@ -1189,8 +1198,6 @@ class Render:
             "Lives: " + str(self.data.lives)
         )
 
-    def mouse_handler(self, mouse_code: int, x: int, y: int, param):
-        pass
 
     def new_game(self, param):
         if not self.new_game_input:
@@ -1347,7 +1354,6 @@ class Render:
                 self.level_deadline - time.monotonic()
             )
             self.PAUSE = True
-
 
     def resume_game(self):
         if self.PAUSE:

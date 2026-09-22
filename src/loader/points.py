@@ -1,10 +1,3 @@
-"""
-Gera sprites "+N" (popup de pontos ao comer um ghost) com o número
-certo, com base num valor configurável (ex.: data.points_per_ghost
-vindo do config.json).
-
-"""
-
 from pathlib import Path
 from PIL import Image, ImageDraw
 
