@@ -23,10 +23,12 @@ class Render:
         w: int,
         h: int,
         levels: list[Level],
-        data
+        data,
+        name
     ):
         self.data: ConfigData = data
         self.set_global_positions_sizes(w, h)
+        self.path_img =  name
         self.mlx = Mlx()
         self.db = DATA_BASE(self.data.highscore_filename)
         self.db.create_table()
@@ -68,6 +70,8 @@ class Render:
         self.menu = []
         self.pause_imgs = []
         self.enter_imgs = []
+        self.eaten_popups: list[tuple[int, int, float]] = []
+        self.power_imgs = {}
         self.enter_deadline = 0
         self.pause_index: int = 0
         self.img_index: int = 0
@@ -150,6 +154,25 @@ class Render:
                 "src/ui/menu/resume.png"
             )
         )
+
+        self.spam, self.spam_w, self.spam_h = self.mlx.mlx_png_file_to_image(
+            self.app,
+            self.path_img
+        )
+
+        for name in (
+            "freeze_bots",
+            "intangibility",
+            "invincibility",
+            "level_plus1",
+            "lives_plus1",
+            "speed"
+        ):
+            self.power_imgs[name] = self.mlx.mlx_png_file_to_image(
+                self.app,
+                f"src/ui/power/{name}.png"
+            )
+
         for img in menu_imgs:
             information = self.mlx.mlx_png_file_to_image(
                 self.app,
@@ -183,7 +206,8 @@ class Render:
         self.player_sheat: dict = {
             "intangibility": False,
             "invincibility": False,
-            "freeze_bots": False}
+            "freeze_bots": False
+        }
         self.PLAYER_SPEED = 10
         self.super_pac_deadline = 0
         self.time_super_pac = 8
@@ -194,6 +218,15 @@ class Render:
         self.super_pac = False
         self.name_player = ""
         self.name_already_set = False
+        self.POWER: bool = False
+        self.EATED: bool = False
+        self.location_x = 0
+        self.location_y = 0
+        self.power_deadline = 0
+        self.player_deadline = 0
+        self.spam_deadline = 0
+        self.current_power: tuple = ()
+        self.power_index = 0
         self.pacgums: int = 0
         self.enter_index = 0
 
@@ -334,22 +367,22 @@ class Render:
             }
             for i in range(4):
                 bot = self.bots[i]
-    
+
                 bot.spam_x = self.cornes[i][0]
                 bot.spam_y = self.cornes[i][1]
-    
+
                 bot.x = self.cornes[i][0]
                 bot.y = self.cornes[i][1]
-    
+
                 bot.maze = self.maze
                 bot.pixel_data = pixel_data
-    
+
                 bot.i = 0
                 bot.pixel = 0
                 bot.path = []
-    
+
                 bot.dead = False
-    
+
                 bot.call_bfs()
 
         self.player_sheat["intangibility"] = False
@@ -468,6 +501,25 @@ class Render:
             return
         return self.controls(keycode, param)
 
+    def power(self) -> None:
+        if self.power_deadline == 0:
+            self.power_deadline = time.monotonic() + 1
+            self.power_index = 0
+        if time.monotonic() >= self.power_deadline:
+            self.POWER = False
+            self.power_deadline = 0
+        img, img_w, img_h = self.current_power
+        x = (self.WIDTH - img_w) // 2
+        y = (self.WIDTH - img_h) // 2
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            img,
+            x,
+            y - self.power_index
+        )
+        self.power_index += 15
+
     def frames(self, x, y):
         self.mlx.mlx_clear_window(self.app, self.window)
         if self.reload:
@@ -494,6 +546,20 @@ class Render:
                 b.img,
                 b.x,
                 b.y
+            )
+        if self.POWER:
+            self.power()
+        now = time.monotonic()
+        self.eaten_popups = [
+            p for p in self.eaten_popups if p[2] > now
+        ]
+        for x, y, _ in self.eaten_popups:
+            self.mlx.mlx_put_image_to_window(
+                self.app,
+                self.window,
+                self.spam,
+                x,
+                y
             )
 
     def controls(self, key, param):
@@ -531,45 +597,53 @@ class Render:
             if key == 49:
                 # tecla 1
                 self.PLAYER_SPEED = 10 if self.PLAYER_SPEED == 15 else 15
+                self.current_power = self.power_imgs["speed"]
+                self.POWER = True
 
             if key == 50:
                 # tecla 2
                 self.player_sheat["invincibility"] = not self.player_sheat["invincibility"]
+                self.current_power = self.power_imgs["invincibility"]
+                self.POWER = True
 
             if key == 51:
                 # tecla 3
                 self.data.lives += 1
+                self.current_power = self.power_imgs["lives_plus1"]
+                self.POWER = True
 
             if key == 52:
                 # tecla 4
                 self.start_level(next_level=True)
                 self.reload = True
+                self.current_power = self.power_imgs["level_plus1"]
+                self.POWER = True
 
             if key == 53:
                 # tecla 5
                 self.player_sheat["freeze_bots"] = not self.player_sheat["freeze_bots"]
+                self.current_power = self.power_imgs["freeze_bots"]
+                self.POWER = True
 
             if key == 54:
                 # tecla 6
                 self.player_sheat["intangibility"] = not self.player_sheat["intangibility"]
+                self.current_power = self.power_imgs["intangibility"]
+                self.POWER = True
 
             if key in (65362, 119):
                 # up
                 self.player.update_img("UP", self.mlx, self.app)
-                self.frames(self.player.x, self.player.y)
             if key in (65361, 97):
                 # left
                 self.player.update_img("LEFT", self.mlx, self.app)
-                self.frames(self.player.x, self.player.y)
             if key in (65363, 100):
                 # right
                 self.player.update_img("RIGHT", self.mlx, self.app)
-                self.frames(self.player.x, self.player.y)
 
             if key in (65364,115):
                 # down
                 self.player.update_img("DOWN", self.mlx, self.app)
-                self.frames(self.player.x, self.player.y)
         return 0
 
     def pac_gums(self, cell: int, x: int, y: int):
@@ -637,6 +711,7 @@ class Render:
                 x + self.CELL_W, y + self.CELL_H,
                 self.color
             )
+
     def fill_42(self):
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
@@ -743,6 +818,7 @@ class Render:
         self.mlx.mlx_loop_exit(self.app)
 
     def reset_game(self):
+        self.eaten_popups = []
         self.gameover = False
         self.gamewin = False
         self.victory = False
@@ -751,6 +827,7 @@ class Render:
         self.index = 0
         self.data.lives = self.initial_lives
         self.PLAYER_SPEED = 10
+        self.points = 0
         self.super_pac = False
         self.super_pac_deadline = 0
         self.end_until = None
@@ -771,6 +848,9 @@ class Render:
         self.pacgums = 0
         self.pause_index = 0
         self.enter_index = 0
+        self.reload = False
+        self.power_deadline = 0
+        self.player_deadline = 0
         self.scores = self.db.get_scores()
 
     def render_loop(self, param):
@@ -884,7 +964,7 @@ class Render:
         return player_rect.colliderect(bot_rect)
 
     def move_bots(self):
-        if time.time() >= self.super_pac_deadline:
+        if self.super_pac and time.time() >= self.super_pac_deadline:
             self.super_pac = False
             for bot in self.bots:
                 bot.reset_img(self.mlx, self.app)
@@ -905,6 +985,12 @@ class Render:
                 if not b.path or b.i >= len(b.path) and not b.dead:
                     b.scape((self.player.x, self.player.y))
                 if touching and not b.dead:
+                    self.eaten_popups.clear()
+                    self.eaten_popups.append((
+                        b.x + b.img_width // 2 - self.spam_w // 2,
+                        b.y + b.img_height // 2 - self.spam_h // 2,
+                        time.monotonic() + 0.3
+                    ))
                     b.recalculate_rote((b.x, b.y), calcule_to_midle=True)
                     b.kill_bot(self.mlx, self.app)
                     self.points += self.data.points_per_ghost
@@ -1050,10 +1136,14 @@ class Render:
                     break
 
         self.gums()
-        self.player.update_img(
-            self.player._direction,
-            self.mlx, self.app
-        )
+        if self.player_deadline == 0:
+            self.player_deadline = time.monotonic() + 0.05
+        if time.monotonic() >= self.player_deadline:
+            self.player.update_img(
+                self.player._direction,
+                self.mlx, self.app
+            )
+            self.player_deadline = 0
         if not self.player_sheat["freeze_bots"]:
             self.move_bots()
         self.frames(self.player.x, self.player.y)

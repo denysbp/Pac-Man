@@ -37,7 +37,7 @@ keyboard: dict[str, int] = {
     122: "z",
     32: " "
 }
-from .loader import LoaderError, ConfigLoader
+from .loader import LoaderError, ConfigLoader, ScoreSpriteGenerator
 from .helps import (
     colision,
     drawlineH,
