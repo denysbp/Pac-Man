@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Union
 from .metadata import Rect
 from .configs import (
     RIGHT, LEFT, TOP, DOWN
@@ -17,8 +17,8 @@ class Player:
         height: int,
         mlx_ptr: Any,
         mlx: Mlx,
-        lives
-    ):
+        lives: int
+    ) -> None:
         self._img_name: str = ""
         self._direction: str = "RIGHT"
         self.live: int = lives
@@ -43,25 +43,26 @@ class Player:
                     str(path)
                 )
 
-    def update_img(self, direction, mlx: Mlx, mlx_ptr: Any) -> None:
+    def update_img(self, direction: str) -> None:
         if direction != self._direction:
             self._direction = direction
         move = self._directions[self._direction]
         self._img_name = move[self.index % len(move)]
-        self.img, self.img_width, self.img_height = self._image_cache[self._img_name]
+        self.img, self.img_width, self.img_height = self._image_cache[
+            self._img_name
+        ]
         self.index += 1
-
 
     def hit_gum(
         self,
-        position,
-        OFFSET_X,
-        OFFSET_Y,
-        CELL_W,
-        CELL_H,
-        m_w,
-        m_h
-    ):
+        position: list,
+        OFFSET_X: int,
+        OFFSET_Y: int,
+        CELL_W: int,
+        CELL_H: int,
+        m_w: int,
+        m_h: int
+    ) -> Union[tuple[int, int] | None]:
         center_x = self.x + self.img_width // 2
         center_y = self.y + self.img_height // 2
 
@@ -75,7 +76,6 @@ class Player:
             return gum_y, gum_x
 
         return None
-
 
     @property
     def rect(self) -> Rect:

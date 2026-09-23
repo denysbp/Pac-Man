@@ -9,7 +9,8 @@ from src import (
 from mlx.mlx import Mlx
 from sys import argv, exit
 
-def main():
+
+def main() -> int:
     if len(argv) != 2:
         print(
             "Program usage: "
@@ -25,7 +26,7 @@ def main():
             config.points_per_ghost
         )
         mlx = Mlx()
-        _ , w, h = mlx.mlx_get_screen_size(
+        _, w, h = mlx.mlx_get_screen_size(
             mlx.mlx_init()
         )
         game = Render(
@@ -33,7 +34,7 @@ def main():
             h,
             alocate_levels(data),
             config,
-            name._str
+            str(name)
         )
         game.run()
     except LoaderError as e:
@@ -42,3 +43,4 @@ def main():
         print(e)
     except Exception as e:
         print(e)
+    return 0

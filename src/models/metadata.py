@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import Union, Any, Callable
 from ..loader.loader import ConfigLoader
@@ -14,35 +15,43 @@ class ConfigData:
     level_max_time: int
     seed: Union[int | None]
 
+
 @dataclass
 class Level:
     width: int
     height: int
 
+
 class Rect:
-    def __init__(self, x, y, width, height):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        width: int,
+        height: int
+    ) -> None:
         self.x = x
         self.y = y
         self.width = width
         self.height = height
 
     @property
-    def left(self):
+    def left(self) -> int:
         return self.x
 
     @property
-    def right(self):
+    def right(self) -> int:
         return self.x + self.width
 
     @property
-    def top(self):
+    def top(self) -> int:
         return self.y
 
     @property
-    def bottom(self):
+    def bottom(self) -> int:
         return self.y + self.height
 
-    def colliderect(self, other):
+    def colliderect(self, other: Rect) -> bool:
         return (
             self.left < other.right and
             self.right > other.left and
@@ -52,13 +61,13 @@ class Rect:
 
 
 class Memory:
-    def __init__(self):
+    def __init__(self) -> None:
         self.data: Any
         self.bpp: int
         self.size_line: int
         self.endian: int
 
-    def save(self, function: Callable, arg) -> None:
+    def save(self, function: Callable, arg: Any | None) -> None:
         self.data, self.bpp, self.size_line, self.endian = function(arg)
 
 

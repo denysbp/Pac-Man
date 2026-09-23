@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any
-from mlx.mlx import Mlx
 if TYPE_CHECKING:
     from ..models import Player
+
 
 def colision(
     player: "Player",
@@ -11,7 +11,7 @@ def colision(
     bottom: int,
     colision_bot_player: bool = False,
     invecibility: bool = False
-):
+) -> bool:
     if colision_bot_player:
         if invecibility:
             return True
@@ -31,7 +31,14 @@ def colision(
 
     return False
 
-def put_pixel(data, size_line, x, y, color):
+
+def put_pixel(
+    data: Any,
+    size_line: int,
+    x: int,
+    y: int,
+    color: int
+) -> None:
     """
         Draws a pixel directly into an image memory buffer.
 
@@ -55,7 +62,16 @@ def put_pixel(data, size_line, x, y, color):
     data[offset + 3] = (color >> 24) & 0xFF
     # write the 4 bytes of the color on the pixel
 
-def drawlineH(data, size_line, x0, y0, x1, y1, color):
+
+def drawlineH(
+    data: Any,
+    size_line: int,
+    x0: int,
+    y0: int,
+    x1: int,
+    y1: int,
+    color: int
+) -> None:
     # we decide the correect position to start
     if x0 > x1:
         x0, x1 = x1, x0
@@ -83,7 +99,15 @@ def drawlineH(data, size_line, x0, y0, x1, y1, color):
             p = p + 2*dy
 
 
-def drawlineV(data, size_line, x0, y0, x1, y1, color):
+def drawlineV(
+    data: Any,
+    size_line: int,
+    x0: int,
+    y0: int,
+    x1: int,
+    y1: int,
+    color: int
+) -> None:
     if y0 > y1:
         x0, x1 = x1, x0
         y0, y1 = y1, y0
@@ -103,20 +127,21 @@ def drawlineV(data, size_line, x0, y0, x1, y1, color):
                 p = p - 2*dy
             p = p + 2*dx
 
+
 def blit_into_buffer(
-    dst_data,
-    dst_bpp,
-    dst_size_line,
-    dst_w,
-    dst_h,
-    src_data,
-    src_bpp,
-    src_size_line,
-    src_w,
-    src_h,
-    dst_x,
-    dst_y
-):
+    dst_data: Any,
+    dst_bpp: int,
+    dst_size_line: int,
+    dst_w: int,
+    dst_h: int,
+    src_data: Any,
+    src_bpp: int,
+    src_size_line: int,
+    src_w: int,
+    src_h: int,
+    dst_x: int,
+    dst_y: int
+) -> None:
 
     """
     Copies a source image into a destination image buffer.

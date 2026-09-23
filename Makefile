@@ -2,6 +2,7 @@ VENV = .venv
 PY = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 SRC = src/
+FILE ?= .
 
 run:
 	$(PY) pac-man.py config.json
@@ -20,9 +21,10 @@ clean:
 	rm -rf $(SRC)/helps/__pycache__
 	rm -rf $(SRC)/models/__pycache__
 	rm -rf $(SRC)/ui/__pycache__
+	rm -rf .mypy_cache
 
 fclean: clean
-	-rf $(VENV)
+	rm -rf $(VENV)
 
 debug:
 	$(PY) -m pdb pac-man.py config.json
@@ -32,14 +34,8 @@ deploy:
 
 
 lint:
-	@$(VENV)/bin/flake8 .
-	@$(VENV)/bin/mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
-	@echo "\033[32mEverything in the norm!!"
-
-lint-strict: install
-	@$(VENV)/bin/flake8 .
-	@$(VENV)/bin/mypy . --strict
-	@echo "\033[32mEverything in the norm!!"
+	@$(VENV)/bin/flake8 . --exclude=.venv,venv,dist,build
+	$(VENV)/bin/mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 help:
 	@echo "\033[35mAvailable Make commands:\033[0m"

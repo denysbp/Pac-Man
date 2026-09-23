@@ -86,7 +86,11 @@ class ScoreSpriteGenerator:
         img.save(out_path)
         return out_path
 
-    def generate_for_values(self, values: list[int], prefix: str = "+") -> dict[int, Path]:
+    def generate_for_values(
+        self,
+        values: list[int],
+        prefix: str = "+"
+    ) -> dict[int, Path]:
         return {v: self.generate_for_value(v, prefix) for v in values}
 
 

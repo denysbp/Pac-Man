@@ -7,7 +7,7 @@ COMMENTS = (
     "//"
 )
 
-# ESTA CLASSE FAZ O LOADER DAS CONFIG DO JSON FILE
+
 class ConfigLoader:
     def __init__(
         self,
@@ -16,7 +16,7 @@ class ConfigLoader:
     ):
         if '.' not in path:
             raise LoaderError(
-                f"You're supposed to pass a file."
+                "You're supposed to pass a file."
             )
         _, type = path.split(".", 1)
         if type != "json":
@@ -26,8 +26,7 @@ class ConfigLoader:
         self.path: str = path
         self.configs: Dict[str, Any]
 
-    # RESPONSAVEL POR REMOVER COMENTARIOS DAS LINHAS
-    def _split_comments(self, lines: str) -> str:
+    def _split_comments(self, lines: list[str]) -> str:
         json_str = ""
         for line in lines:
             if line.strip().startswith(COMMENTS):
@@ -35,7 +34,6 @@ class ConfigLoader:
             json_str += line
         return json_str
 
-    # ELE VERIFICA SE CADA HEIGHT E WIDTH SAO NUMEROS
     def _ensure_levels_values(self) -> None:
         for config in self.configs["level"]:
             if not isinstance(config, dict):
@@ -47,9 +45,8 @@ class ConfigLoader:
                 raise LoaderError(
                     "LIMITS: >= 14 <= 17."
                 )
-        return True
+        return
 
-    # VERIFICA SE TODOS NUMEROS SAO POSITIVOS E VALIDOS
     def _ensure_numbers(self) -> None:
         all_numbers = [
             self.configs["lives"],
@@ -67,7 +64,7 @@ class ConfigLoader:
             )
         if any(number < 0 for number in all_numbers):
             raise LoaderError(
-                f"WE DON'T ACCEPT NEGATIVE VALUES."
+                "WE DON'T ACCEPT NEGATIVE VALUES."
             )
 
         if any(isinstance(number, bool) for number in all_numbers):
@@ -75,8 +72,11 @@ class ConfigLoader:
                 "WE DON'T ACCEPT BOOLEAN."
             )
 
+        if self.configs["lives"] == 0:
+            raise LoaderError(
+                "Live must be >= 1, How can you play with 0 lives?"
+            )
 
-    # VALIDA TODAS OS VALORES
     def _ensure_values(self) -> None:
         valid_keys = [
             "highscore_filename",
@@ -98,7 +98,7 @@ class ConfigLoader:
             )
         if len(self.configs) != 9:
             raise LoaderError(
-                f"We detected unknown keys."
+                "We detected unknown keys."
             )
         if not isinstance(self.configs["highscore_filename"], str):
             raise LoaderError(
@@ -153,6 +153,10 @@ class ConfigLoader:
     def load_json(self) -> None:
         with open(self.path, "r+", encoding="UTF-8") as file:
             lines = file.readlines()
+            if not lines:
+                raise LoaderError(
+                    "The provide file is empty."
+                )
             json_str = self._split_comments(lines)
         self.configs = json.loads(json_str)
         self._ensure_values()

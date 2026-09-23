@@ -1,7 +1,6 @@
 from mlx.mlx import Mlx
 from mazegenerator.mazegenerator import MazeGenerator
-from random import randint, random, choice
-import ctypes
+from random import randint, choice
 from ..models import Player, Memory, Rect, Level, ConfigData, Bot
 from ..data_base import DATA_BASE
 from typing import Any
@@ -12,8 +11,38 @@ from src import (
     drawlineV,
     blit_into_buffer,
     put_pixel,
-    keyboard
 )
+
+keyboard: dict[int, str] = {
+    65509: "capslock!",
+    97: "a",
+    98: "b",
+    99: "c",
+    100: "d",
+    101: "e",
+    102: "f",
+    103: "g",
+    104: "h",
+    105: "i",
+    106: "j",
+    107: "k",
+    108: "l",
+    109: "m",
+    110: "n",
+    111: "o",
+    112: "p",
+    113: "q",
+    114: "r",
+    115: "s",
+    116: "t",
+    117: "u",
+    118: "v",
+    119: "w",
+    120: "x",
+    121: "y",
+    122: "z",
+    32: " "
+}
 
 
 class Render:
@@ -28,7 +57,7 @@ class Render:
     ):
         self.data: ConfigData = data
         self.set_global_positions_sizes(w, h)
-        self.path_img =  name
+        self.path_img = name
         self.mlx = Mlx()
         self.db = DATA_BASE(self.data.highscore_filename)
         self.db.create_table()
@@ -78,14 +107,13 @@ class Render:
         self.new_game_input: bool = False
         self.high_scores_input: bool = False
         self.show_controls_input: bool = False
-        self.show_modes: bool =  False
+        self.show_modes: bool = False
         self.gamewin: bool = False
         self.PAUSE: bool = False
         self.quit = False
         self.end_until = None
         self.exit: bool = False
         self.initial_lives = self.data.lives
-
 
     def set_images(self):
         menu_imgs = [
@@ -100,10 +128,10 @@ class Render:
             self.HEIGHT,
             "PAC Man"
         )
-        self.small_gun, self.m_w, self.m_h  = self.mlx.mlx_png_file_to_image(
+        self.small_gun, self.m_w, self.m_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/models/assets/gums/pacgum-small.png")
-        self.player_img, self.player_w, self.player_h= self.mlx.mlx_png_file_to_image(
+        self.player_img, self.pl_w, self.pl_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/models/assets/player/right-3.png"
         )
@@ -113,14 +141,14 @@ class Render:
         self.victory_img, self.v_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/victory.png")
-        self.big_gum, self.b_w, self.b_h  = self.mlx.mlx_png_file_to_image(
+        self.big_gum, self.b_w, self.b_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/models/assets/gums/pacgum-big.png")
         self.buffer = self.mlx.mlx_new_image(
             self.app,
             self.WIDTH,
             self.HEIGHT)
-        self.gameover_img, self.over_width , _ = self.mlx.mlx_png_file_to_image(
+        self.gameover_img, self.over_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/gameover.png"
         )
@@ -182,7 +210,6 @@ class Render:
                 information
             )
 
-
     def get_image(self) -> tuple[Any | None, int, int]:
         return self.menu[self.img_index % len(self.menu)]
 
@@ -195,11 +222,11 @@ class Render:
 
     def create_classes_and_classes_atributes(self):
         self.player: Player = Player(
-            span_x= 0,
-            span_y= 0,
+            span_x=0,
+            span_y=0,
             image=self.player_img,
-            width=self.player_w,
-            height=self.player_h,
+            width=self.pl_w,
+            height=self.pl_h,
             mlx_ptr=self.app,
             mlx=self.mlx,
             lives=self.data.lives)
@@ -234,8 +261,8 @@ class Render:
         for i in range(4):
             self.bots.append(
                 Bot(
-                    spam_x = 0,
-                    spam_y = 0,
+                    spam_x=0,
+                    spam_y=0,
                     mlx_ptr=self.app,
                     mlx=self.mlx,
                     maze=[],
@@ -293,7 +320,8 @@ class Render:
         self.maze_height = height
         self.maze_width = width
         self.CELL_W = (self.WIDTH - 2 * self.OFFSET_X) // self.maze_width
-        self.CELL_H = (self.HEIGHT - self.OFFSET_Y - self.HUD_HEIGHT) // self.maze_height
+        self.CELL_H = (
+            self.HEIGHT - self.OFFSET_Y - self.HUD_HEIGHT) // self.maze_height
         self.map_height = self.CELL_H * self.maze_height
         self.map_width = self.CELL_W * self.maze_width
         margin_x = round(self.CELL_W * 0.5)
@@ -301,7 +329,7 @@ class Render:
         self.cornes.extend(
             [
                 (
-                    self.OFFSET_X  + margin_x,
+                    self.OFFSET_X + margin_x,
                     self.OFFSET_Y + margin_y),
                 (
                     self.OFFSET_X + self.maze_width * self.CELL_W - margin_x,
@@ -323,7 +351,7 @@ class Render:
                 cell = self.maze.maze[i][j]
                 if self.is_walkable(cell):
                     small_gum_x = x + (self.CELL_W - self.m_w) // 2
-                    small_gum_y = y + (self.CELL_H -self.m_h) // 2
+                    small_gum_y = y + (self.CELL_H - self.m_h) // 2
                     self.gum_position.append(
                         (small_gum_y, small_gum_x)
                     )
@@ -344,6 +372,7 @@ class Render:
             if self.index == len(self.levels):
                 self.gamewin = True
                 return
+            self.clear_buffer()
             self.level_deadline = time.monotonic() + self.TIME
             self.index += 1
             level = self.levels[self.index % len(self.levels)]
@@ -361,9 +390,9 @@ class Render:
             pixel_data = {
                 "SPEED": self.BOT_SPEED,
                 "OFFSET_X": self.OFFSET_X,
-                "OFFSET_Y":self.OFFSET_Y,
-                "CELL_W":self.CELL_W ,
-                "CELL_H":self.CELL_H
+                "OFFSET_Y": self.OFFSET_Y,
+                "CELL_W": self.CELL_W,
+                "CELL_H": self.CELL_H
             }
             for i in range(4):
                 bot = self.bots[i]
@@ -393,7 +422,6 @@ class Render:
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
-
     def cell_position(self, row, col):
         x = self.OFFSET_X + col * self.CELL_W
         y = self.OFFSET_Y + row * self.CELL_H
@@ -420,7 +448,8 @@ class Render:
             )
         if cell & self.S:
             walls.append(
-                Rect(x, y + self.CELL_H - thickness // 2,
+                Rect(
+                    x, y + self.CELL_H - thickness // 2,
                     self.CELL_W, thickness)
             )
         if cell & self.W:
@@ -429,8 +458,9 @@ class Render:
             )
         if cell & self.E:
             walls.append(
-                Rect(x + self.CELL_W - thickness // 2,
-                    y, thickness, self.CELL_H)
+                Rect(
+                    x + self.CELL_W - thickness // 2, y, thickness,
+                    self.CELL_H)
             )
         return walls
 
@@ -603,7 +633,6 @@ class Render:
                 else:
                     self.PLAYER_SPEED = 10
 
-
             if key == 50:
                 # tecla 2
                 if not self.player_sheat["invincibility"]:
@@ -648,23 +677,23 @@ class Render:
 
             if key in (65362, 119):
                 # up
-                self.player.update_img("UP", self.mlx, self.app)
+                self.player.update_img("UP")
             if key in (65361, 97):
                 # left
-                self.player.update_img("LEFT", self.mlx, self.app)
+                self.player.update_img("LEFT")
             if key in (65363, 100):
                 # right
-                self.player.update_img("RIGHT", self.mlx, self.app)
+                self.player.update_img("RIGHT")
 
-            if key in (65364,115):
+            if key in (65364, 115):
                 # down
-                self.player.update_img("DOWN", self.mlx, self.app)
+                self.player.update_img("DOWN")
         return 0
 
     def pac_gums(self, cell: int, x: int, y: int):
         if self.is_walkable(cell):
             small_gum_x = x + (self.CELL_W - self.m_w) // 2
-            small_gum_y = y + (self.CELL_H -self.m_h) // 2
+            small_gum_y = y + (self.CELL_H - self.m_h) // 2
 
             if (small_gum_y, small_gum_x) not in self.gum_position:
                 return
@@ -752,7 +781,6 @@ class Render:
                 self.draw_cell_walls(cell, x, y)
                 self.pac_gums(cell, x, y)
 
-
         for x, y in self.cornes:
             if (x, y) in self.heated_big:
                 continue
@@ -799,7 +827,7 @@ class Render:
             self.app,
             self.window,
             round((self.WIDTH // 2) * 0.80),
-            round((self.HEIGHT // 2) * 0.92),
+            round((self.HEIGHT // 2) * 0.98),
             0x00FFFFFF,
             self.name_player
         )
@@ -807,17 +835,20 @@ class Render:
             self.app,
             self.window,
             round((self.WIDTH // 2) * 1.05),
-            round((self.HEIGHT // 2) * 0.60),
+            round((self.HEIGHT // 2) * 0.63),
             0x00FFFFFF,
             str(self.points)
         )
         self.INPUT = True
         if self.name_already_set:
+            skip = False
             if not self.name_player.strip():
                 self.name_player = "UNKNOWN"
+                skip = True
             self.db.insert_on_table(
                 self.name_player.strip(),
-                self.points
+                self.points,
+                skip
             )
             self.back_to_menu()
 
@@ -874,7 +905,7 @@ class Render:
 
             if self.coodown <= 0:
                 self.victory = False
-                self.coodown = 200
+                self.coodown = 100
                 self.start_level()
                 self.draw_board()
             else:
@@ -922,7 +953,7 @@ class Render:
 
     def game_over(self):
         self.mlx.mlx_clear_window(self.app, self.window)
-        x = (self.WIDTH - self.over_width) // 2
+        x = (self.WIDTH - self.over_w) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
             self.window,
@@ -943,7 +974,6 @@ class Render:
             x,
             y
         )
-
 
     def is_near_player(self, bot, player, distance):
         dx = bot.x - player.x
@@ -1036,7 +1066,8 @@ class Render:
             if self.check_colision_to_bot(b, dx, dy):
                 b.move_bot()
                 b.pixel += self.BOT_SPEED
-                cell_size = self.CELL_H if direction in ("N", "S") else self.CELL_W
+                cell_size = self.CELL_H if direction in (
+                    "N", "S") else self.CELL_W
                 while b.pixel >= cell_size:
                     b.pixel -= cell_size
                     b.i += 1
@@ -1150,7 +1181,6 @@ class Render:
         if time.monotonic() >= self.player_deadline:
             self.player.update_img(
                 self.player._direction,
-                self.mlx, self.app
             )
             self.player_deadline = 0
         if not self.player_sheat["freeze_bots"]:
@@ -1197,7 +1227,6 @@ class Render:
             0x00FFFFFF,
             "Lives: " + str(self.data.lives)
         )
-
 
     def new_game(self, param):
         if not self.new_game_input:
@@ -1251,20 +1280,19 @@ class Render:
         self.mlx.mlx_clear_window(self.app, self.window)
         self.start_screen()
 
-
     def start_game(self, keycode, param):
         if keycode == 0xff1b and any(
             [
-            self.new_game_input,
-            self.high_scores_input,
-            self.show_controls_input
+                self.new_game_input,
+                self.high_scores_input,
+                self.show_controls_input
             ]
         ):
             self.new_game_input = False
             self.high_scores_input = False
             self.show_controls_input = False
 
-        elif keycode ==  0xff1b:
+        elif keycode == 0xff1b:
             self.close(param)
             return
 
@@ -1374,6 +1402,12 @@ class Render:
             self.start_level()
             self.clear_buffer()
             self.draw_board()
-            self.mlx.mlx_hook(self.window, 2, 1 << 0, self.key_press, self.player)
+            self.mlx.mlx_hook(
+                self.window,
+                2,
+                1 << 0,
+                self.key_press,
+                self.player
+            )
             self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
             self.mlx.mlx_loop(self.app)
