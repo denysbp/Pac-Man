@@ -1031,7 +1031,7 @@ class Render:
                         b.y + b.img_height // 2 - self.spam_h // 2,
                         time.monotonic() + 0.9
                     ))
-                    b.recalculate_rote((b.x, b.y), respaw=True)
+                    b.recalculate_rote((b.x, b.y), (0, 0), respaw=True)
                     b.kill_bot(self.mlx, self.app)
                     self.points += self.data.points_per_ghost
                     b.bot_respaw = time.time() + b.BOT_TIME_DEAD
