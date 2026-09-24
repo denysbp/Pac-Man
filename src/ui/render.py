@@ -52,9 +52,9 @@ class Render:
         w: int,
         h: int,
         levels: list[Level],
-        data,
-        name
-    ):
+        data: ConfigData,
+        name: str
+    ) -> None:
         self.data: ConfigData = data
         self.set_global_positions_sizes(w, h)
         self.path_img = name
@@ -67,7 +67,7 @@ class Render:
         self.set_images()
         self.create_classes_and_classes_atributes()
 
-    def set_global_positions_sizes(self, w: int, h: int):
+    def set_global_positions_sizes(self, w: int, h: int) -> None:
         self.H = 2
         self.V = 1
         self.N = 1
@@ -96,12 +96,12 @@ class Render:
         self.start = True
         self.gameover = False
         self.capslock = False
-        self.menu = []
-        self.pause_imgs = []
-        self.enter_imgs = []
+        self.menu: list[tuple] = []
+        self.pause_imgs: list[tuple] = []
+        self.enter_imgs: list[tuple] = []
         self.eaten_popups: list[tuple[int, int, float]] = []
-        self.power_imgs = {}
-        self.enter_deadline = 0
+        self.power_imgs: dict[str, tuple] = {}
+        self.enter_deadline: float | int = 0
         self.pause_index: int = 0
         self.img_index: int = 0
         self.new_game_input: bool = False
@@ -111,11 +111,11 @@ class Render:
         self.gamewin: bool = False
         self.PAUSE: bool = False
         self.quit = False
-        self.end_until = None
+        self.end_until: float = 0
         self.exit: bool = False
         self.initial_lives = self.data.lives
 
-    def set_images(self):
+    def set_images(self) -> None:
         menu_imgs = [
             "new-game",
             "scores",
@@ -220,7 +220,7 @@ class Render:
         self.enter_index += 1
         return self.enter_imgs[self.enter_index % len(self.enter_imgs)]
 
-    def create_classes_and_classes_atributes(self):
+    def create_classes_and_classes_atributes(self) -> None:
         self.player: Player = Player(
             span_x=0,
             span_y=0,
@@ -236,10 +236,10 @@ class Render:
             "freeze_bots": False
         }
         self.PLAYER_SPEED = 10
-        self.super_pac_deadline = 0
+        self.super_pac_deadline: float | int = 0
         self.time_super_pac = 8
         self.TIME: int = self.data.level_max_time
-        self.PAUSED_TIME = 0
+        self.PAUSED_TIME: float | int = 0
         self.INPUT: bool = False
         self.level_deadline = time.monotonic() + self.TIME
         self.super_pac = False
@@ -249,8 +249,8 @@ class Render:
         self.EATED: bool = False
         self.location_x = 0
         self.location_y = 0
-        self.power_deadline = 0
-        self.player_deadline = 0
+        self.power_deadline: float | int = 0
+        self.player_deadline: float | int = 0
         self.spam_deadline = 0
         self.current_power: tuple = ()
         self.power_index = 0
@@ -278,15 +278,15 @@ class Render:
             self.buffer
         )
 
-        self.gum_position: list[(int, int)] = []
-        self.heated_small = []
+        self.gum_position: list[tuple[int, int]] = []
+        self.heated_small: list[tuple] = []
         self.small_gun_memory: Memory = Memory()
         self.small_gun_memory.save(
             self.mlx.mlx_get_data_addr,
             self.small_gun
         )
 
-        self.heated_big = []
+        self.heated_big: list[tuple] = []
         self.big_gum_memory: Memory = Memory()
         self.big_gum_memory.save(
             self.mlx.mlx_get_data_addr,
@@ -295,7 +295,7 @@ class Render:
         if self.data.seed is None:
             self.data.seed = 0
 
-    def find_spawn_below_42(self):
+    def find_spawn_below_42(self) -> tuple[int, int]:
         rows_with_42 = [i for i, row in enumerate(self.maze.maze) if 15 in row]
         last_row = max(rows_with_42)
 
@@ -311,10 +311,10 @@ class Render:
         spawn_row = last_row + 1
         return spawn_row, spawn_col
 
-    def clear_buffer(self):
+    def clear_buffer(self) -> None:
         self.memory.data[:] = b'\x00' * len(self.memory.data)
 
-    def calcule_maze_dimetions(self, height: int, width: int):
+    def calcule_maze_dimetions(self, height: int, width: int) -> None:
         self.cornes.clear()
         self.gum_position.clear()
         self.maze_height = height
@@ -356,7 +356,7 @@ class Render:
                         (small_gum_y, small_gum_x)
                     )
 
-        temp = []
+        temp: list[tuple] = []
         while len(temp) < self.data.pacgum:
             gum = choice(self.gum_position)
             self.gum_position.remove(gum)
@@ -367,7 +367,7 @@ class Render:
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
-    def start_level(self, next_level: bool = True):
+    def start_level(self, next_level: bool = True) -> None:
         if next_level:
             if self.index == len(self.levels):
                 self.gamewin = True
@@ -422,12 +422,12 @@ class Render:
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
-    def cell_position(self, row, col):
+    def cell_position(self, row: int, col: int) -> tuple[int, int]:
         x = self.OFFSET_X + col * self.CELL_W
         y = self.OFFSET_Y + row * self.CELL_H
         return x, y
 
-    def is_walkable(self, cell: int):
+    def is_walkable(self, cell: int) -> bool:
         return (
             not (cell & self.N) or
             not (cell & self.E) or
@@ -435,7 +435,7 @@ class Render:
             not (cell & self.W)
         )
 
-    def get_wall_rects(self, row, col):
+    def get_wall_rects(self, row: int, col: int) -> list:
         if not (0 <= row < self.maze_height and 0 <= col < self.maze_width):
             return []
         x, y = self.cell_position(row, col)
@@ -464,7 +464,7 @@ class Render:
             )
         return walls
 
-    def check_colision(self, dx, dy) -> bool:
+    def check_colision(self, dx: int, dy: int) -> bool:
         w = self.player.img_width
         h = self.player.img_height
         dest_rect = Rect(dx, dy, w, h)
@@ -487,7 +487,7 @@ class Render:
                     return False
         return True
 
-    def check_colision_to_bot(self, bot: Bot, dx, dy) -> bool:
+    def check_colision_to_bot(self, bot: Bot, dx: int, dy: int) -> bool:
         w = bot.img_width
         h = bot.img_height
         dest_rect = Rect(dx, dy, w, h)
@@ -510,7 +510,7 @@ class Render:
                     return False
         return True
 
-    def blip(self):
+    def blip(self) -> None:
         self.mlx.mlx_put_image_to_window(
             self.app,
             self.window,
@@ -519,14 +519,14 @@ class Render:
             0
         )
 
-    def close(self, param):
+    def close(self, param: Any) -> None:
         self.quit = True
         self.mlx.mlx_do_key_autorepeaton(self.app)
         self.mlx.mlx_destroy_window(self.app, self.window)
         self.mlx.mlx_loop_exit(self.app)
         return
 
-    def key_press(self, keycode, param):
+    def key_press(self, keycode: int, param: Any) -> None:
         if self.victory:
             return
         return self.controls(keycode, param)
@@ -550,7 +550,7 @@ class Render:
         )
         self.power_index += 15
 
-    def frames(self, x, y):
+    def frames(self, x: int, y: int) -> None:
         self.mlx.mlx_clear_window(self.app, self.window)
         if self.reload:
             self.clear_buffer()
@@ -592,7 +592,7 @@ class Render:
                 y
             )
 
-    def controls(self, key, param):
+    def controls(self, key: int, param: Any) -> None:
         if self.INPUT:
             if key == 65293:
                 self.name_already_set = True
@@ -610,7 +610,7 @@ class Render:
         if key == 32:
             # space
             self.pause_game()
-            return 0
+            return
 
         if self.PAUSE:
             if key == 65362:
@@ -688,9 +688,9 @@ class Render:
             if key in (65364, 115):
                 # down
                 self.player.update_img("DOWN")
-        return 0
+        return
 
-    def pac_gums(self, cell: int, x: int, y: int):
+    def pac_gums(self, cell: int, x: int, y: int) -> None:
         if self.is_walkable(cell):
             small_gum_x = x + (self.CELL_W - self.m_w) // 2
             small_gum_y = y + (self.CELL_H - self.m_h) // 2
@@ -715,7 +715,7 @@ class Render:
                 small_gum_y
             )
 
-    def draw_cell_walls(self, cell, x, y):
+    def draw_cell_walls(self, cell: int, x: int, y: int) -> None:
         if cell & self.N:
             drawlineH(
                 self.memory.data,
@@ -752,7 +752,7 @@ class Render:
                 self.color
             )
 
-    def fill_42(self):
+    def fill_42(self) -> None:
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 cell = self.maze.maze[i][j]
@@ -771,7 +771,7 @@ class Render:
                         0xFFFFFFFF
                     )
 
-    def draw_board(self):
+    def draw_board(self) -> None:
         self.fill_42()
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
@@ -799,8 +799,8 @@ class Render:
                 y - self.b_h // 2
             )
 
-    def end_screen(self):
-        if self.end_until is None:
+    def end_screen(self) -> None:
+        if self.end_until == 0:
             self.end_until = time.monotonic() + 3
             if self.gameover:
                 self.game_over()
@@ -810,7 +810,7 @@ class Render:
         if time.monotonic() >= self.end_until:
             self.get_user_name()
 
-    def get_user_name(self):
+    def get_user_name(self) -> None:
         x = (self.WIDTH - self.n_w) // 2
         self.mlx.mlx_clear_window(
             self.app,
@@ -852,13 +852,13 @@ class Render:
             )
             self.back_to_menu()
 
-    def back_to_menu(self):
+    def back_to_menu(self) -> None:
         self.reset_game()
         self.start = True
         self.mlx.mlx_clear_window(self.app, self.window)
         self.mlx.mlx_loop_exit(self.app)
 
-    def reset_game(self):
+    def reset_game(self) -> None:
         self.eaten_popups = []
         self.gameover = False
         self.gamewin = False
@@ -871,7 +871,7 @@ class Render:
         self.points = 0
         self.super_pac = False
         self.super_pac_deadline = 0
-        self.end_until = None
+        self.end_until = 0
         for k in self.player_sheat:
             self.player_sheat[k] = False
         self.gum_position.clear()
@@ -894,7 +894,7 @@ class Render:
         self.player_deadline = 0
         self.scores = self.db.get_scores()
 
-    def render_loop(self, param):
+    def render_loop(self, param: Any) -> int:
         if self.start:
             return 0
         elif self.gameover or self.gamewin:
@@ -927,7 +927,7 @@ class Render:
             )
         return 0
 
-    def level_win(self):
+    def level_win(self) -> None:
         x = (self.WIDTH - self.v_w) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
@@ -937,7 +937,7 @@ class Render:
             round((self.HEIGHT // 2) * 0.95)
         )
 
-    def game_win(self):
+    def game_win(self) -> None:
         self.mlx.mlx_clear_window(
             self.app,
             self.window
@@ -951,7 +951,7 @@ class Render:
             round((self.HEIGHT // 2) * 0.95)
         )
 
-    def game_over(self):
+    def game_over(self) -> None:
         self.mlx.mlx_clear_window(self.app, self.window)
         x = (self.WIDTH - self.over_w) // 2
         self.mlx.mlx_put_image_to_window(
@@ -962,7 +962,7 @@ class Render:
             round((self.HEIGHT // 2) * 0.95)
         )
 
-    def pause(self):
+    def pause(self) -> None:
         pause_img, pause_w, pause_h = self.get_pause_image()
         self.pause_index = self.pause_index % len(self.pause_imgs)
         x = (self.WIDTH - pause_w) // 2
@@ -975,14 +975,14 @@ class Render:
             y
         )
 
-    def is_near_player(self, bot, player, distance):
+    def is_near_player(self, bot: Bot, player: Player, distance: int) -> bool:
         dx = bot.x - player.x
         dy = bot.y - player.y
         return dx * dx + dy * dy <= distance * distance
 
     def check_bot_player_collision(
         self,
-        bot,
+        bot: Bot,
         invencible: bool = False
     ) -> bool:
         if invencible:
@@ -1003,7 +1003,7 @@ class Render:
         )
         return player_rect.colliderect(bot_rect)
 
-    def move_bots(self):
+    def move_bots(self) -> None:
         if self.super_pac and time.time() >= self.super_pac_deadline:
             self.super_pac = False
             for bot in self.bots:
@@ -1013,7 +1013,7 @@ class Render:
                 b.dead = False
                 b.reset_img(self.mlx, self.app)
 
-            invincible = self.player_sheat.get("invincibility")
+            invincible = self.player_sheat["invincibility"]
             touching = self.check_bot_player_collision(
                 b,
                 invencible=invincible
@@ -1075,7 +1075,7 @@ class Render:
                 b.i += 1
                 b.pixel = 0
 
-    def gums(self):
+    def gums(self) -> None:
         gum = self.player.hit_gum(
             self.gum_position,
             self.OFFSET_X,
@@ -1151,7 +1151,7 @@ class Render:
             return False
         return True
 
-    def move(self, param) -> None:
+    def move(self, param: Any) -> None:
         direction_vectors = {
             "UP":    (0, -1),
             "DOWN":  (0, 1),
@@ -1228,7 +1228,7 @@ class Render:
             "Lives: " + str(self.data.lives)
         )
 
-    def new_game(self, param):
+    def new_game(self, param: Any) -> None:
         if not self.new_game_input:
             return
         if self.enter_deadline == 0:
@@ -1249,7 +1249,7 @@ class Render:
             )
             self.enter_deadline = 0
 
-    def high_scores(self):
+    def high_scores(self) -> None:
         if self.scores:
 
             x = round((self.WIDTH // 2) * 0.90)
@@ -1266,7 +1266,7 @@ class Render:
                     f"{name} - {score}"
                 )
 
-    def show_controls(self):
+    def show_controls(self) -> None:
         x = (self.WIDTH - self.c_w) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
@@ -1276,11 +1276,11 @@ class Render:
             0
         )
 
-    def redraw_start_screen(self):
+    def redraw_start_screen(self) -> None:
         self.mlx.mlx_clear_window(self.app, self.window)
         self.start_screen()
 
-    def start_game(self, keycode, param):
+    def start_game(self, keycode: int, param: Any) -> None:
         if keycode == 0xff1b and any(
             [
                 self.new_game_input,
@@ -1321,8 +1321,8 @@ class Render:
 
         self.redraw_start_screen()
 
-    def set_name_player(self, keycode):
-        k: str = keyboard.get(keycode)
+    def set_name_player(self, keycode: int) -> None:
+        k: str = keyboard[keycode]
         if not k:
             return
         if len(self.name_player) > 15:
@@ -1332,7 +1332,7 @@ class Render:
         if k.isalpha() or k == " ":
             self.name_player += (k.upper() if self.capslock else k.lower())
 
-    def start_screen(self):
+    def start_screen(self) -> None:
         if self.new_game_input:
             enter_img, w, _ = self.get_enter_image()
             x = (self.WIDTH - w) // 2
@@ -1375,7 +1375,7 @@ class Render:
             0
         )
 
-    def pause_game(self):
+    def pause_game(self) -> None:
         if not self.PAUSE:
             self.PAUSED_TIME = max(
                 0,
@@ -1383,17 +1383,17 @@ class Render:
             )
             self.PAUSE = True
 
-    def resume_game(self):
+    def resume_game(self) -> None:
         if self.PAUSE:
             self.level_deadline = time.monotonic() + self.PAUSED_TIME
             self.PAUSE = False
 
-    def game_menu(self):
+    def game_menu(self) -> None:
         self.start_screen()
         self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
         self.mlx.mlx_loop(self.app)
 
-    def run(self):
+    def run(self) -> None:
         self.mlx.mlx_do_key_autorepeatoff(self.app)
         while not self.quit:
             self.game_menu()

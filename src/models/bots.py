@@ -44,7 +44,7 @@ class Bot:
         self.HEAT_BOX_BOT_X = self.img_width // 2 + margin
         self.HEAT_BOX_BOT_Y = self.img_height // 2 + margin
         self.BOT_TIME_DEAD = 5
-        self.bot_respaw = 0
+        self.bot_respaw: float | int = 0
 
     @staticmethod
     def can_advance(cell: int, direction: str) -> bool:
