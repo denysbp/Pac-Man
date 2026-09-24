@@ -1322,9 +1322,9 @@ class Render:
         self.redraw_start_screen()
 
     def set_name_player(self, keycode: int) -> None:
-        k: str = keyboard[keycode]
-        if not k:
+        if keycode not in keyboard.keys():
             return
+        k: str = keyboard[keycode]
         if len(self.name_player) > 15:
             return
         if k == "capslock!":
