@@ -1,7 +1,7 @@
 VENV = .venv
 PY = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
-SRC = src/
+SRC = src
 
 all: run
 run:
@@ -16,7 +16,7 @@ run:
 	fi
 
 clean:
-	rm -rf $(SRC)__pycache__
+	rm -rf $(SRC)/__pycache__
 	rm -rf $(SRC)/loader/__pycache__
 	rm -rf $(SRC)/data_base/__pycache__
 	rm -rf $(SRC)/exceptions/__pycache__
