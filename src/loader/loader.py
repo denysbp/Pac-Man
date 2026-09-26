@@ -9,11 +9,40 @@ COMMENTS = (
 
 
 class ConfigLoader:
+    """
+    Responsible to load the JSON config file
+
+    Attributes
+    ____________
+    path: str
+        represent the path for the provide file
+    configs: dict
+        store the processed values from the config file
+
+    Methods
+    ____________
+    _split_comments():
+        parse lines ignoring lines that start with comments
+    _ensure_levels_values():
+        parse the levels dicts to ensure its well formated
+    _ensure_numbers():
+        verify if any of the values are bool
+    _ensure_values():
+        verify if the values are int objects
+    load_json():
+        load the file, call the private parser methods and save the configs
+    """
     def __init__(
         self,
         *,
         path: str
-    ):
+    ) -> None:
+        """
+        Before creating the class the constructor will ensure it's a JSON file
+        Args:
+            path: str
+                the provider path for the config file
+        """
         if '.' not in path:
             raise LoaderError(
                 "You're supposed to pass a file."
@@ -27,6 +56,16 @@ class ConfigLoader:
         self.configs: Dict[str, Any]
 
     def _split_comments(self, lines: list[str]) -> str:
+        """
+        Responsible for detect line that start with comments.
+        This method use a list containing the comments types
+        and if a line star with it, we ignore before concatenate.
+        Args:
+            lines: list
+                List containing each line of the provider config file
+        Returns:
+            The str containing only valid lines
+        """
         json_str = ""
         for line in lines:
             if line.strip().startswith(COMMENTS):
@@ -35,6 +74,12 @@ class ConfigLoader:
         return json_str
 
     def _ensure_levels_values(self) -> None:
+        """
+        Verify if the level config follow the standard.
+
+        Returns:
+            None.
+        """
         for config in self.configs["level"]:
             if not isinstance(config, dict):
                 raise LoaderError(
@@ -48,6 +93,11 @@ class ConfigLoader:
         return
 
     def _ensure_numbers(self) -> None:
+        """
+        Verify if it's a real number and not a bool
+        Returns:
+            None.
+        """
         all_numbers = [
             self.configs["lives"],
             self.configs["pacgum"],
@@ -78,6 +128,7 @@ class ConfigLoader:
             )
 
     def _ensure_values(self) -> None:
+        """The parser, ensure if all the values are correct for the keys."""
         valid_keys = [
             "highscore_filename",
             "lives",
@@ -149,8 +200,8 @@ class ConfigLoader:
             )
         self._ensure_levels_values()
 
-    # DEPOIS DE VALIDAR SE TUDO DER CERTO ELE SALVA OS MAMBOS
     def load_json(self) -> None:
+        """Open the config file and validate the args."""
         with open(self.path, "r+", encoding="UTF-8") as file:
             lines = file.readlines()
             if not lines:

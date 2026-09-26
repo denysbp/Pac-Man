@@ -46,7 +46,202 @@ keyboard: dict[int, str] = {
 
 
 class Render:
+    """
+    Responsible for managing the game rendering, input,
+    game state and interaction between the player, bots and maze.
 
+    Attributes
+    __________
+    data: ConfigData
+        store the game configuration values
+    H: int
+        represent the horizontal wall direction value
+    V: int
+        represent the vertical wall direction value
+    N: int
+        represent the north wall value
+    E: int
+        represent the east wall value
+    S: int
+        represent the south wall value
+    W: int
+        represent the west wall value
+    WIDTH: int
+        represent the window width
+    HEIGHT: int
+        represent the window height
+    OFFSET_X: int
+        represent the horizontal offset of the maze
+    OFFSET_Y: int
+        represent the vertical offset of the maze
+    HUD_HEIGHT: int
+        represent the height reserved for the HUD
+    CELL_W: int
+        represent the width of a maze cell
+    CELL_H: int
+        represent the height of a maze cell
+    maze_width: int
+        represent the number of columns in the maze
+    maze_height: int
+        represent the number of rows in the maze
+    map_width: int
+        represent the width of the generated map
+    map_height: int
+        represent the height of the generated map
+    cornes: list
+        store the positions of the big gums and bot spawn points
+    points: int
+        store the current player score
+    victory: bool
+        indicate if the current level has been completed
+    gameover: bool
+        indicate if the game is over
+    gamewin: bool
+        indicate if the player has completed the game
+    PAUSE: bool
+        indicate if the game is currently paused
+    player: Player
+        store the player object
+    bots: list[Bot]
+        store the bots used in the game
+    levels: list[Level]
+        store the available game levels
+    maze: MazeGenerator
+        store the current generated maze
+    player_sheat: dict
+        store the active player power-up states
+    gum_position: list[tuple[int, int]]
+        store the positions of the small gums
+    heated_small: list[tuple]
+        store the small gums already collected
+    heated_big: list[tuple]
+        store the big gums already collected
+    power_imgs: dict[str, tuple]
+        store the images associated with the power-ups
+    eaten_popups: list[tuple[int, int, float]]
+        store the position and expiration time of score popups
+    memory: Memory
+        store the image memory information for the game buffer
+    small_gun_memory: Memory
+        store the image memory information for small gums
+    big_gum_memory: Memory
+        store the image memory information for big gums
+    mlx: Mlx
+        store the MLX wrapper used for rendering
+    db: DATA_BASE
+        store the database used for the high scores
+    app: Any
+        store the MLX connection window: Any store the game window
+    buffer: Any
+        store the image buffer used for rendering
+
+    Methods
+    _______
+    set_global_positions_sizes():
+        initialize the global game positions, sizes and state values
+    set_images():
+        load the images used by the game
+    get_image():
+        return the current menu image
+    get_pause_image():
+        return the current pause menu image
+    get_enter_image():
+        return the current enter animation image
+    create_classes_and_classes_atributes():
+        create the player, bots and image memory objects
+    find_spawn_below_42():
+        find the player spawn position below the 42 structure
+    clear_buffer():
+        clear the game image buffer
+    calcule_maze_dimetions():
+        calculate the maze dimensions and initialize gum positions
+    start_level():
+        generate and initialize a game level
+    cell_position():
+        calculate the pixel position of a maze cell
+    is_walkable():
+        verify if a maze cell can be walked through
+    get_wall_rects():
+        return the wall rectangles surrounding a maze cell
+    check_colision():
+        verify if the player collides with a wall
+    check_colision_to_bot():
+        verify if a bot collides with a wall
+    blip():
+        copy the game buffer into the window
+    close():
+        close the game window and stop the MLX loop
+    key_press():
+        handle keyboard input during the game
+    power():
+        display the current power-up image
+    frames():
+        render the current game frame
+    controls():
+        process player controls and power-up inputs
+    pac_gums():
+        draw a small gum when the cell contains one
+    draw_cell_walls():
+        draw the walls of a maze cell
+    fill_42():
+        draw the 42 structure inside the maze
+    draw_board():
+        draw the maze, walls and gums into the buffer
+    end_screen():
+        display the game ending screen
+    get_user_name():
+        display the score screen and process the player name
+    back_to_menu():
+        reset the game and return to the main menu
+    reset_game():
+        reset the game state and player values
+    render_loop():
+        update and render the game according to its current state
+    level_win():
+        display the level victory image
+    game_win():
+    display the game completion image
+    game_over():
+        display the game over image
+    pause():
+        display the current pause menu image
+    is_near_player():
+        verify if a bot is close to the player
+    check_bot_player_collision():
+        verify if a bot collides with the player
+    move_bots():
+        update the position and state of all bots
+    gums():
+        detect and process gum collection
+    try_move_step():
+        try to move the player by a given number of
+    pixels move():
+        update the player and bot movement
+    draw_information():
+        draw the score, level, lives and remaining time
+    new_game():
+        display the new game animation
+    high_scores():
+        display the stored high scores
+    show_controls():
+        display the game controls
+    redraw_start_screen():
+        clear the window and redraw the start screen
+    start_game():
+        process keyboard input from the main menu
+    set_name_player():
+        update the player name from keyboard input
+    start_screen():
+        display the current main menu screen
+    pause_game():
+        pause the game and store the remaining level time
+    resume_game():
+        resume the game using the stored remaining time
+    game_menu():
+        run the main menu loop
+    run():
+        start and control the main game loop
+    """
     def __init__(
         self,
         w: int,
@@ -68,6 +263,13 @@ class Render:
         self.create_classes_and_classes_atributes()
 
     def set_global_positions_sizes(self, w: int, h: int) -> None:
+        """
+        Initialize the global positions, sizes and game state values.
+
+        Args:
+            w: Width of the game window.
+            h: Height of the game window.
+        """
         self.H = 2
         self.V = 1
         self.N = 1
@@ -116,6 +318,7 @@ class Render:
         self.initial_lives = self.data.lives
 
     def set_images(self) -> None:
+        """ Load the images used by the game and create the game window. """
         menu_imgs = [
             "new-game",
             "scores",
@@ -211,16 +414,36 @@ class Render:
             )
 
     def get_image(self) -> tuple[Any | None, int, int]:
+        """
+        Return the current menu image.
+
+        Returns:
+            A tuple containing the image, its width and its height.
+        """
         return self.menu[self.img_index % len(self.menu)]
 
     def get_pause_image(self) -> tuple[Any | None, int, int]:
+        """
+        Return the current pause menu image.
+
+        Returns:
+            A tuple containing the image, its width and its height.
+        """
         return self.pause_imgs[self.pause_index % len(self.pause_imgs)]
 
     def get_enter_image(self) -> tuple[Any | None, int, int]:
+        """
+        Return the next image of the enter animation.
+
+        Returns:
+            A tuple containing the image, its width and its height. """
         self.enter_index += 1
         return self.enter_imgs[self.enter_index % len(self.enter_imgs)]
 
     def create_classes_and_classes_atributes(self) -> None:
+        """
+        Create the player, bots and image memory objects used by the game.
+        """
         self.player: Player = Player(
             span_x=0,
             span_y=0,
@@ -296,6 +519,12 @@ class Render:
             self.data.seed = 0
 
     def find_spawn_below_42(self) -> tuple[int, int]:
+        """
+        Find the player spawn position below the 42 structure.
+
+        Returns:
+            A tuple containing the maze row and column of the spawn position.
+        """
         rows_with_42 = [i for i, row in enumerate(self.maze.maze) if 15 in row]
         last_row = max(rows_with_42)
 
@@ -312,9 +541,17 @@ class Render:
         return spawn_row, spawn_col
 
     def clear_buffer(self) -> None:
+        """ Clear the game image buffer. """
         self.memory.data[:] = b'\x00' * len(self.memory.data)
 
     def calcule_maze_dimetions(self, height: int, width: int) -> None:
+        """
+        Calculate the maze dimensions and initialize the gum positions.
+
+        Args:
+            height: Height of the generated maze.
+            width: Width of the generated maze.
+        """
         self.cornes.clear()
         self.gum_position.clear()
         self.maze_height = height
@@ -368,6 +605,14 @@ class Render:
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
     def start_level(self, next_level: bool = True) -> None:
+        """
+        Initialize a game level and generate its maze.
+
+        Args:
+            next_level:
+                If True, generate the next level.
+                If False, only reset the player position and power-up states.
+        """
         if next_level:
             if self.index == len(self.levels):
                 self.gamewin = True
@@ -423,11 +668,30 @@ class Render:
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
 
     def cell_position(self, row: int, col: int) -> tuple[int, int]:
+        """
+        Convert maze coordinates into pixel coordinates.
+
+        Args:
+            row: Row of the maze cell.
+            col: Column of the maze cell.
+
+        Returns:
+            A tuple containing the X and Y pixel coordinates.
+        """
         x = self.OFFSET_X + col * self.CELL_W
         y = self.OFFSET_Y + row * self.CELL_H
         return x, y
 
     def is_walkable(self, cell: int) -> bool:
+        """
+        Check if a maze cell has at least one open direction.
+
+        Args:
+            cell: Integer representing the walls of the maze cell.
+
+        Returns:
+            True if the cell can be walked through, otherwise False.
+        """
         return (
             not (cell & self.N) or
             not (cell & self.E) or
@@ -436,6 +700,15 @@ class Render:
         )
 
     def get_wall_rects(self, row: int, col: int) -> list:
+        """
+        Return the wall rectangles surrounding a maze cell.
+
+        Args:
+            row: Row of the maze cell.
+            col: Column of the maze cell.
+
+        Returns: A list of Rect objects representing the cell walls.
+        """
         if not (0 <= row < self.maze_height and 0 <= col < self.maze_width):
             return []
         x, y = self.cell_position(row, col)
@@ -465,6 +738,17 @@ class Render:
         return walls
 
     def check_colision(self, dx: int, dy: int) -> bool:
+        """
+        Check if the player can move to the given position.
+
+        Args:
+            dx: X coordinate of the destination position.
+            dy: Y coordinate of the destination position.
+
+        Returns:
+            True if the destination does not collide with a wall,
+            otherwise False.
+        """
         w = self.player.img_width
         h = self.player.img_height
         dest_rect = Rect(dx, dy, w, h)
@@ -488,6 +772,18 @@ class Render:
         return True
 
     def check_colision_to_bot(self, bot: Bot, dx: int, dy: int) -> bool:
+        """
+        Check if a bot can move to the given position.
+
+        Args:
+            bot: Bot whose collision area is being checked.
+            dx: X coordinate of the destination position.
+            dy: Y coordinate of the destination position.
+
+        Returns:
+            True if the destination does not collide with a wall,
+            otherwise False.
+        """
         w = bot.img_width
         h = bot.img_height
         dest_rect = Rect(dx, dy, w, h)
@@ -511,6 +807,7 @@ class Render:
         return True
 
     def blip(self) -> None:
+        """ Copy the game buffer into the game window. """
         self.mlx.mlx_put_image_to_window(
             self.app,
             self.window,
@@ -520,6 +817,12 @@ class Render:
         )
 
     def close(self, param: Any) -> None:
+        """
+        Close the game window and stop the MLX loop.
+
+        Args:
+            param: Callback parameter received by the MLX hook.
+        """
         self.quit = True
         self.mlx.mlx_do_key_autorepeaton(self.app)
         self.mlx.mlx_destroy_window(self.app, self.window)
@@ -527,11 +830,19 @@ class Render:
         return
 
     def key_press(self, keycode: int, param: Any) -> None:
+        """
+        Process a keyboard input during the game.
+
+        Args:
+            keycode: Key code received from the MLX keyboard hook.
+            param: Callback parameter received by the MLX hook.
+        """
         if self.victory:
             return
         return self.controls(keycode, param)
 
     def power(self) -> None:
+        """ Display the current power-up image with its animation effect. """
         if self.power_deadline == 0:
             self.power_deadline = time.monotonic() + 1
             self.power_index = 0
@@ -551,6 +862,13 @@ class Render:
         self.power_index += 15
 
     def frames(self, x: int, y: int) -> None:
+        """
+        Render the current game frame.
+
+        Args:
+            x: X coordinate of the player.
+            y: Y coordinate of the player.
+        """
         self.mlx.mlx_clear_window(self.app, self.window)
         if self.reload:
             self.clear_buffer()
@@ -593,6 +911,13 @@ class Render:
             )
 
     def controls(self, key: int, param: Any) -> None:
+        """
+        Process keyboard controls and player power-ups.
+
+        Args:
+            key: Key code received from the keyboard hook.
+            param: Callback parameter received by the MLX hook.
+        """
         if self.INPUT:
             if key == 65293:
                 self.name_already_set = True
@@ -691,6 +1016,14 @@ class Render:
         return
 
     def pac_gums(self, cell: int, x: int, y: int) -> None:
+        """
+        Draw a small gum when the current cell contains one.
+
+        Args:
+            cell: Integer representing the walls of the maze cell.
+            x: X pixel coordinate of the cell.
+            y: Y pixel coordinate of the cell.
+        """
         if self.is_walkable(cell):
             small_gum_x = x + (self.CELL_W - self.m_w) // 2
             small_gum_y = y + (self.CELL_H - self.m_h) // 2
@@ -716,6 +1049,14 @@ class Render:
             )
 
     def draw_cell_walls(self, cell: int, x: int, y: int) -> None:
+        """
+        Draw the walls defined by a maze cell.
+
+        Args:
+            cell: Integer representing the walls of the maze cell.
+            x: X pixel coordinate of the cell.
+            y: Y pixel coordinate of the cell.
+        """
         if cell & self.N:
             drawlineH(
                 self.memory.data,
@@ -753,6 +1094,7 @@ class Render:
             )
 
     def fill_42(self) -> None:
+        """ Draw the 42 structure inside the maze. """
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
                 cell = self.maze.maze[i][j]
@@ -772,6 +1114,9 @@ class Render:
                     )
 
     def draw_board(self) -> None:
+        """
+        Draw the maze walls, 42 structure and gums into the image buffer.
+        """
         self.fill_42()
         for i in range(len(self.maze.maze)):
             for j in range(len(self.maze.maze[i])):
@@ -800,6 +1145,10 @@ class Render:
             )
 
     def end_screen(self) -> None:
+        """
+        Display the game ending screen and
+        request the player name after the end screen delay.
+        """
         if self.end_until == 0:
             self.end_until = time.monotonic() + 3
             if self.gameover:
@@ -811,6 +1160,7 @@ class Render:
             self.get_user_name()
 
     def get_user_name(self) -> None:
+        """ Display the score screen and process the player name input. """
         x = (self.WIDTH - self.n_w) // 2
         self.mlx.mlx_clear_window(
             self.app,
@@ -853,12 +1203,14 @@ class Render:
             self.back_to_menu()
 
     def back_to_menu(self) -> None:
+        """ Reset the game and return to the main menu. """
         self.reset_game()
         self.start = True
         self.mlx.mlx_clear_window(self.app, self.window)
         self.mlx.mlx_loop_exit(self.app)
 
     def reset_game(self) -> None:
+        """ Reset the game state, player values, gums, bots and menu inputs."""
         self.eaten_popups = []
         self.gameover = False
         self.gamewin = False
@@ -895,6 +1247,14 @@ class Render:
         self.scores = self.db.get_scores()
 
     def render_loop(self, param: Any) -> int:
+        """
+        Update and render the game according to its current state.
+
+        Args:
+            param: Callback parameter received by the MLX loop hook.
+
+        Returns: Always returns 0.
+        """
         if self.start:
             return 0
         elif self.gameover or self.gamewin:
@@ -928,6 +1288,7 @@ class Render:
         return 0
 
     def level_win(self) -> None:
+        """ Display the level victory image. """
         x = (self.WIDTH - self.v_w) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
@@ -938,6 +1299,7 @@ class Render:
         )
 
     def game_win(self) -> None:
+        """ Display the game completion image. """
         self.mlx.mlx_clear_window(
             self.app,
             self.window
@@ -952,6 +1314,7 @@ class Render:
         )
 
     def game_over(self) -> None:
+        """ Display the game over image. """
         self.mlx.mlx_clear_window(self.app, self.window)
         x = (self.WIDTH - self.over_w) // 2
         self.mlx.mlx_put_image_to_window(
@@ -963,6 +1326,7 @@ class Render:
         )
 
     def pause(self) -> None:
+        """ Display the current pause menu image. """
         pause_img, pause_w, pause_h = self.get_pause_image()
         self.pause_index = self.pause_index % len(self.pause_imgs)
         x = (self.WIDTH - pause_w) // 2
@@ -976,6 +1340,16 @@ class Render:
         )
 
     def is_near_player(self, bot: Bot, player: Player, distance: int) -> bool:
+        """
+        Check if a bot is within a given distance from the player.
+
+        Args:
+            bot: Bot whose distance from the player is checked.
+            player: Player used as the reference position.
+            distance: Maximum distance allowed.
+
+        Returns: True if the bot is within the given distance, otherwise False.
+        """
         dx = bot.x - player.x
         dy = bot.y - player.y
         return dx * dx + dy * dy <= distance * distance
@@ -985,6 +1359,15 @@ class Render:
         bot: Bot,
         invencible: bool = False
     ) -> bool:
+        """
+        Check if a bot is colliding with the player.
+
+        Args:
+            bot: Bot whose collision with the player is checked.
+            invencible: If True, ignore the collision.
+
+        Returns: True if the player and bot collide, otherwise False.
+        """
         if invencible:
             return False
         player_rect = Rect(
@@ -1004,6 +1387,7 @@ class Render:
         return player_rect.colliderect(bot_rect)
 
     def move_bots(self) -> None:
+        """ Update the position, path and state of all bots. """
         if self.super_pac and time.time() >= self.super_pac_deadline:
             self.super_pac = False
             for bot in self.bots:
@@ -1076,6 +1460,7 @@ class Render:
                 b.pixel = 0
 
     def gums(self) -> None:
+        """ Detect and process small and big gum collection by the player. """
         gum = self.player.hit_gum(
             self.gum_position,
             self.OFFSET_X,
@@ -1130,6 +1515,17 @@ class Render:
         step: int,
         intangibility: bool
     ) -> bool:
+        """
+        Try to move the player by a given number of pixels.
+
+        Args:
+            dx_dir: Horizontal movement direction.
+            dy_dir: Vertical movement direction.
+            step: Number of pixels to move.
+            intangibility: If True, ignore wall collisions.
+
+        Returns: True if the player moved successfully, otherwise False.
+        """
         self.player.x = dx = self.player.x + dx_dir * step
         self.player.y = dy = self.player.y + dy_dir * step
 
@@ -1152,6 +1548,11 @@ class Render:
         return True
 
     def move(self, param: Any) -> None:
+        """
+        Update the player movement, gums, animation and bots.
+
+        Args: param: Parameter received by the movement callback.
+        """
         direction_vectors = {
             "UP":    (0, -1),
             "DOWN":  (0, 1),
@@ -1188,6 +1589,7 @@ class Render:
         self.frames(self.player.x, self.player.y)
 
     def draw_information(self) -> None:
+        """ Draw the score, level, lives and remaining level time. """
         hud_top = self.HEIGHT - self.HUD_HEIGHT
         margin_x = round(self.WIDTH * 0.02)
 
@@ -1229,6 +1631,11 @@ class Render:
         )
 
     def new_game(self, param: Any) -> None:
+        """
+        Display the new game animation while waiting for player input.
+
+        Args: param: Callback parameter received by the MLX loop hook.
+        """
         if not self.new_game_input:
             return
         if self.enter_deadline == 0:
@@ -1250,6 +1657,7 @@ class Render:
             self.enter_deadline = 0
 
     def high_scores(self) -> None:
+        """ Display the stored high scores. """
         if self.scores:
 
             x = round((self.WIDTH // 2) * 0.90)
@@ -1267,6 +1675,7 @@ class Render:
                 )
 
     def show_controls(self) -> None:
+        """ Display the game controls. """
         x = (self.WIDTH - self.c_w) // 2
         self.mlx.mlx_put_image_to_window(
             self.app,
@@ -1277,10 +1686,18 @@ class Render:
         )
 
     def redraw_start_screen(self) -> None:
+        """ Clear the window and redraw the main menu. """
         self.mlx.mlx_clear_window(self.app, self.window)
         self.start_screen()
 
     def start_game(self, keycode: int, param: Any) -> None:
+        """
+        Process keyboard input received from the main menu.
+
+        Args:
+            keycode: Key code received from the keyboard hook.
+            param: Callback parameter received by the MLX hook.
+        """
         if keycode == 0xff1b and any(
             [
                 self.new_game_input,
@@ -1322,6 +1739,11 @@ class Render:
         self.redraw_start_screen()
 
     def set_name_player(self, keycode: int) -> None:
+        """
+        Add a valid keyboard character to the player name.
+
+        Args: keycode: Key code received from the keyboard.
+        """
         if keycode not in keyboard.keys():
             return
         k: str = keyboard[keycode]
@@ -1333,6 +1755,7 @@ class Render:
             self.name_player += (k.upper() if self.capslock else k.lower())
 
     def start_screen(self) -> None:
+        """ Display the current main menu screen. """
         if self.new_game_input:
             enter_img, w, _ = self.get_enter_image()
             x = (self.WIDTH - w) // 2
@@ -1376,6 +1799,7 @@ class Render:
         )
 
     def pause_game(self) -> None:
+        """ Pause the game and store the remaining level time. """
         if not self.PAUSE:
             self.PAUSED_TIME = max(
                 0,
@@ -1384,16 +1808,19 @@ class Render:
             self.PAUSE = True
 
     def resume_game(self) -> None:
+        """ Resume the game using the time stored when it was paused. """
         if self.PAUSE:
             self.level_deadline = time.monotonic() + self.PAUSED_TIME
             self.PAUSE = False
 
     def game_menu(self) -> None:
+        """ Start the main menu and run its MLX event loop. """
         self.start_screen()
         self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
         self.mlx.mlx_loop(self.app)
 
     def run(self) -> None:
+        """ Start the game and control the main MLX loops. """
         self.mlx.mlx_do_key_autorepeatoff(self.app)
         while not self.quit:
             self.game_menu()

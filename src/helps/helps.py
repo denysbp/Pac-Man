@@ -72,7 +72,32 @@ def drawlineH(
     y1: int,
     color: int
 ) -> None:
-    # we decide the correect position to start
+    """
+    Draws a line between two points using an error-based algorithm.
+
+    The function assumes that the line is mostly horizontal, meaning
+    the distance on the x-axis is greater than the distance on the
+    y-axis. The error value is used to decide when the y coordinate
+    needs to be changed while moving through the x coordinates.
+
+    If the first point is to the right of the second point, the
+    coordinates are swapped so that the line is always processed
+    from left to right. The direction of the y coordinate is kept
+    separately to support lines going upwards or downwards.
+
+    Args:
+        data: Image memory buffer where the pixels are written.
+        size_line: Number of bytes occupied by one image row.
+        x0: Horizontal coordinate of the first point.
+        y0: Vertical coordinate of the first point.
+        x1: Horizontal coordinate of the second point.
+        y1: Vertical coordinate of the second point.
+        color: 32-bit integer representing the color of the line.
+
+    Returns:
+        None.
+    """
+    # we decide the correct position to start
     if x0 > x1:
         x0, x1 = x1, x0
         y0, y1 = y1, y0
@@ -88,13 +113,13 @@ def drawlineH(
     if dx != 0:
         y = y0
         # line approximation error
-        p = 2*dy - dx
+        p = 2 * dy - dx
         for i in range(dx + 1):
             put_pixel(data, size_line, x0 + i, y, color)
             if p >= 0:
                 y += dt
                 # if the error is to big we need to change one unity in dy
-                p = p - 2*dx
+                p = p - 2 * dx
             # then we correct the error again
             p = p + 2*dy
 
@@ -108,6 +133,31 @@ def drawlineV(
     y1: int,
     color: int
 ) -> None:
+    """
+    Draws a vertical line between two points using an error-based
+    line drawing algorithm.
+
+    The function assumes that the line is mostly vertical, so the
+    y coordinate is increased one pixel at a time. The error value
+    is used to decide when the x coordinate needs to be changed.
+
+    If the first point is below the second point, the coordinates
+    are swapped so that the line is always processed from top to
+    bottom. The direction of the x coordinate is kept separately
+    so the line can go either left or right.
+
+    Args:
+        data: Image memory buffer where the pixels are written.
+        size_line: Number of bytes occupied by one image row.
+        x0: Horizontal coordinate of the first point.
+        y0: Vertical coordinate of the first point.
+        x1: Horizontal coordinate of the second point.
+        y1: Vertical coordinate of the second point.
+        color: 32-bit integer representing the color of the line.
+
+    Returns:
+        None.
+    """
     if y0 > y1:
         x0, x1 = x1, x0
         y0, y1 = y1, y0
@@ -124,8 +174,8 @@ def drawlineV(
             put_pixel(data, size_line, x, y0 + i, color)
             if p >= 0:
                 x += dt
-                p = p - 2*dy
-            p = p + 2*dx
+                p = p - 2 * dy
+            p = p + 2 * dx
 
 
 def blit_into_buffer(
@@ -142,17 +192,39 @@ def blit_into_buffer(
     dst_x: int,
     dst_y: int
 ) -> None:
-
     """
-    Copies a source image into a destination image buffer.
+    Copies an image from one memory buffer into another.
 
-    The source image is placed at the given destination coordinates.
-    Pixels outside the destination boundaries are ignored.
+    The source image is copied pixel by pixel starting at the given
+    destination coordinates. Pixels that fall outside the destination
+    image are ignored.
 
-    Transparent source pixels are skipped using their alpha value.
-    Each visible pixel is converted into a 32-bit color and written
-    directly into the destination buffer.
-    this function copy only 1 pixel per iteration
+    The function uses the alpha component of each source pixel to
+    determine whether it should be copied. Fully transparent pixels
+    are skipped, while visible pixels are converted into a 32-bit
+    color before being written to the destination buffer.
+
+    The source and destination images can have different dimensions
+    and bytes-per-pixel values. The row size of each image is used
+    to calculate the position of each pixel in its respective memory
+    buffer.
+
+    Args:
+        dst_data: Destination image memory buffer.
+        dst_bpp: Number of bits used by each destination pixel.
+        dst_size_line: Number of bytes occupied by one destination row.
+        dst_w: Width of the destination image in pixels.
+        dst_h: Height of the destination image in pixels.
+        src_data: Source image memory buffer.
+        src_bpp: Number of bits used by each source pixel.
+        src_size_line: Number of bytes occupied by one source row.
+        src_w: Width of the source image in pixels.
+        src_h: Height of the source image in pixels.
+        dst_x: Horizontal position where the source image is placed.
+        dst_y: Vertical position where the source image is placed.
+
+    Returns:
+        None. The destination image buffer is modified directly.
     """
     src_bytes_per_pixel = src_bpp // 8
     for row in range(src_h):
@@ -172,7 +244,7 @@ def blit_into_buffer(
             alpha = src_data[src_offset + 3]
             if alpha == 0:
                 continue
-            # we construct the color with or to agrupate everything
+            # we construct the color with (or) to agrupate everything
             color = (
                 src_data[src_offset] |
                 (src_data[src_offset + 1] << 8) |
