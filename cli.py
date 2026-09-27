@@ -11,15 +11,18 @@ from sys import argv, exit
 
 
 def main() -> int:
-    if len(argv) != 2:
+    path = ""
+    if len(argv) > 2:
         print(
             "Program usage: "
             "pac-man.py <file_name>.json"
         )
         exit(1)
+    if len(argv) == 2:
+        path = argv[1]
     try:
         points = ScoreSpriteGenerator()
-        data = ConfigLoader(path=argv[1])
+        data = ConfigLoader(path=path)
         data.load_json()
         config = create_config(data)
         name = points.generate_for_value(
@@ -42,5 +45,5 @@ def main() -> int:
     except ValueError as e:
         print(e)
     except Exception as e:
-        print(e)
+        print(f"Something when wrong: {e}")
     return 0

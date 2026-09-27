@@ -1,11 +1,65 @@
 import json
 from ..exceptions import LoaderError
 from typing import Dict, Any
+from time import sleep
 
 COMMENTS = (
     "#",
     "//"
 )
+
+DEFAULT = {
+    "highscore_filename": "pacman.db",
+    "lives": 3,
+    "pacgum": 80,
+    "points_per_pacgum": 10,
+    "points_per_super_pacgum": 50,
+    "points_per_ghost": 250,
+    "level": [
+        {
+            "width": 15,
+            "height": 15
+        },
+        {
+            "width": 15,
+            "height": 16
+        },
+        {
+            "width": 16,
+            "height": 16
+        },
+        {
+            "width": 16,
+            "height": 17
+        },
+        {
+            "width": 17,
+            "height": 15
+        },
+        {
+            "width": 16,
+            "height": 16
+        },
+        {
+            "width": 17,
+            "height": 17
+        },
+        {
+            "width": 18,
+            "height": 18
+        },
+        {
+            "width": 19,
+            "height": 19
+        },
+        {
+            "width": 20,
+            "height": 20
+        }
+    ],
+    "level_max_time": 120,
+    "seed": 42
+}
 
 
 class ConfigLoader:
@@ -43,15 +97,16 @@ class ConfigLoader:
             path: str
                 the provider path for the config file
         """
-        if '.' not in path:
-            raise LoaderError(
-                "You're supposed to pass a file."
-            )
-        _, type = path.split(".", 1)
-        if type != "json":
-            raise LoaderError(
-                f"Expecting 'json' got '{type}'."
-            )
+        if path:
+            if '.' not in path:
+                raise LoaderError(
+                    "You're supposed to pass a file."
+                )
+            _, type = path.split(".", 1)
+            if type != "json":
+                raise LoaderError(
+                    f"Expecting 'json' got '{type}'."
+                )
         self.path: str = path
         self.configs: Dict[str, Any]
 
@@ -112,6 +167,9 @@ class ConfigLoader:
             raise LoaderError(
                 "WE DON'T ACCEPT BOOLEAN."
             )
+        if any(number > 1000 for number in all_numbers):
+            print("::::BUGS MAY OCCUR DURING GRAPHICAL VISUALIZATION::::")
+            sleep(1)
         if any(number < 0 for number in all_numbers):
             raise LoaderError(
                 "WE DON'T ACCEPT NEGATIVE VALUES."
@@ -140,17 +198,20 @@ class ConfigLoader:
             "level_max_time",
             "seed"
         ]
-        if any(key not in valid_keys for key in self.configs.keys()):
+        if any(key for key in valid_keys if key not in self.configs.keys()):
             missing = [
                 k for k in valid_keys if k not in self.configs.keys()
             ]
-            raise LoaderError(
-                f"Missing keys {missing}."
-            )
+            for k in missing:
+                value = DEFAULT[k]
+                print(f"Missing {k} using default: {value}")
+                self.configs[k] = value
         if len(self.configs) != 9:
-            raise LoaderError(
-                "We detected unknown keys."
-            )
+            invalids = [
+                k for k in self.configs.keys() if k not in valid_keys
+            ]
+            print(f"We detected unknown keys. {invalids}")
+            print("::::Rejected with sucess:::::")
         if not isinstance(self.configs["highscore_filename"], str):
             raise LoaderError(
                 "Expecting 'str' got "
@@ -202,14 +263,16 @@ class ConfigLoader:
 
     def load_json(self) -> None:
         """Open the config file and validate the args."""
-        with open(self.path, "r+", encoding="UTF-8") as file:
-            lines = file.readlines()
-            if not lines:
-                raise LoaderError(
-                    "The provide file is empty."
-                )
-            json_str = self._split_comments(lines)
-        self.configs = json.loads(json_str)
+        if self.path:
+            with open(self.path, "r+", encoding="UTF-8") as file:
+                lines = file.readlines()
+                if lines:
+                    json_str = self._split_comments(lines)
+                    self.configs = json.loads(json_str)
+                else:
+                    self.configs = {}
+        else:
+            self.configs = {}
         self._ensure_values()
 
 

@@ -12,6 +12,7 @@ from src import (
     blit_into_buffer,
     put_pixel,
 )
+import signal
 
 keyboard: dict[int, str] = {
     65509: "capslock!",
@@ -251,6 +252,7 @@ class Render:
         name: str
     ) -> None:
         self.data: ConfigData = data
+        signal.signal(signal.SIGINT, self.handle_sigint)
         self.set_global_positions_sizes(w, h)
         self.path_img = name
         self.mlx = Mlx()
@@ -814,6 +816,19 @@ class Render:
             0,
             0
         )
+
+    def handle_sigint(self, signum: int, frame: Any) -> None:
+        """
+        Handle Ctrl+C without raising
+        KeyboardInterrupt inside an MLX callback.
+        """
+        print("\nClosing game...")
+        self.quit = True
+
+        try:
+            self.mlx.mlx_loop_exit(self.app)
+        except Exception:
+            pass
 
     def close(self, param: Any) -> None:
         """
@@ -1819,15 +1834,17 @@ class Render:
         self.mlx.mlx_loop(self.app)
 
     def run(self) -> None:
-        """ Start the game and control the main MLX loops. """
-        self.mlx.mlx_do_key_autorepeatoff(self.app)
+        """Start the game and control the main MLX loops."""
         while not self.quit:
             self.game_menu()
+
             if self.quit:
                 break
+
             self.start_level()
             self.clear_buffer()
             self.draw_board()
+
             self.mlx.mlx_hook(
                 self.window,
                 2,
@@ -1835,5 +1852,11 @@ class Render:
                 self.key_press,
                 self.player
             )
-            self.mlx.mlx_loop_hook(self.app, self.render_loop, None)
+
+            self.mlx.mlx_loop_hook(
+                self.app,
+                self.render_loop,
+                None
+            )
+
             self.mlx.mlx_loop(self.app)

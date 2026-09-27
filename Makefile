@@ -23,6 +23,7 @@ clean:
 	rm -rf $(SRC)/helps/__pycache__
 	rm -rf $(SRC)/models/__pycache__
 	rm -rf $(SRC)/ui/__pycache__
+	rm -rf __pycache__
 	rm -rf .mypy_cache
 
 fclean: clean
@@ -37,7 +38,7 @@ deploy:
 
 lint:
 	@$(VENV)/bin/flake8 . --exclude=.venv,venv,dist,build
-	$(VENV)/bin/mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	@$(VENV)/bin/mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 help:
 	@echo "\033[35mAvailable Make commands:\033[0m"

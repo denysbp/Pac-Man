@@ -217,6 +217,7 @@ Relationships (high level):
 
 > - [MLX / minilibx documentation](https://harm-smits.github.io/42docs/libs/minilibx)
 > - [Pac-Man ghost-AI article consulted](https://aighost.co.uk/how-pac-man-ghost-ai-works-the-classic-chase-algorithms/)
+> - [Signal documentation](https://docs.python.org/3/library/signal.html)
 
 ### AI usage
 > AI was used 0% as a code generator, but rather as an advisor, in terms of optimization.
