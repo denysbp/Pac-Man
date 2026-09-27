@@ -619,14 +619,12 @@ class Render:
                 return
             self.clear_buffer()
             self.level_deadline = time.monotonic() + self.TIME
-            self.index += 1
             level = self.levels[self.index % len(self.levels)]
             width, height = level.width, level.height
             self.maze = MazeGenerator(
                 (width, height),
-                seed=self.data.seed
+                seed=self.data.seed if self.index == 0 else 0
             )
-
             self.heated_small.clear()
             self.heated_big.clear()
             self.maze.generate()
@@ -658,6 +656,7 @@ class Render:
                 bot.dead = False
 
                 bot.call_bfs()
+            self.index += 1
 
         self.player_sheat["intangibility"] = False
         self.player_sheat["invincibility"] = False

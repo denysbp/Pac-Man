@@ -8,7 +8,7 @@
 	// Amount of pacgum
 	"pacgum": 80,
 
-	"seed": 0,
+	"seed": 42,
 
 	"level_max_time": 140,
 
