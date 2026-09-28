@@ -6,7 +6,6 @@ from src import (
     LoaderError,
     ScoreSpriteGenerator
 )
-from mlx.mlx import Mlx
 from sys import argv, exit
 
 
@@ -28,10 +27,7 @@ def main() -> int:
         name = points.generate_for_value(
             config.points_per_ghost
         )
-        mlx = Mlx()
-        _, w, h = mlx.mlx_get_screen_size(
-            mlx.mlx_init()
-        )
+        w, h = 1920, 1080
         game = Render(
             w,
             h,

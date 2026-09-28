@@ -94,7 +94,7 @@ class DATA_BASE:
         Returns:
             None
         """
-        self.cursor.execute("""s
+        self.cursor.execute("""
             UPDATE player
             SET score = ?
             WHERE name = ?

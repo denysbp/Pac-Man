@@ -83,6 +83,8 @@ class Bot:
         convert pixel coordinates into maze grid coordinates
     can_reset():
         verify if the bot has returned to its spawn position
+    reset_spam():
+        reset the config when we need to redraw the bot at span
     rect:
         return a rectangle representing the bot position and size
     """
@@ -394,6 +396,23 @@ class Bot:
             otherwise False.
         """
         return (self.x, self.y) == (self.spam_x, self.spam_y)
+
+    def reset_spam(
+        self,
+        maze: MazeGenerator
+    ) -> None:
+        self.x = self.spam_x
+        self.y = self.spam_y
+
+        self.maze = maze
+
+        self.i = 0
+        self.pixel = 0
+        self.path = []
+
+        self.dead = False
+
+        self.call_bfs()
 
     @property
     def rect(self) -> Rect:

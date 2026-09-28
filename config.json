@@ -3,7 +3,7 @@
 	"highscore_filename": "pacman.db",
 
 	// Amount of lives
-	"lives": 3,
+	"lives": 1,
 
 	// Amount of pacgum
 	"pacgum": 80,

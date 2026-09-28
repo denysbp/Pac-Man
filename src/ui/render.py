@@ -249,7 +249,7 @@ class Render:
         h: int,
         levels: list[Level],
         data: ConfigData,
-        name: str
+        name: str,
     ) -> None:
         self.data: ConfigData = data
         signal.signal(signal.SIGINT, self.handle_sigint)
@@ -274,6 +274,7 @@ class Render:
         """
         self.H = 2
         self.V = 1
+        self.PLAYER_SPEED = 10
         self.N = 1
         self.E = 2
         self.S = 4
@@ -301,6 +302,7 @@ class Render:
         self.gameover = False
         self.capslock = False
         self.menu: list[tuple] = []
+        self.go_state: bool = True
         self.pause_imgs: list[tuple] = []
         self.enter_imgs: list[tuple] = []
         self.eaten_popups: list[tuple[int, int, float]] = []
@@ -393,6 +395,11 @@ class Render:
             self.path_img
         )
 
+        self.go_img, self.go_w, self.go_h = self.mlx.mlx_png_file_to_image(
+            self.app,
+            "src/ui/menu/go.png"
+        )
+
         for name in (
             "freeze_bots",
             "intangibility",
@@ -460,7 +467,6 @@ class Render:
             "invincibility": False,
             "freeze_bots": False
         }
-        self.PLAYER_SPEED = 10
         self.super_pac_deadline: float | int = 0
         self.time_super_pac = 8
         self.TIME: int = self.data.level_max_time
@@ -469,6 +475,7 @@ class Render:
         self.level_deadline = time.monotonic() + self.TIME
         self.super_pac = False
         self.name_player = ""
+        self.showed_name = "_"
         self.name_already_set = False
         self.POWER: bool = False
         self.EATED: bool = False
@@ -644,20 +651,7 @@ class Render:
 
                 bot.spam_x = self.cornes[i][0]
                 bot.spam_y = self.cornes[i][1]
-
-                bot.x = self.cornes[i][0]
-                bot.y = self.cornes[i][1]
-
-                bot.maze = self.maze
                 bot.pixel_data = pixel_data
-
-                bot.i = 0
-                bot.pixel = 0
-                bot.path = []
-
-                bot.dead = False
-
-                bot.call_bfs()
             self.index += 1
 
         self.player_sheat["intangibility"] = False
@@ -667,6 +661,11 @@ class Render:
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
         self.player.y = self.OFFSET_Y + row * self.CELL_H - 150
+        for i in range(4):
+            bot = self.bots[i]
+            bot.reset_spam(
+                self.maze
+            )
 
     def cell_position(self, row: int, col: int) -> tuple[int, int]:
         """
@@ -932,6 +931,8 @@ class Render:
             key: Key code received from the keyboard hook.
             param: Callback parameter received by the MLX hook.
         """
+        if self.go_state and not self.PAUSE:
+            self.go_state = False
         if self.INPUT:
             if key == 65293:
                 self.name_already_set = True
@@ -1187,13 +1188,16 @@ class Render:
             x,
             0,
         )
+        self.showed_name = self.name_player + "_"
+        if len(self.showed_name) > 16:
+            self.showed_name = self.showed_name[:len(self.showed_name) -1]
         self.mlx.mlx_string_put(
             self.app,
             self.window,
             round((self.WIDTH // 2) * 0.80),
             round((self.HEIGHT // 2) * 0.98),
             0x00FFFFFF,
-            self.name_player
+            self.showed_name
         )
         self.mlx.mlx_string_put(
             self.app,
@@ -1242,6 +1246,7 @@ class Render:
             self.player_sheat[k] = False
         self.gum_position.clear()
         self.heated_small.clear()
+        self.go_state = True
         self.heated_big.clear()
         for b in self.bots:
             b.dead = False
@@ -1291,6 +1296,9 @@ class Render:
                 self.player.y
             )
             self.pause()
+
+        elif self.go_state:
+            self.go()
 
         else:
             self.move(self.player)
@@ -1349,6 +1357,21 @@ class Render:
             self.app,
             self.window,
             pause_img,
+            x,
+            y
+        )
+
+    def go(self) -> None:
+        self.frames(
+            self.player.x,
+            self.player.y
+        )
+        x = (self.WIDTH - self.go_w) // 2
+        y = (self.HEIGHT - self.go_h) // 2
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            self.go_img,
             x,
             y
         )
@@ -1440,6 +1463,7 @@ class Render:
                 else:
                     self.data.lives -= 1
                     self.start_level(next_level=False)
+                    self.go_state = True
 
             else:
                 if not b.path or b.i >= len(b.path):
@@ -1623,7 +1647,7 @@ class Render:
             0x00FFFFFF,
             "Level: " + str(self.index)
         )
-        if not self.PAUSE:
+        if not self.PAUSE and not self.go_state:
             remaining = max(0, self.level_deadline - time.monotonic())
             if remaining <= 0:
                 self.gameover = True
@@ -1835,6 +1859,7 @@ class Render:
 
     def run(self) -> None:
         """Start the game and control the main MLX loops."""
+        self.mlx.mlx_do_key_autorepeatoff(self.app)
         while not self.quit:
             self.game_menu()
 
