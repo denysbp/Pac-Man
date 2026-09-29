@@ -13,6 +13,9 @@ datas = [
     (os.path.join(mazegen_path, "mazegenerator.py"), "mazegenerator"),
     (os.path.join(mazegen_path, "__init__.py"), "mazegenerator"),
     ("src/models/assets", "src/models/assets"),
+    ("src/ui/menu", "src/ui/menu"),
+    ("src/ui/points", "src/ui/points"),
+    ("src/ui/power", "src/ui/power"),
 
 ]
 

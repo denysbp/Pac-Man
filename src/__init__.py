@@ -4,7 +4,8 @@ from .helps import (
     drawlineH,
     drawlineV,
     put_pixel,
-    blit_into_buffer
+    blit_into_buffer,
+    resource_path
 )
 from .ui import Render
 from .data_base import DATA_BASE
@@ -35,5 +36,6 @@ __all__ = [
     "alocate_levels",
     "create_config",
     "DATA_BASE",
-    "Render"
+    "Render",
+    "resource_path"
 ]

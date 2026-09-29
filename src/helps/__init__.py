@@ -3,7 +3,8 @@ from .helps import (
     drawlineH,
     drawlineV,
     put_pixel,
-    blit_into_buffer
+    blit_into_buffer,
+    resource_path
 )
 
 
@@ -12,5 +13,6 @@ __all__ = [
     "drawlineH",
     "drawlineV",
     "put_pixel",
-    "blit_into_buffer"
+    "blit_into_buffer",
+    "resource_path"
 ]

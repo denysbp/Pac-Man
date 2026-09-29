@@ -3,6 +3,7 @@ from typing import Any, Union
 from mazegenerator.mazegenerator import MazeGenerator
 from collections import deque
 from src.models.metadata import Rect
+from src import resource_path
 
 
 class Bot:
@@ -99,10 +100,10 @@ class Bot:
         pixel_data: dict[str, int] = {}
     ) -> None:
         self.images: list[str] = [
-            "src/models/assets/ghost_images/orange.png",
-            "src/models/assets/ghost_images/pink.png",
-            "src/models/assets/ghost_images/red.png",
-            "src/models/assets/ghost_images/blue.png",
+            resource_path("src/models/assets/ghost_images/orange.png"),
+            resource_path("src/models/assets/ghost_images/pink.png"),
+            resource_path("src/models/assets/ghost_images/red.png"),
+            resource_path("src/models/assets/ghost_images/blue.png"),
             ]
         self.id = bot_id
         self.img, self.img_width, self.img_height = mlx.mlx_png_file_to_image(
@@ -340,7 +341,7 @@ class Bot:
         """
         self.img, self.width, self.height = mlx.mlx_png_file_to_image(
             mlx_ptr,
-            "src/models/assets/ghost_images/powerup.png"
+            resource_path("src/models/assets/ghost_images/powerup.png")
         )
         if not self.img:
             raise Exception(
@@ -357,7 +358,7 @@ class Bot:
         """
         self.img, self.width, self.height = mlx.mlx_png_file_to_image(
             mlx_ptr,
-            "src/models/assets/ghost_images/dead.png"
+            resource_path("src/models/assets/ghost_images/dead.png")
         )
         if not self.img:
             raise Exception(
