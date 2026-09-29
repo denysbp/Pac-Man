@@ -300,7 +300,7 @@ class Render:
         self.index: int = 0
         self.points = self.data.points_per_pacgum
         self.coodown = 200
-        self.color = 0xFF0000
+        self.color = 0xFF0000FF
         self.victory = False
         self.reload = False
         self.start = True
