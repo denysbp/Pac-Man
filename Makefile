@@ -3,7 +3,7 @@ PY = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 SRC = src
 
-all: run
+
 run:
 	@if [ ! -d ".venv" ]; then \
 		python3 -m venv $(VENV); \
@@ -27,7 +27,7 @@ clean:
 	rm -rf .mypy_cache
 
 fclean: clean
-	rm -rf $(VENV)
+	rm -rf $(VENV) dist build
 
 debug:
 	$(PY) -m pdb pac-man.py config.json
@@ -35,6 +35,8 @@ debug:
 deploy:
 	.venv/bin/python -m PyInstaller pac2.spec
 
+binarie:
+	./dist/Pac-man42/pac_man42
 
 lint:
 	@$(VENV)/bin/flake8 . --exclude=.venv,venv,dist,build
@@ -45,6 +47,7 @@ help:
 	@echo "\033[33mrun\033[0m          Execute the main script project."
 	@echo "\033[33mdebug\033[0m        Run the main script in debug mode using Python’s built-in debugger."
 	@echo "\033[33mclean\033[0m        Remove temporary files or caches (e.g., __pycache__, .mypy_cache) to keep the project environment clean."
+	@echo "\033[33mdeploy\033[0m	   Install the project to go to the web!"
 	@echo "\033[33mlint\033[0m         Execute flake8 . and mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs"
 	@echo "\033[33mlint-strict\033[0m  Execute flake8 . and mypy . --strict"
 

@@ -61,6 +61,18 @@ DEFAULT = {
     "seed": 42
 }
 
+VALID_KEYS = {
+    "highscore_filename",
+    "lives",
+    "pacgum",
+    "seed",
+    "level_max_time",
+    "points_per_pacgum",
+    "points_per_super_pacgum",
+    "points_per_ghost",
+    "level"
+}
+
 
 class ConfigLoader:
     """
@@ -109,6 +121,7 @@ class ConfigLoader:
                 )
         self.path: str = path
         self.configs: Dict[str, Any]
+        self.keys_received: set[str] = set()
 
     def _split_comments(self, lines: list[str]) -> str:
         """
@@ -123,9 +136,26 @@ class ConfigLoader:
         """
         json_str = ""
         for line in lines:
+
             if line.strip().startswith(COMMENTS):
                 continue
+
+            if any(
+                line.split(
+                    ":", 1)[0].replace(
+                    '"', "").strip() == k for k in VALID_KEYS
+                    ):
+                key = line.split(":", 1)[0].replace('"', "").strip()
+
+                if key in self.keys_received:
+                    print(
+                        f"Warning: Duplicade key '{key}',"
+                        "the program will receive the first key showed!"
+                    )
+                    continue
+                self.keys_received.add(key)
             json_str += line
+
         return json_str
 
     def _ensure_levels_values(self) -> None:
@@ -143,7 +173,11 @@ class ConfigLoader:
             height, width = config["height"], config["width"]
             if height <= 14 or width <= 14:
                 raise LoaderError(
-                    "LIMITS: >= 14 <= 17."
+                    "Error: The maze must to has limits greater the 14!"
+                )
+            if height >= 30 or width >= 30:
+                raise LoaderError(
+                    "Error: The maze must to has limits greater the 14!"
                 )
         return
 
@@ -248,6 +282,8 @@ class ConfigLoader:
                 f"Expecting 'int' got "
                 f"'{self.configs['level_max_time'].__class__.__name__}'"
             )
+        if not self.configs["level"]:
+            raise LoaderError("Error: Level cannot be empty!")
         if not isinstance(self.configs["level"], list):
             raise LoaderError(
                 "Expecting 'int' got "
@@ -282,6 +318,5 @@ if __name__ == "__main__":
             path="config.json"
         )
         loader.load_json()
-        print(loader.configs)
     except LoaderError as e:
         print(e)

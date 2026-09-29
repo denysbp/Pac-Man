@@ -82,6 +82,8 @@ class Player:
                     mlx_ptr,
                     str(path)
                 )
+                if not self._image_cache[path]:
+                    raise FileNotFoundError("Error: File corrupted!")
 
     def update_img(self, direction: str) -> None:
         """

@@ -109,6 +109,10 @@ class Bot:
             mlx_ptr,
             self.images[self.id % len(self.images)]
             )
+        if not self.img:
+            raise Exception(
+                "error"
+            )
         self.spam_x = spam_x
         self.spam_y = spam_y
 
@@ -338,6 +342,10 @@ class Bot:
             mlx_ptr,
             "src/models/assets/ghost_images/powerup.png"
         )
+        if not self.img:
+            raise Exception(
+                "error"
+            )
 
     def kill_bot(self, mlx: Mlx, mlx_ptr: Any) -> None:
         """
@@ -351,6 +359,10 @@ class Bot:
             mlx_ptr,
             "src/models/assets/ghost_images/dead.png"
         )
+        if not self.img:
+            raise Exception(
+                "error"
+            )
         self.dead = True
 
     def reset_img(self, mlx: Mlx, mlx_ptr: Any) -> None:
@@ -364,6 +376,10 @@ class Bot:
         self.img, self.width, self.height = mlx.mlx_png_file_to_image(
             mlx_ptr, self.images[self.id % len(self.images)]
         )
+        if not self.img:
+            raise Exception(
+                "error"
+            )
 
     def get_coord_to_maze_grid(
         self,

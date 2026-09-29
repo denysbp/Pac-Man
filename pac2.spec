@@ -1,5 +1,5 @@
-# -*- mode: python ; coding: utf-8 -*-
 import os
+import ctypes
 
 mlx_path = ".venv/lib/python3.10/site-packages/mlx"
 mazegen_path = ".venv/lib/python3.10/site-packages/mazegenerator"
@@ -21,7 +21,7 @@ a = Analysis(
     pathex=[],
     binaries=binaries,
     datas=datas,
-    hiddenimports=[],
+    hiddenimports=['ctypes'],
     excludes=['mlx', 'mlx.mlx'],
     hookspath=[],
     hooksconfig={},
