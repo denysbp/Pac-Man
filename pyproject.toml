@@ -1,0 +1,32 @@
+[project]
+name = "pac-man"
+version = "0.1.0"
+description = "Pac Man"
+readme = "README.md"
+requires-python = ">=3.10"
+
+
+dependencies = [
+    "flake8>=7.4.1",
+    "mazegenerator",
+    "mlx",
+    "mypy>=2.3.1",
+    "pillow>=12.3.0",
+    "pyinstaller>=6.22.3",
+]
+
+mazegenerator = { path = "wheels/mazegenerator-2.1.0-py3-none-any.whl" }
+mlx = { path = "wheels/mlx-2.2-py3-none-any.whl" }
+
+[tool.uv.sources]
+Pac-man42 = { path = "Pac-man42" }
+mazegenerator = { path = "wheels/mazegenerator-2.1.0-py3-none-any.whl" }
+mlx = { path = "wheels/mlx-2.2-py3-none-any.whl" }
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+ignore_missing_imports = true

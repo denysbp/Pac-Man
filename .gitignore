@@ -9,3 +9,4 @@ mapa.md
 points/
 *.idea/
 .mypy_cache
+uv.lock

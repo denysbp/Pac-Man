@@ -59,7 +59,6 @@ class DATA_BASE:
             None
         """
         data = self.get_scores()
-        print(data)
         for information in data:
             if name in information[0] and not skip:
                 if score > information[1]:

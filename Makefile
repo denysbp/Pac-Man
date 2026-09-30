@@ -1,18 +1,45 @@
-VENV = .venv
 PY = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 SRC = src
+USER := $(shell command whoami)
+MODEL := Qwen/Qwen3-0.6B
+HOME := /home/$(USER)
+FOLDER = $(shell pwd)
+PY = $(VENV)/bin/python3
+SGOINFRE := $(HOME)/sgoinfre
+VENV := $(SGOINFRE)/.venv
+WGET := $(shell command -v wget 2> /dev/null)
+CURL := $(shell command -v curl 2> /dev/null)
 
+
+all: run
+
+
+local:
+	@test -f $(HOME)/.local/bin/env || mkdir -p $(HOME)/.local/bin && touch  $(HOME)/.local/bin/env
+
+build_uv: local
+ifdef WGET
+		@wget -qO- https://astral.sh/uv/install.sh | sh
+		@. $(HOME)/.local/bin/env
+		@echo "We used wget to install the uv"
+else ifdef CURL
+			@curl -LsSf https://astral.sh/uv/install.sh | sh
+			@. $(HOME)/.local/bin/env
+			@echo "We used curl to install the uv"
+
+endif
+
+install: build_uv
+	uv sync
 
 run:
 	@if [ ! -d ".venv" ]; then \
-		python3 -m venv $(VENV); \
-		$(PIP) install --upgrade pip; \
-		$(PIP) install -U pyinstaller; \
-		$(PIP) install -r requirements.txt; \
-		$(PY) pac-man.py config.json; \
+		uv sync; \
+		uv add wheels/mazegenerator-2.1.0-py3-none-any.whl wheels/mlx-2.2-py3-none-any.whl; \
+		uv run pac-man.py config.json; \
 	else \
-		$(PY) pac-man.py config.json; \
+		uv run pac-man.py config.json; \
 	fi
 
 clean:
@@ -30,17 +57,15 @@ fclean: clean
 	rm -rf $(VENV) dist build
 
 debug:
-	$(PY) -m pdb pac-man.py config.json
+	uv -m pdb pac-man.py config.json
 
 deploy:
 	.venv/bin/python -m PyInstaller pac2.spec
 
-binarie:
-	./dist/Pac-man42/pac_man42
 
 lint:
-	@$(VENV)/bin/flake8 . --exclude=.venv,venv,dist,build
-	@$(VENV)/bin/mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	uv run -m flake8 .
+	uv run mypy . --config-file pyproject.toml
 
 help:
 	@echo "\033[35mAvailable Make commands:\033[0m"
@@ -55,4 +80,4 @@ help:
 	@echo "\033[31mError: Unknown command.\033[0m"
 	@echo "Use \033[33mmake help\033[0m to see all available commands."
 
-.PHONY: run debug clean  lint  help .DEFAULT
+.PHONY: run debug clean  lint  help .DEFAULT local build_uv all fclean deploy install
