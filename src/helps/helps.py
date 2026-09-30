@@ -1,5 +1,3 @@
-import os
-import sys
 from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from ..models import Player
@@ -63,19 +61,6 @@ def put_pixel(
     data[offset + 2] = (color >> 16) & 0xFF
     data[offset + 3] = (color >> 24) & 0xFF
     # write the 4 bytes of the color on the pixel
-
-
-
-
-def resource_path(path):
-    if getattr(sys, "frozen", False):
-        return os.path.join(sys._MEIPASS, path)
-
-    return os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        path
-    )
-
 
 
 def drawlineH(

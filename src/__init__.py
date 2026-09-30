@@ -5,7 +5,6 @@ from .helps import (
     drawlineV,
     put_pixel,
     blit_into_buffer,
-    resource_path
 )
 from .ui import Render
 from .data_base import DATA_BASE
@@ -37,5 +36,4 @@ __all__ = [
     "create_config",
     "DATA_BASE",
     "Render",
-    "resource_path"
 ]

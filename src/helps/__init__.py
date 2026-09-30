@@ -4,7 +4,6 @@ from .helps import (
     drawlineV,
     put_pixel,
     blit_into_buffer,
-    resource_path
 )
 
 
@@ -14,5 +13,4 @@ __all__ = [
     "drawlineV",
     "put_pixel",
     "blit_into_buffer",
-    "resource_path"
 ]
