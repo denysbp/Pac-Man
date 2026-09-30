@@ -37,6 +37,7 @@ run:
 	@if [ ! -d ".venv" ]; then \
 		uv sync; \
 		uv add wheels/mazegenerator-2.1.0-py3-none-any.whl wheels/mlx-2.2-py3-none-any.whl; \
+		uv add pyinstaller; \
 		uv run pac-man.py config.json; \
 	else \
 		uv run pac-man.py config.json; \
@@ -57,10 +58,10 @@ fclean: clean
 	rm -rf $(VENV) dist build
 
 debug:
-	uv -m pdb pac-man.py config.json
+	uv run pdb pac-man.py config.json
 
 deploy:
-	.venv/bin/python -m PyInstaller pac2.spec
+	uvx pyinstaller pac2.spec
 
 
 lint:
