@@ -303,6 +303,7 @@ class Render:
         self.color = 0xFF0000FF
         self.victory = False
         self.reload = False
+        self.transition = True
         self.start = True
         self.gameover = False
         self.capslock = False
@@ -310,9 +311,12 @@ class Render:
         self.go_state: bool = True
         self.pause_imgs: list[tuple] = []
         self.enter_imgs: list[tuple] = []
+        self.window_img: list[tuple] = []
+        self.window_index: int = 0
         self.eaten_popups: list[tuple[int, int, float]] = []
         self.power_imgs: dict[str, tuple] = {}
         self.enter_deadline: float | int = 0
+        self.window_deadline: float | int = time.monotonic()
         self.pause_index: int = 0
         self.img_index: int = 0
         self.new_game_input: bool = False
@@ -472,6 +476,18 @@ class Render:
                 information
             )
 
+        for i in range(1, 11):
+            img = f"src/ui/window/frame{i}.png"
+            information = self.mlx.mlx_png_file_to_image(
+                self.app,
+                img
+            )
+            if not information:
+                raise FileNotFoundError("Error: File corrupted!")
+            self.window_img.append(
+                information
+            )
+
     def get_image(self) -> tuple[Any | None, int, int]:
         """
         Return the current menu image.
@@ -495,9 +511,19 @@ class Render:
         Return the next image of the enter animation.
 
         Returns:
-            A tuple containing the image, its width and its height. """
+            A tuple containing the image, its width and its height.
+        """
         self.enter_index += 1
         return self.enter_imgs[self.enter_index % len(self.enter_imgs)]
+
+    def get_window_img(self) -> tuple[Any | None, int, int]:
+        """
+        Return the next image of the window animation.
+
+        Returns:
+            A tuple containing the image, its width and its height.
+        """
+        return self.window_img[self.window_index % len(self.window_img)]
 
     def create_classes_and_classes_atributes(self) -> None:
         """
@@ -1296,6 +1322,9 @@ class Render:
         self.INPUT = False
         self.PAUSE = False
         self.index = 0
+        self.transition = True
+        self.window_index = 0
+        self.window_deadline = time.monotonic()
         self.data.lives = self.initial_lives
         self.PLAYER_SPEED = 10
         self.points = 0
@@ -1324,6 +1353,30 @@ class Render:
         self.power_deadline = 0
         self.player_deadline = 0
         self.scores = self.db.get_scores()
+
+    def window_transition(self, param: Any) -> None:
+        if not self.transition:
+            return
+        if self.window_index > 10:
+            self.transition = False
+            self.mlx.mlx_clear_window(
+                self.app,
+                self.window
+            )
+            self.start_screen()
+            self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
+            return
+        img, _, _ = self.get_window_img()
+        self.mlx.mlx_put_image_to_window(
+            self.app,
+            self.window,
+            img,
+            0,
+            0
+        )
+        if time.monotonic() >= self.window_deadline:
+            self.window_deadline = time.monotonic() + 0.3
+            self.window_index += 1
 
     def render_loop(self, param: Any) -> int:
         """
@@ -1911,13 +1964,20 @@ class Render:
 
     def game_menu(self) -> None:
         """ Start the main menu and run its MLX event loop. """
-        self.start_screen()
-        self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
+        if self.transition:
+            self.mlx.mlx_loop_hook(
+                self.app,
+                self.window_transition,
+                None
+            )
+        else:
+            self.start_screen()
         self.mlx.mlx_loop(self.app)
 
     def run(self) -> None:
         """Start the game and control the main MLX loops."""
         self.mlx.mlx_do_key_autorepeatoff(self.app)
+        self.mlx.mlx_hook(self.window, 33, 0, self.close, None)
         while not self.quit:
             self.game_menu()
 
