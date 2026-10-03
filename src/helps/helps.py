@@ -57,6 +57,7 @@ def put_pixel(
     offset = y * size_line + x * 4
 
     data[offset] = color & 0xFF
+    # we catch the 8 fisrt bits
     data[offset + 1] = (color >> 8) & 0xFF
     data[offset + 2] = (color >> 16) & 0xFF
     data[offset + 3] = (color >> 24) & 0xFF

@@ -299,7 +299,7 @@ class Render:
         self.cornes: list = []
         self.index: int = 0
         self.points = self.data.points_per_pacgum
-        self.coodown = 200
+        self.coodown = 0.0
         self.color = 0xFF0000FF
         self.victory = False
         self.reload = False
@@ -707,6 +707,8 @@ class Render:
         self.player_sheat["intangibility"] = False
         self.player_sheat["invincibility"] = False
         self.player_sheat["invincibility"] = False
+        self.player_sheat["freeze_bots"] = False
+        self.go_state = True
         self.PLAYER_SPEED = 10
         row, col = self.find_spawn_below_42()
         self.player.x = self.OFFSET_X + col * self.CELL_W + 25
@@ -947,7 +949,7 @@ class Render:
             y
         )
         if self.pacgums == len(self.gum_position):
-            self.coodown = 200
+            self.coodown = time.monotonic() + 0.5
             self.victory = True
             self.gum_position.clear()
         for b in self.bots:
@@ -1126,8 +1128,10 @@ class Render:
             drawlineH(
                 self.memory.data,
                 self.memory.size_line,
-                x, y,
-                x + self.CELL_W, y,
+                x,
+                y,
+                x + self.CELL_W,
+                y,
                 self.color
             )
 
@@ -1135,8 +1139,10 @@ class Render:
             drawlineH(
                 self.memory.data,
                 self.memory.size_line,
-                x, y + self.CELL_H,
-                x + self.CELL_W, y + self.CELL_H,
+                x,
+                y + self.CELL_H,
+                x + self.CELL_W,
+                y + self.CELL_H,
                 self.color
             )
 
@@ -1144,8 +1150,10 @@ class Render:
             drawlineV(
                 self.memory.data,
                 self.memory.size_line,
-                x, y,
-                x, y + self.CELL_H,
+                x,
+                y,
+                x,
+                y + self.CELL_H,
                 self.color
             )
 
@@ -1153,8 +1161,10 @@ class Render:
             drawlineV(
                 self.memory.data,
                 self.memory.size_line,
-                x + self.CELL_W, y,
-                x + self.CELL_W, y + self.CELL_H,
+                x + self.CELL_W,
+                y,
+                x + self.CELL_W,
+                y + self.CELL_H,
                 self.color
             )
 
@@ -1330,11 +1340,9 @@ class Render:
             self.end_screen()
             return 0
         elif self.victory:
-            self.coodown -= 1
-
-            if self.coodown <= 0:
+            if self.coodown <= time.monotonic():
                 self.victory = False
-                self.coodown = 100
+                self.coodown = 0
                 self.start_level()
                 self.draw_board()
             else:

@@ -19,7 +19,6 @@ mazegenerator = { path = "wheels/mazegenerator-2.1.0-py3-none-any.whl" }
 mlx = { path = "wheels/mlx-2.2-py3-none-any.whl" }
 
 [tool.uv.sources]
-Pac-man42 = { path = "Pac-man42" }
 mazegenerator = { path = "wheels/mazegenerator-2.1.0-py3-none-any.whl" }
 mlx = { path = "wheels/mlx-2.2-py3-none-any.whl" }
 
