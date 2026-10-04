@@ -103,26 +103,12 @@ def drawlineH(
         x0, x1 = x1, x0
         y0, y1 = y1, y0
 
-    # we decide how far we will walk
     dx = x1 - x0
-    dy = y1 - y0
-
-    dt = -1 if dy < 0 else 1
-
-    dy *= dt
 
     if dx != 0:
         y = y0
-        # line approximation error
-        p = 2 * dy - dx
         for i in range(dx + 1):
             put_pixel(data, size_line, x0 + i, y, color)
-            if p >= 0:
-                y += dt
-                # if the error is to big we need to change one unity in dy
-                p = p - 2 * dx
-            # then we correct the error again
-            p = p + 2*dy
 
 
 def drawlineV(
@@ -163,20 +149,12 @@ def drawlineV(
         x0, x1 = x1, x0
         y0, y1 = y1, y0
 
-    dx = x1 - x0
     dy = y1 - y0
-    dt = -1 if dx < 0 else 1
-    dx *= dt
 
     if dy != 0:
         x = x0
-        p = 2*dx - dy
         for i in range(dy + 1):
             put_pixel(data, size_line, x, y0 + i, color)
-            if p >= 0:
-                x += dt
-                p = p - 2 * dy
-            p = p + 2 * dx
 
 
 def blit_into_buffer(

@@ -296,6 +296,7 @@ class Render:
         self.maze_height = 0
         self.map_width = 0
         self.map_height = 0
+        self.FPS = 30
         self.cornes: list = []
         self.index: int = 0
         self.points = self.data.points_per_pacgum
@@ -470,19 +471,19 @@ class Render:
                 self.app,
                 f"src/ui/menu/{img}.png"
             )
-            if not information:
+            if not information[0]:
                 raise FileNotFoundError("Error: File corrupted!")
             self.menu.append(
                 information
             )
 
-        for i in range(1, 11):
+        for i in range(0, 180):
             img = f"src/ui/window/frame{i}.png"
             information = self.mlx.mlx_png_file_to_image(
                 self.app,
                 img
             )
-            if not information:
+            if not information[0]:
                 raise FileNotFoundError("Error: File corrupted!")
             self.window_img.append(
                 information
@@ -1009,6 +1010,8 @@ class Render:
             key: Key code received from the keyboard hook.
             param: Callback parameter received by the MLX hook.
         """
+        if self.transition:
+            return
         if self.go_state and not self.PAUSE:
             self.go_state = False
         if self.INPUT:
@@ -1325,6 +1328,8 @@ class Render:
         self.transition = True
         self.window_index = 0
         self.window_deadline = time.monotonic()
+        self.window_start = time.monotonic()
+        self.last_drawn = -1
         self.data.lives = self.initial_lives
         self.PLAYER_SPEED = 10
         self.points = 0
@@ -1357,26 +1362,19 @@ class Render:
     def window_transition(self, param: Any) -> None:
         if not self.transition:
             return
-        if self.window_index > 10:
+        index = int((time.monotonic() - self.window_start) * self.FPS)
+        if index > 179:
             self.transition = False
-            self.mlx.mlx_clear_window(
-                self.app,
-                self.window
-            )
+            self.mlx.mlx_clear_window(self.app, self.window)
             self.start_screen()
             self.mlx.mlx_hook(self.window, 2, 1 << 0, self.start_game, None)
             return
+        if index == self.last_drawn:
+            return
+        self.last_drawn = index
+        self.window_index = index
         img, _, _ = self.get_window_img()
-        self.mlx.mlx_put_image_to_window(
-            self.app,
-            self.window,
-            img,
-            0,
-            0
-        )
-        if time.monotonic() >= self.window_deadline:
-            self.window_deadline = time.monotonic() + 0.3
-            self.window_index += 1
+        self.mlx.mlx_put_image_to_window(self.app, self.window, img, 0, 0)
 
     def render_loop(self, param: Any) -> int:
         """
@@ -1863,6 +1861,9 @@ class Render:
             keycode: Key code received from the keyboard hook.
             param: Callback parameter received by the MLX hook.
         """
+        if self.transition:
+            self.window_index = 180
+            return
         if keycode == 0xff1b and any(
             [
                 self.new_game_input,
@@ -1981,6 +1982,8 @@ class Render:
     def game_menu(self) -> None:
         """ Start the main menu and run its MLX event loop. """
         if self.transition:
+            self.window_start = time.monotonic()
+            self.last_drawn = -1
             self.mlx.mlx_loop_hook(
                 self.app,
                 self.window_transition,
