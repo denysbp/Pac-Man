@@ -297,34 +297,52 @@ class Bot:
             self.i = 0
             self.pixel = 0
 
+    def distance_map(
+        self,
+        origin: tuple[int, int]
+    ) -> dict[tuple[int, int], int]:
+        """
+        BFS from origin: real distance (in cells) to every reachable cell.
+        """
+        dist = {origin: 0}
+        queue = deque([origin])
+        while queue:
+            cell = queue.popleft()
+            for _, nxt in self.get_valid_cells(cell):
+                if nxt not in dist:
+                    dist[nxt] = dist[cell] + 1
+                    queue.append(nxt)
+        return dist
+
     def scape(self, player_cordintaes: tuple[int, int]) -> None:
         """
-        Calculate a path that moves the bot away from the player.
+        Flee from the player using real maze distances (BFS).
 
-        The available neighbouring cells are compared using their
-        Manhattan distance from the player's position. The cell with
-        the greatest distance is selected as the escape target.
-
-        Args:
-            player_cordintaes: Player coordinates in pixels.
+        Picks the reachable cell that is farthest
+        from the player among the
+        cells the bot can reach before the player does.
         """
         bot = self.get_coord_to_maze_grid((self.x, self.y))
         player = self.get_coord_to_maze_grid(player_cordintaes)
 
-        valid_cells = self.get_valid_cells(bot)
+        from_player = self.distance_map(player)
+        from_bot = self.distance_map(bot)
 
-        if not valid_cells:
+        safe = [
+            c for c, d in from_bot.items()
+            if c != bot and from_player.get(c, float("inf")) > d
+        ]
+        candidates = safe or [c for c in from_bot if c != bot]
+        if not candidates:
             return
 
-        px, py = player
-        _, escape_cell = max(
-            valid_cells,
-            key=lambda item: (
-                abs(item[1][0] - px) +
-                abs(item[1][1] - py)
-            )
+        # Farthest from the player tie-break: closest to the bot
+        target = max(
+            candidates,
+            key=lambda c: (from_player.get(c, 0), -from_bot[c]),
         )
-        new = self.bfs(bot, escape_cell)
+
+        new = self.bfs(bot, target)
         if new is not None:
             self.path = new
             self.i = 0

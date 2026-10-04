@@ -1540,6 +1540,22 @@ class Render:
             self.super_pac = False
             for bot in self.bots:
                 bot.reset_img(self.mlx, self.app)
+                if self.is_near_player(
+                    bot,
+                    self.player,
+                    250
+                ):
+                    bot.recalculate_rote(
+                        (bot.x, bot.y),
+                        (self.player.x, self.player.y)
+                    )
+                else:
+                    x = randint(0, self.player.x)
+                    y = randint(0, self.player.y)
+                    bot.recalculate_rote(
+                        (bot.x, bot.y),
+                        (x, y)
+                    )
         for b in self.bots:
             if time.time() >= b.bot_respaw and b.dead:
                 b.dead = False
