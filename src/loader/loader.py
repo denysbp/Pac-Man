@@ -58,7 +58,7 @@ DEFAULT = {
         }
     ],
     "level_max_time": 120,
-    "seed": 42
+    "seed": 2
 }
 
 VALID_KEYS = {

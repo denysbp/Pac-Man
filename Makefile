@@ -63,6 +63,7 @@ debug:
 deploy:
 	.venv/bin/pyinstaller pac2.spec
 	cp -r dist/Pac-man42/_internal/src dist/Pac-man42/
+	mv dist/Pac-man42/ .
 	zip -r pac-man.zip dist/Pac-man42
 	unzip -t pac-man.zip
 

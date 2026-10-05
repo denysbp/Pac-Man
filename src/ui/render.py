@@ -710,11 +710,10 @@ class Render:
             width, height = level.width, level.height
             self.maze = MazeGenerator(
                 (width, height),
-                seed=self.data.seed if self.index == 0 else 0
             )
             self.heated_small.clear()
             self.heated_big.clear()
-            self.maze.generate()
+            self.maze.generate(seed=self.data.seed if self.index == 0 else 0)
             self.pacgums = 0
             self.calcule_maze_dimetions(self.maze._height, self.maze._width)
             pixel_data = {
