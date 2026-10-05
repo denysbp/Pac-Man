@@ -2,7 +2,6 @@ PY = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 SRC = src
 USER := $(shell command whoami)
-MODEL := Qwen/Qwen3-0.6B
 HOME := /home/$(USER)
 FOLDER = $(shell pwd)
 PY = $(VENV)/bin/python3
@@ -64,7 +63,7 @@ deploy:
 	.venv/bin/pyinstaller pac2.spec
 	cp -r dist/Pac-man42/_internal/src dist/Pac-man42/
 	mv dist/Pac-man42/ .
-	zip -r pac-man.zip dist/Pac-man42
+	zip -r pac-man.zip Pac-man42
 	unzip -t pac-man.zip
 
 
