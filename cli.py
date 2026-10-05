@@ -40,6 +40,8 @@ def main() -> int:
         print(e)
     except ValueError as e:
         print(e)
+    except FileNotFoundError as e:
+        print(e)
     except Exception as e:
         print(f"Something when wrong: {e}")
     return 0

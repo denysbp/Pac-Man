@@ -265,7 +265,7 @@ class Render:
             self.set_images()
         except FileNotFoundError as e:
             raise FileNotFoundError(
-                f"Error: {e}"
+                f"{e}"
             )
         self.create_classes_and_classes_atributes()
 
@@ -346,34 +346,34 @@ class Render:
             "src/models/assets/gums/pacgum-small.png"
         )
         if not self.small_gun:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.player_img, self.pl_w, self.pl_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/models/assets/player/right-3.png"
         )
         if not self.player_img:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.img_controls, self.c_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/keys.png")
         if not self.img_controls:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.victory_img, self.v_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/victory.png"
         )
         if not self.victory_img:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.big_gum, self.b_w, self.b_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/models/assets/gums/pacgum-big.png"
         )
         if not self.big_gum:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.buffer = self.mlx.mlx_new_image(
             self.app,
@@ -384,35 +384,35 @@ class Render:
             "src/ui/menu/gameover.png"
         )
         if not self.gameover_img:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.names_img, self.n_w, _ = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/names.png"
         )
         if not self.names_img:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.win_img, self.win_w, self.win_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/gamewin.png"
         )
         if not self.win_img:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
         #
         self.enter_imgs.append(self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/enter-00.png"
         ))
         if not self.enter_imgs[0][0]:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.enter_imgs.append(self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/enter-01.png"
         ))
         if not self.enter_imgs[1][0]:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.pause_imgs.append(
             self.mlx.mlx_png_file_to_image(
@@ -421,7 +421,7 @@ class Render:
             )
         )
         if not self.pause_imgs[0][0]:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.pause_imgs.append(
             self.mlx.mlx_png_file_to_image(
@@ -430,21 +430,21 @@ class Render:
             )
         )
         if not self.enter_imgs[1][0]:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.spam, self.spam_w, self.spam_h = self.mlx.mlx_png_file_to_image(
             self.app,
             self.path_img
         )
         if not self.spam:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         self.go_img, self.go_w, self.go_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/ui/menu/go.png"
         )
         if not self.go_img:
-            raise FileNotFoundError("Error: File corrupted!")
+            raise FileNotFoundError("File corrupted!")
 
         for name in (
             "freeze_bots",
@@ -459,7 +459,7 @@ class Render:
                 f"src/ui/power/{name}.png"
             )
             if not self.power_imgs[name]:
-                raise FileNotFoundError("Error: File corrupted!")
+                raise FileNotFoundError("File corrupted!")
 
         for img in menu_imgs:
             information = self.mlx.mlx_png_file_to_image(
@@ -467,7 +467,7 @@ class Render:
                 f"src/ui/menu/{img}.png"
             )
             if not information[0]:
-                raise FileNotFoundError("Error: File corrupted!")
+                raise FileNotFoundError("File corrupted!")
             self.menu.append(
                 information
             )
@@ -479,7 +479,7 @@ class Render:
                 img
             )
             if not information[0]:
-                raise FileNotFoundError("Error: File corrupted!")
+                raise FileNotFoundError("File corrupted!")
             self.window_img.append(
                 information
             )
