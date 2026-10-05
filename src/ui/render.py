@@ -333,6 +333,7 @@ class Render:
 
     def set_images(self) -> None:
         """ Load the images used by the game and create the game window. """
+        print("LOADING IMAGES *IT WILL TAKE TIME*")
         menu_imgs = [
             "new-game",
             "scores",
@@ -340,12 +341,6 @@ class Render:
             "exit"
         ]
 
-        self.window = self.mlx.mlx_new_window(
-            self.app,
-            self.WIDTH,
-            self.HEIGHT,
-            "PAC Man"
-        )
         self.small_gun, self.m_w, self.m_h = self.mlx.mlx_png_file_to_image(
             self.app,
             "src/models/assets/gums/pacgum-small.png"
@@ -488,6 +483,12 @@ class Render:
             self.window_img.append(
                 information
             )
+        self.window = self.mlx.mlx_new_window(
+            self.app,
+            self.WIDTH,
+            self.HEIGHT,
+            "Pac Man"
+        )
 
     def get_image(self) -> tuple[Any | None, int, int]:
         """

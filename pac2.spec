@@ -16,6 +16,7 @@ datas = [
     ("src/ui/menu", "src/ui/menu"),
     ("src/ui/points", "src/ui/points"),
     ("src/ui/power", "src/ui/power"),
+    ("src/ui/window", "src/ui/window"),
 
 ]
 
@@ -24,7 +25,11 @@ a = Analysis(
     pathex=[],
     binaries=binaries,
     datas=datas,
-    hiddenimports=['ctypes'],
+    hiddenimports=[
+		'ctypes',
+		'PIL',
+		'PIL.Image',
+	],
     excludes=['mlx', 'mlx.mlx'],
     hookspath=[],
     hooksconfig={},
@@ -40,7 +45,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='pac_man42',
+    name='PACMAN',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

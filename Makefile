@@ -58,10 +58,10 @@ fclean: clean
 	rm -rf $(VENV) dist build
 
 debug:
-	uv run pdb pac-man.py config.json
+	uv run -m pdb pac-man.py config.json
 
 deploy:
-	uvx pyinstaller pac2.spec
+	.venv/bin/pyinstaller pac2.spec
 
 
 lint:
