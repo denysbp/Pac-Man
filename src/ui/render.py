@@ -903,7 +903,7 @@ class Render:
         """
         print("\nClosing game...")
         self.quit = True
-
+        self.mlx.mlx_do_key_autorepeaton(self.app)
         try:
             self.mlx.mlx_loop_exit(self.app)
         except Exception:

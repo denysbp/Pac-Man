@@ -17,7 +17,7 @@ datas = [
     ("src/ui/points", "src/ui/points"),
     ("src/ui/power", "src/ui/power"),
     ("src/ui/window", "src/ui/window"),
-
+    ("INSTRUCTIONS.md", "INSTRUCTIONS")
 ]
 
 a = Analysis(

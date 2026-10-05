@@ -217,6 +217,7 @@ Relationships (high level):
 
 > - [MLX / minilibx documentation](https://harm-smits.github.io/42docs/libs/minilibx)
 > - [Pac-Man ghost-AI article consulted](https://aighost.co.uk/how-pac-man-ghost-ai-works-the-classic-chase-algorithms/)
+> - [Pac-Man Dowload](https://denysbp.itch.io/pac-man42)
 > - [Signal documentation](https://docs.python.org/3/library/signal.html)
 
 ### AI usage
